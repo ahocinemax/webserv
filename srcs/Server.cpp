@@ -14,10 +14,10 @@
 
 namespace
 {
-    void log(const std::string &message)
-    {
-        std::cout << message << std::endl;
-    }
+	void	log(const std::string &message)
+	{
+		std::cout << message << std::endl;
+	}
 }
 
 Server::Server(std::string ipAddress, int port) : _ipAddress(ipAddress),
@@ -48,18 +48,18 @@ Server::~Server(void) { Server::closeServer(); }
 
 void	Server::listenSocket()
 {
+	char	*request;
+	int		recievedBytes;
+
 	if (listen(_newSocket, 10) < 0)
 		throw ListenException();
-	std::cout << "Listening to address: " << _ipAddress << " on port: " 
-	<< _port << std::endl;
-
-	int	recievedBytes;
+	std::cout << "Listening to address: " << _ipAddress << " on port: " << _port << std::endl;
 
 	while (42)
 	{
 		acceptConnection(_newSocket);
 
-		char *request = readSocket();
+		request = readSocket();
 		buildResponse(request);
 		writeSocket(_serverMessage);
 		close(_newSocket);
@@ -68,8 +68,8 @@ void	Server::listenSocket()
 
 void	Server::startServer()
 {
-	_socket = socket(_socketAddr.sin_family, SOCK_NONBLOCK, 0);
-	std::cout << _socket << "    " << _socketAddr.sin_addr.s_addr << std::endl;
+	_socket = socket(_socketAddr.sin_family, SOCK_STREAM, 0);
+	std::cout << _socket << "    " << _socketAddr.sin_family << std::endl;
 	if (_socket < 0)
 		throw SocketConnectionException();
 	if (bind(_socket, (struct sockaddr *)&_socketAddr, _socketAddrLen) < 0)
