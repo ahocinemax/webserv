@@ -69,11 +69,12 @@ void	Server::listenSocket()
 void	Server::startServer()
 {
 	_socket = socket(_socketAddr.sin_family, SOCK_STREAM, 0);
-	std::cout << _socket << "    " << _socketAddr.sin_family << std::endl;
 	if (_socket < 0)
-		throw SocketConnectionException();
-	if (bind(_socket, (struct sockaddr *)&_socketAddr, _socketAddrLen) < 0)
 		throw SocketCreationException();
+	if (bind(_socket, (struct sockaddr *)&_socketAddr, _socketAddrLen) < 0)
+		throw SocketConnectionException();
+	
+	std::cout << "socket created: " << _socket << std::endl;
 }
 
 void	Server::closeServer() { close(_socket); close(_newSocket); exit(0); }
