@@ -15,16 +15,16 @@
 
 int main(int argc, char **argv)
 {
-	if (argc != 2)
-		return (std::cerr << "Usage: ./webserv <config_file>" << std::endl, 1);
+	if (argc > 2)
+		throw std::invalid_argument("Usage: ./webserv <config_file>");
 
 	std::string config_file;
 
 	config_file = argv[1];
 	try
 	{
-		Server server("127.0.0.1", 8080);
-		server.listenSocket();
+		Server server;
+		// server.listenSocket();
 	}
 	catch (const std::exception &e)
 	{

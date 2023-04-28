@@ -15,6 +15,7 @@
 
 # include <iostream>
 # include <string>
+# include <string.h>
 # include <vector>
 # include <map>
 # include <netinet/in.h>
@@ -30,8 +31,11 @@
 # include "Client.hpp"
 
 # define BUFFER_SIZE 30720
+# define SUCCESS 0
+# define FAILED -1
+# define EMPTY 1
 
-enum MethodTypes
+enum MethodType
 {
 	OPTIONS,
 	GET,
@@ -40,21 +44,8 @@ enum MethodTypes
 	PUT,
 	DELETE,
 	TRACE,
-	CONNECT
+	CONNECT,
+	UNKNOWN
 };
-
-// struct sockaddr_in
-// {
-// 	short			sin_family;
-// 	int				sin_type;
-// 	unsigned short	sin_port;
-// 	struct in_addr	sin_addr;
-// 	char			sin_zero[8];
-// };
-
-// struct in_addr
-// {
-// 	unsigned long	s_addr;
-// };
 
 #endif

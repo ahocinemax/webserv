@@ -14,25 +14,27 @@
 # define PARSER_HPP
 
 # include "webserv.hpp"
+# include <fstream>
 
 class Parser
 {
 	public:
-		Parser(std::string config_file);
-		~Parser();
+		Parser(const char *config_file);
+		~Parser(void);
 
-		void	parse();
+		std::vector<Server>	*parse(void);
 
 	private:
-		std::string					_server_name;
-		std::string					_root;
-		std::vector<std::string>	_index;
-		std::map<int, std::string>	_error_page;
-		int							_client_max_body_size;
-		bool						_autoindex;
-		std::string					_ip_address;
-		std::vector<MethodTypes>	_allowed_methods;
-		Location					_location;
+		std::string	_content;
+
+		Location	parseLocation(std::size_t *i);
+		Server		parseServer(std::size_t *i);
+
+		int			setLocation(Location &loc, std::string &key, std::string &val);
+		int			setServer(Server &serv, std::string &key, std::string &val);
+		
+		int			checkSyntax(std::string line);
+		int			printError(void) const;
 };
 
 #endif

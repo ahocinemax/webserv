@@ -14,17 +14,48 @@
 # define SERVER_HPP
 
 # include "webserv.hpp"
+# include "Location.hpp"
 # include <sys/socket.h>
+# include <sys/types.h>
 # include <netdb.h>
 # include <exception>
+# include <fcntl.h>
+# include <stdio.h>
 
 class Server
 {
 	public:
-		Server(std::string ipAddress, int port);
-		~Server(void);
+		int							client_body_limit;
+		bool						autoindex;
+		std::string 				root;
+		std::string 				server_name;
+		std::vector<std::string>	index;
+		std::vector<MethodType>		allow_methods;
+		std::map<int, std::string>	error_pages;
+		
+		std::vector<Location>		locations
 
-		void	listenSocket();
+		int							redirect_status;
+		std::string					redirect_url;
+
+		struct timeval				send_timeout;
+		struct timeval				recv_timeout;
+
+	public:
+		std::string					_ipAddress;
+		std::string					_port;
+		int							_socket;
+
+		~Server(void);
+		Server(void);
+
+		static MethodType	methodType(std::string str);
+
+		void	createSocket(void);
+		void	printInfo(void);
+
+		Location	*getLocation(std::string uriRequest) const;
+		bool		validLocation(std::string path, std::string request) const;
 
 		// Exceptions
 		class SocketCreationException : public std::exception
@@ -32,16 +63,16 @@ class Server
 			public:
 				virtual const char *what() const throw()
 				{
-					return ("error: Cannot create socket");
+					return ("Error: Cannot create socket");
 				}
 		};
 
-		class ListenException : public std::exception
+		class SocketListenException : public std::exception
 		{
 			public:
 				virtual const char *what() const throw()
 				{
-					return ("error: Cannot listen to socket");
+					return ("Error: Cannot listen to socket");
 				}
 		};
 
@@ -52,7 +83,7 @@ class Server
 			public:
 				virtual const char *what() const throw()
 				{
-					return ("Server failed to accept incoming connection");
+					return ("Error: Server failed to accept incoming connection");
 				}
 		};
 
@@ -61,7 +92,7 @@ class Server
 			public:
 				virtual const char *what() const throw()
 				{
-					return ("error: Cannot connect with socket");
+					return ("Error: Cannot connect with socket");
 				}
 		};
 
@@ -70,7 +101,7 @@ class Server
 			public:
 				virtual const char *what() const throw()
 				{
-					return ("error: Cannot read from socket");
+					return ("Error: Cannot read from socket");
 				}
 		};
 
@@ -79,27 +110,18 @@ class Server
 			public:
 				virtual const char *what() const throw()
 				{
-					return ("error: Cannot write to socket");
+					return ("Error: Cannot write to socket");
 				}
 		};
 
-	private:
-		std::string			_ipAddress;
-		int					_port;
-		int					_socket;
-		int					_newSocket;
-		long				_incommingMsg;
-		struct sockaddr_in	_socketAddr;
-		socklen_t			_socketAddrLen;
-		std::string			_serverMessage;
-
-		void	startServer();
-		void	closeServer();
-		void	getSocketAddr();
-		void	acceptConnection(int &newSocket);
-		char	*readSocket();
-		void	buildResponse(char *request);
-		void	writeSocket(std::string message);
+		class GetAddrInfoException : public std::exception
+		{
+			public:
+				virtual const char *what() const throw()
+				{
+					return ("Error: Cannot get address info");
+				}
+		};
 };
 
 #endif
