@@ -1,7 +1,7 @@
 #ifndef LOCATION_HPP
 # define LCOATION_HPP
 
-#include "webserv.hpp"
+# include "webserv.hpp"
 
 class Location
 {

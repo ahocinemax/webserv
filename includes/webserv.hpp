@@ -24,16 +24,11 @@
 # include <fcntl.h>
 # include <stdlib.h>
 
-# include "Server.hpp"
-# include "Request.hpp"
-# include "Response.hpp"
-# include "Location.hpp"
-# include "Client.hpp"
-
 # define BUFFER_SIZE 30720
 # define SUCCESS 0
 # define FAILED -1
 # define EMPTY 1
+# define SEP " \t\n"
 
 enum MethodType
 {

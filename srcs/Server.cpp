@@ -86,9 +86,9 @@ void	Server::printInfo(void)
 		for (unsigned long i = 0; i < index.size(); i++)
 			std::cout << "\t" << index[i] << std::endl;
 		std::cout << "> Allowed methods: " << std::endl;
-		for (unsigned long i = 0; i < allow_methods.size(); i++)
+		for (unsigned long i = 0; i < allowMethods.size(); i++)
 		{
-			switch (allow_methods[i])
+			switch (allowMethods[i])
 			{
 				case GET:
 					std::cout << "\tGET" << std::endl;
