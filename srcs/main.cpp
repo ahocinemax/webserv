@@ -12,6 +12,7 @@
 
 #include "webserv.hpp"
 #include "Server.hpp"
+#include "Parser.hpp"
 
 int main(int argc, char **argv)
 {
@@ -23,8 +24,10 @@ int main(int argc, char **argv)
 	config_file = argv[1];
 	try
 	{
-		Server server;
-		// server.listenSocket();
+		Parser parser(config_file.c_str());
+		std::vector<Server> *serv = parser.parse();
+		serv->begin()->printInfo();
+		delete serv;
 	}
 	catch (const std::exception &e)
 	{

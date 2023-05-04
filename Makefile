@@ -3,9 +3,7 @@
 #-----------------------------------------------#
 
 NAME		= webserv
-
-FLAGS		= -Wall -Wextra -Werror -std=c++98 -g3
-INCLUDE		= -I $(HEAD_DIR) -lXext -lX11 -lm
+FLAGS		= -Wall -Wextra -Werror -g3 -std=c++98
 CC			= c++
 
 #-----------------------------------------------#
@@ -14,7 +12,6 @@ CC			= c++
 
 SRCS_DIR	= ./srcs/
 SRCS_PATH	= $(addprefix $(SRCS_DIR), $(SRCS))
-
 SRCS		= main.cpp \
 			  Server.cpp \
 			  Client.cpp \
@@ -34,9 +31,8 @@ OBJS_DIR	= ./objs/
 #                    INCLUDES                   #
 #-----------------------------------------------#
 
-INC_DIR		= ./includes/
-
 INCLUDES	= -I$(INC_DIR)
+INC_DIR		= ./includes/
 
 #-----------------------------------------------#
 #                     COLORS                    #
@@ -67,19 +63,29 @@ RM			= rm -rf
 #-----------------------------------------------#
 
 all:		$(NAME)
+			@echo "${BOLD}${GREEN}\n----------- Compilation done ! -----------${RESET}"
+			@echo "${GREEN}Run ${BOLD}${BLUE}./webserv <path_to_config_file>${RESET}${GREEN} to run the server.${RESET}"
 
 $(NAME):	$(OBJS)
+			@echo "${YELLOW}${UNDERLINE}\nLinking...${RESET}${YELLOW}"
 			$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) -o $(NAME)
+			@echo -n "${RESET}"
 
 $(OBJS_DIR)%.o:	$(SRCS_DIR)%.cpp
 				@mkdir -p $(OBJS_DIR)
+				@echo -n "${CYAN}${UNDERLINE}Compiling $<:${RESET}    ${CYAN}"
 				$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+				@echo -n "${RESET}"
 
 clean:
+			@echo "${RED}${UNDERLINE}Cleaning objects...${RESET}${RED}"
 			$(RM) $(OBJS_DIR)
+			@echo -n "${RESET}"
 
-fclean:		clean
+fclean:	clean
+			@echo "${RED}${UNDERLINE}Removing executable...${RESET}${RED}"
 			$(RM) $(NAME)
+			@echo "${RESET}"
 
 re:			fclean all
 

@@ -10,23 +10,20 @@
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "Server.hpp"
+#include "Parser.hpp"
 
-Server::Server(void)
+Server::Server(void) :	client_body_limit(1024),
+						autoindex(false),
+						_ipAddress(""),
+						_port(""),
+						redirect_status(-1)
 {
-	client_body_limit = 1024;
-
 	struct timeval timer;
 	timer.tv_sec = 60;
 	timer.tv_usec = 0;
 
 	if (recv_timeout.tv_sec != 0)	recv_timeout = timer;
 	if (send_timeout.tv_sec != 0)	send_timeout = timer;
-
-	autoindex = false;
-	_ipAddress = "";
-	_port = "";
-	redirect_status = -1;
 }
 
 Server::~Server(void) {}
