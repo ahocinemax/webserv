@@ -35,7 +35,7 @@ class Parser
 		int			setServer(Server *serv, std::string &key, std::string &val);
 		
 		int			checkSyntax(std::string line);
-		int			printError(void) const;
+		int			printError(int error_code) const;
 };
 
 #endif

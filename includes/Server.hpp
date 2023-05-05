@@ -52,7 +52,7 @@ class Server
 		static MethodType	methodType(std::string str);
 
 		void	createSocket(void);
-		void	printInfo(void);
+		void	printInfo(int i);
 
 		Location	*getLocation(std::string uriRequest) const;
 		bool		validLocation(std::string path, std::string request) const;

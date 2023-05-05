@@ -24,9 +24,14 @@ int main(int argc, char **argv)
 	config_file = argv[1];
 	try
 	{
+		int i = 1;
 		Parser parser(config_file.c_str());
 		std::vector<Server> *serv = parser.parse();
-		serv->begin()->printInfo();
+		std::cout << "\n> Displaying result ..." << std::endl;
+		for (std::vector<Server>::iterator it = serv->begin(); it != serv->end(); it++)
+		{
+			it->printInfo(i++);
+		}
 		delete serv;
 	}
 	catch (const std::exception &e)

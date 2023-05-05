@@ -15,17 +15,45 @@ void	Location::printLocation(void) const
 	std::cout << "> root: " << this->_root << std::endl;
 	std::cout << "> client_body_limit: " << this->_client_body_limit << std::endl;
 	std::cout << "> allow_methods: " << std::endl;
-	for (size_t i = 0; i < this->_allowMethods.size(); i++)
-		std::cout << "    " << this->_allowMethods[i] << std::endl;
+	for (unsigned long i = 0; i < _allowMethods.size(); i++)
+	{
+		switch (_allowMethods[i])
+		{
+			case GET:
+				std::cout << "\tGET" << std::endl;
+				break;
+			case POST:
+				std::cout << "\tPOST" << std::endl;
+				break;
+			case PUT:
+				std::cout << "\tPUT" << std::endl;
+				break;
+			case DELETE:
+				std::cout << "\tDELETE" << std::endl;
+				break;
+			case HEAD:
+				std::cout << "\tHEAD" << std::endl;
+				break;
+			case OPTIONS:
+				std::cout << "\tOPTIONS" << std::endl;
+				break;
+			case TRACE:
+				std::cout << "\tTRACE" << std::endl;
+				break;
+			case CONNECT:
+				std::cout << "\tCONNECT" << std::endl;
+				break;
+			default:
+				break;
+		}
+	}
 	std::cout << "> index: " << std::endl;
 	for (size_t i = 0; i < this->_index.size(); i++)
-		std::cout << "    " << this->_index[i] << std::endl;
-	std::cout << "> cgi: " << std::endl;
+		std::cout << "\t" << this->_index[i] << std::endl;
+	std::cout << "> cgi_info: " << std::endl;
 	for (std::map<std::string, std::string>::const_iterator it = this->_cgi.begin();
 	it != this->_cgi.end(); it++)
-		std::cout << "    " << it->first << ", " << it->second << std::endl;
-	std::cout << "--------------------------------------------------" << std::endl;
-
+		std::cout << "\t" << it->first << ", " << it->second << std::endl;
 }
 
 MethodType	Location::methodType(std::string str)

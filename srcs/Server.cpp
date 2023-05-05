@@ -63,12 +63,12 @@ void	Server::createSocket(void)
 	}
 }
 
-void	Server::printInfo(void)
+void	Server::printInfo(int i)
 {
-	std::cout << "-------------  Server info:  -------------" << std::endl;
+	std::cout << PURPLE "-------------  Server " << i << " info:  -------------" RESET << std::endl;
 	std::cout << "> Server name: " << server_name << std::endl;
 	std::cout << "> IP address: " << _ipAddress << std::endl;
-	std::cout << "> Port" << _port << std::endl;
+	std::cout << "> Port: " << _port << std::endl;
 	if (redirect_status != -1)
 	{
 		std::cout << "> Redirect status: " << redirect_status << std::endl;
@@ -115,15 +115,22 @@ void	Server::printInfo(void)
 					break;
 			}
 		}
+		std::cout << "> send_timeout: " << send_timeout.tv_sec << std::endl;
+		std::cout << "> recv_timeout: " << recv_timeout.tv_sec << std::endl;
 		std::cout << "> Error pages: ";
 		if (error_pages.size() > 0)
+		{
 			std::cout << std::endl;
+			for (std::map<int, std::string>::iterator it = error_pages.begin(); it != error_pages.end(); it++)
+				std::cout << "\t" << it->first << " " << it->second << std::endl;
+		}
 		else
 			std::cout << "None" << std::endl;
 		std::cout << "> Locations: " << std::endl;
 		for (unsigned long i = 0; i < locations.size(); i++)	
 			locations[i].printLocation();
 	}
+	std::cout << "--------------------------------------------------\n" << std::endl;
 }
 
 MethodType	Server::methodType(std::string uriRequest)

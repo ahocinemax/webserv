@@ -19,7 +19,7 @@ Parser::Parser(const char *config_file)
 	std::ifstream   fs;
 
 	line.clear();
-	fs.open(config_file);
+	fs.open(config_file, std::ifstream::in);
 	if (fs.is_open())
 	{
 		while (!fs.eof())
@@ -31,7 +31,7 @@ Parser::Parser(const char *config_file)
 	}
 	else
 	{
-		std::cerr << "Error: Cannot open config file" << std::endl;
+		std::cerr << "Error: Cannot open file " << config_file << std::endl;
 		exit(1);
 	}
 }
@@ -47,7 +47,7 @@ std::vector<Server>	*Parser::parse(void)
 	std::size_t curr = _content.find_first_not_of(SEP, prev);
 
 	if (curr == std::string::npos)
-		exit(printError());
+		exit(printError(1));
 	while (curr != std::string::npos)
 	{
 		prev = _content.find_first_not_of(SEP, curr);
@@ -56,7 +56,7 @@ std::vector<Server>	*Parser::parse(void)
 		if (key == "server")
 			result->push_back(parseServer(&curr));
 		else
-			exit(printError());
+			exit(printError(2));
 	}
 	std::cout << "> Parsing finished ..." << std::endl;
 	return (result);
@@ -68,36 +68,40 @@ Location	Parser::parseLocation(std::size_t *i)
 	std::size_t start;
 	std::size_t end;
 	std::size_t prev = _content.find_first_not_of(SEP, *i);
-	std::size_t curr = _content.find_first_of(SEP, prev);
+	std::size_t curr = _content.find_first_of("\n{", prev);
 	result._path = _content.substr(prev, curr - prev);
 	prev = _content.find_first_not_of(SEP, curr);
 	if (prev == std::string::npos || _content[prev] != '{')
-		exit(printError());
+		exit(printError(3));
 	prev++;
+	curr = _content.find_first_of(SEP, prev);
 	while (curr != std::string::npos)
 	{
 		if ((prev = _content.find_first_not_of(SEP, curr)) == std::string::npos)
-			exit(printError());
+			exit(printError(4));
 		start = prev;
 		if ((curr = _content.find_first_of(SEP, prev)) == std::string::npos)
-			exit(printError());
+			exit(printError(5));
 		std::string key = _content.substr(start, curr - start);
 		if (key == "}")
 		{
 			*i = _content.find_first_not_of(SEP, curr + 1);
 			break ;
 		}
-		if ((prev = _content.find_first_not_of(SEP, curr)) == std::string::npos)
-			exit(printError());
-		if ((curr = _content.find_first_of('\n', prev)) == std::string::npos)
-			exit(printError());
-		if ((end = checkSyntax(_content.substr(start, curr - start))) == FAILED)
-			exit(printError());
-		if (static_cast<int>(end) == EMPTY)
-			continue ;
-		std::string val = _content.substr(prev, curr - prev);
-		if (setLocation(&result, key, val) == FAILED)
-			exit(printError());
+		else
+		{
+			if ((prev = _content.find_first_not_of(SEP, curr)) == std::string::npos)
+				exit(printError(6));
+			if ((curr = _content.find_first_of('\n', prev)) == std::string::npos)
+				exit(printError(7));
+			if ((end = checkSyntax(_content.substr(start, curr - start))) == FAILED)
+				exit(printError(8));
+			if (static_cast<int>(end) == EMPTY)
+				continue ;
+			std::string val = _content.substr(prev, start + 1 + end - prev);
+			if (setLocation(&result, key, val) == FAILED)
+				exit(printError(9));
+		}
 	}
 	return (result);
 }
@@ -110,16 +114,16 @@ Server	Parser::parseServer(std::size_t *i)
 	std::size_t prev = _content.find_first_not_of(SEP, *i);
 
 	if (prev == std::string::npos || _content[prev] != '{')
-		exit(printError());
+		exit(printError(10));
 	prev++;
 	std::size_t curr = _content.find_first_not_of(SEP, prev);
 	while (curr != std::string::npos)
 	{
 		if ((prev = _content.find_first_not_of(SEP, curr)) == std::string::npos)
-			exit(printError());
+			exit(printError(11));
 		start = prev;
 		if ((curr = _content.find_first_of(SEP, prev)) == std::string::npos)
-			exit(printError());
+			exit(printError(12));
 		std::string key = _content.substr(start, curr - start);
 		if (key == "}")
 		{
@@ -132,16 +136,16 @@ Server	Parser::parseServer(std::size_t *i)
 		else
 		{
 			if ((prev = _content.find_first_not_of(SEP, curr)) == std::string::npos)
-				exit(printError());
+				exit(printError(13));
 			if ((curr = _content.find_first_of('\n', prev)) == std::string::npos)
-				exit(printError());
+				exit(printError(14));
 			if ((end = checkSyntax(_content.substr(start, curr - start))) == FAILED)
-				exit(printError());
+				exit(printError(15));
 			if (static_cast<int>(end) == EMPTY)
 				continue ;
 			std::string val = _content.substr(prev, end - prev + start + 1);
 			if (setServer(&result, key, val) == FAILED)
-				exit(printError());
+				exit(printError(16));
 		}
 	}
 	return (result);
@@ -149,6 +153,8 @@ Server	Parser::parseServer(std::size_t *i)
 
 int Parser::setLocation(Location *loc, std::string &key, std::string &val)
 {
+	std::size_t value;
+	// std::cout << "key: \"" << key << "\" val: {" << val << "}" << std::endl;
 	if (key == "root")
 		loc->_root = val;
 	else if (key == "client_body_limit")
@@ -170,13 +176,19 @@ int Parser::setLocation(Location *loc, std::string &key, std::string &val)
 		std::size_t	key = val.find_first_of(" \t");
 		if (key == std::string::npos)
 			return FAILED;
-		std::size_t value = val.find_first_of(" \t", key + 1);
-		if (value == std::string::npos)
-			return FAILED;
-		loc->_cgi[val.substr(0, key)] = val.substr(value, val.length());
+		value = val.length();
+		if (value == key)
+			return EMPTY;
+		loc->_cgi[val.substr(0, key)] = val.substr(key + 1, value);
 	}
 	else
-		return FAILED;
+	{
+		std::cerr << RED "Error:" RESET " Invalid key in location part" RED " {" << key << ": " << val << "}" RESET << std::endl;
+		std::cerr << "This parameter will be ignored." RESET << std::endl;
+		return (SUCCESS);
+	}
+	std::cout << YELLOW "added " << GREEN << key << ": " << BLUE << \
+	val << YELLOW " to location" RESET << std::endl;
 	return SUCCESS;
 }
 
@@ -197,7 +209,7 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 			if (split == std::string::npos)
 				return (FAILED);
 			serv->_ipAddress = val.substr(0, split);
-			serv->_port = atoi(val.substr(split + 1, val.length()).c_str());
+			serv->_port = val.substr(split + 1, val.length() - 1);
 		}
 	}
 	else if (key == "root")
@@ -220,7 +232,7 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 		{
 			int status = atoi((*it).c_str());
 			if (serv->error_pages.find(status) != serv->error_pages.end())
-				return (FAILED);
+				continue;
 			serv->error_pages[status] = tmp2;
 		}
 	}
@@ -232,7 +244,7 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 	}
 	else if (key == "recv_timeout")
 		serv->recv_timeout.tv_sec = atoi(val.c_str());
-	else if (key == "send_timout")
+	else if (key == "send_timeout")
 		serv->send_timeout.tv_sec = atoi(val.c_str());
 	else if (key == "allow_methods")
 	{
@@ -241,7 +253,13 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 			serv->allowMethods.push_back(serv->methodType(*it));
 	}
 	else
-		return (FAILED);
+	{
+		std::cerr << RED "Error:" RESET " Invalid key in server part" RED " {" << key << ": " << val << "}" RESET << std::endl;
+		std::cerr << "This parameter will be ignored." RESET << std::endl;
+		return (SUCCESS);
+	}
+	std::cout << YELLOW "added " << GREEN << key << ": " << BLUE << val \
+	<< YELLOW " to server" RESET << std::endl;
 	return (SUCCESS);
 }
 
@@ -267,8 +285,8 @@ int	Parser::checkSyntax(std::string line)
 	return (line.find_last_not_of(" \t", semicol - 1));
 }
 
-int	Parser::printError(void) const
+int	Parser::printError(int error_code) const
 {
-	std::cout << "[ERROR] config parsing failed.\n";
+	std::cerr << "[ERROR] config parsing failed." << error_code << std::endl;
 	return (FAILED);
 }
