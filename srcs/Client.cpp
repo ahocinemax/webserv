@@ -1,9 +1,19 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Client.cpp                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahocine <marvin@42.fr>                     +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/05/06 22:37:04 by ahocine           #+#    #+#             */
+/*   Updated: 2023/05/06 22:37:29 by ahocine          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Client.hpp"
 
-Client::Client(Server *server)
+Client::Client(Server *server) : _server(server), _addrLen(sizeof(_addr))
 {
-	_server = server;
-	_addrLen = sizeof(_addr);
 	clearRequest();
 	gettimeofday(&_timer, NULL);
 	memset(_request, 0, MAX_REQUEST_SIZE + 1);
@@ -33,13 +43,26 @@ struct timeval	Client::getTimer(void) const { return _timer; }
 
 std::string	Client::setRootPath(std::string path)
 {
-	std::size_t	lenght;
+	std::size_t	len;
 	std::string	root;
 	int index = -1;
 
 	for (size_t i = 0; i < _server->locations.size(); i++)
 	{
-		
+		if (_server->locations[i]._root != "" && path.find(_server->locations[i]._path) != std::string::npos)
+		{
+			if (charCounter(path, '/') == charCounter(_server->locations[i]._path, '/'))
+			{
+				if (strcmp(strrchr(path.c_str(), '/'), strrchr(_server->locations[i]._path.c_str(), '/')))
+					continue;
+			}
+			if (len < _server->locations[i]._path.length())
+			{
+				len = _server->locations[i]._root.length();
+				root = _server->locations[i]._root;
+				index = i;
+			}
+		}
 	}
 	
 	if (index == -1)
@@ -47,21 +70,19 @@ std::string	Client::setRootPath(std::string path)
 	return (root);
 }
 
-// const char	*Client::setClientAddr(void)
-// {
-// 	if (_addr.ss_family == AF_INET)
-// 		return inet_ntoa(((struct sockaddr_in *)&_addr)->sin_addr);
-// 	else
-// 		return inet_ntoa(((struct sockaddr_in6 *)&_addr)->sin6_addr);
-// }
+const char	*Client::setClientAddr(void)
+{
+	static char buffer[100];
+	getnameinfo((struct sockaddr *)&_addr, _addrLen, buffer, sizeof(buffer), 0, 0, NI_NUMERICHOST);
+	return (buffer);
+}
 
-// const char	*Client::setClientPort(void)
-// {
-// 	if (_addr.ss_family == AF_INET)
-// 		return ft_itoa(ntohs(((struct sockaddr_in *)&_addr)->sin_port));
-// 	else
-// 		return ft_itoa(ntohs(((struct sockaddr_in6 *)&_addr)->sin6_port));
-// }
+const char	*Client::setClientPort(void)
+{
+	static char buffer[100];
+	getnameinfo((struct sockaddr *)&_addr, _addrLen, 0, 0, buffer, sizeof(buffer), NI_NUMERICHOST);
+	return (buffer);
+}
 
 int		Client::charCounter(std::string str, char c)
 {
