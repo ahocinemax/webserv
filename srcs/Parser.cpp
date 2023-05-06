@@ -271,7 +271,7 @@ int	Parser::checkSyntax(std::string line)
 	if (split != std::string::npos)
 	{
 		line.erase(split);
-		if (find = line.find_first_not_of(SEP) != std::string::npos)
+		if ((find = line.find_first_not_of(SEP)) != std::string::npos)
 			return (EMPTY);
 	}
 
