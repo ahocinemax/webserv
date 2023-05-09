@@ -93,23 +93,8 @@ void	Server::printInfo(int i)
 				case POST:
 					std::cout << "\tPOST" << std::endl;
 					break;
-				case PUT:
-					std::cout << "\tPUT" << std::endl;
-					break;
 				case DELETE:
 					std::cout << "\tDELETE" << std::endl;
-					break;
-				case HEAD:
-					std::cout << "\tHEAD" << std::endl;
-					break;
-				case OPTIONS:
-					std::cout << "\tOPTIONS" << std::endl;
-					break;
-				case TRACE:
-					std::cout << "\tTRACE" << std::endl;
-					break;
-				case CONNECT:
-					std::cout << "\tCONNECT" << std::endl;
 					break;
 				default:
 					break;
@@ -139,18 +124,8 @@ MethodType	Server::methodType(std::string uriRequest)
 		return GET;
 	else if (uriRequest == "POST")
 		return POST;
-	else if (uriRequest == "PUT")
-		return PUT;
 	else if (uriRequest == "DELETE")
 		return DELETE;
-	else if (uriRequest == "HEAD")
-		return HEAD;
-	else if (uriRequest == "OPTIONS")
-		return OPTIONS;
-	else if (uriRequest == "TRACE")
-		return TRACE;
-	else if (uriRequest == "CONNECT")
-		return CONNECT;
 	else
 		return UNKNOWN;
 }

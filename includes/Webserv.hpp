@@ -13,48 +13,35 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-# include <iostream>
-# include <string>
-# include <string.h>
-# include <vector>
-# include <map>
-# include <netinet/in.h>
-# include <arpa/inet.h>
+# include "Utils.hpp"
+# include "Client.hpp"
+# include "Request.hpp"
+# include "Response.hpp"
+# include <cstdio>
 # include <unistd.h>
-# include <fcntl.h>
-# include <stdlib.h>
+# include <sys/stat.h>
 
-# define BUFFER_SIZE	30720
-# define SUCCESS		0
-# define FAILED			-1
-# define EMPTY			1
-
-# define SEP			" \t\n"
-# define RESET			"\033[0m"
-# define BOLD			"\033[1m"
-# define UNDERLINE		"\033[4m"
-# define BLINK			"\033[5m"
-
-# define BLACK			"\033[30m"
-# define RED			"\033[31m"
-# define GREEN			"\033[32m"
-# define YELLOW			"\033[33m"
-# define BLUE			"\033[34m"
-# define PURPLE			"\033[35m"
-# define CYAN			"\033[36m"
-# define WHITE			"\033[37m"
-
-enum MethodType
+class Webserv
 {
-	OPTIONS,
-	GET,
-	HEAD,
-	POST,
-	PUT,
-	DELETE,
-	TRACE,
-	CONNECT,
-	UNKNOWN
+	private:
+		std::map<int, std::string>	_statutCode;
+		std::vector<Server>			_servers;
+		std::vector<Client>			_clients;
+
+		void	deleteMethod(Client &client, std::string path);
+		void	postMethod(Client &client, Request &request);
+		void	getMethod(Client &client, std::string path);
+
+		std::string		getPath(Client &client, std::string path);
+
+		int				writeResponse(Client &client, std::string response, std::string path);
+
+	public:
+		Webserv(/* args */);
+		~Webserv();
 };
+
+
+
 
 #endif

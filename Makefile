@@ -19,6 +19,7 @@ SRCS		= main.cpp \
 			  Location.cpp \
 			  Utils.cpp \
 			  Parser.cpp \
+			  Response.cpp
 
 #-----------------------------------------------#
 #                     OBJECTS                   #

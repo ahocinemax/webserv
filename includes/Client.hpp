@@ -14,7 +14,7 @@
 # define CLIENT_HPP
 
 # define MAX_REQUEST_SIZE 4096
-# include "webserv.hpp"
+# include "Utils.hpp"
 # include "Server.hpp"
 # include <sys/time.h>
 
@@ -33,16 +33,18 @@ class Client
 		void		setSocket(int socket);
 		void		setRecvSize(int size);
 
-		int			getSocket(void) const;
-		int			getRecvSize(void) const;
-		timeval		getTimer(void) const;
-
 		std::string	setRootPath(std::string path);
 		const char	*setClientAddr(void);
 		const char	*setClientPort(void);
 
+		int			getRecvSize(void) const;
+		int			getSocket(void) const;
+		timeval		getTimer(void) const;
+
 		int			charCounter(std::string str, char c);
 		void		clearRequest(void);
+
+		void		displayErrorPage(std::map<int, std::string>::iterator statutCode);
 
 	private:
 		int		_socket;

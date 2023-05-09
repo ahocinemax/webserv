@@ -1,6 +1,6 @@
 #include "Location.hpp"
 
-Location::Location(/* args */) : _client_body_limit(0), _path(""), _root("")
+Location::Location() : _client_body_limit(0), _path(""), _root("")
 {
 }
 
@@ -25,25 +25,11 @@ void	Location::printLocation(void) const
 			case POST:
 				std::cout << "\tPOST" << std::endl;
 				break;
-			case PUT:
-				std::cout << "\tPUT" << std::endl;
-				break;
 			case DELETE:
 				std::cout << "\tDELETE" << std::endl;
 				break;
-			case HEAD:
-				std::cout << "\tHEAD" << std::endl;
-				break;
-			case OPTIONS:
-				std::cout << "\tOPTIONS" << std::endl;
-				break;
-			case TRACE:
-				std::cout << "\tTRACE" << std::endl;
-				break;
-			case CONNECT:
-				std::cout << "\tCONNECT" << std::endl;
-				break;
 			default:
+				std::cout << "\tUNKNOWN" << std::endl;
 				break;
 		}
 	}
@@ -60,20 +46,10 @@ MethodType	Location::methodType(std::string str)
 {
 	if (str == "GET")
 		return (GET);
-	else if (str == "HEAD")
-		return (HEAD);
 	else if (str == "POST")
 		return (POST);
-	else if (str == "PUT")
-		return (PUT);
 	else if (str == "DELETE")
 		return (DELETE);
-	else if (str == "CONNECT")
-		return (CONNECT);
-	else if (str == "OPTIONS")
-		return (OPTIONS);
-	else if (str == "TRACE")
-		return (TRACE);
 	else
 		return (UNKNOWN);
 }
