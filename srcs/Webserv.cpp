@@ -96,10 +96,10 @@ void	Webserv::postMethod(Client &client, Request &request)
 	std::cout << GREEN << filePath << " posted (" << code << ")" RESET << std::endl;
 }
 
-// void	Webserv::getMethod(Client &client, std::string path)
-// {
-	// ;
-// }
+void	Webserv::getMethod(Client &client, std::string path)
+{
+	;
+}
 
 std::string	Webserv::getPath(Client &client, std::string path)
 {
@@ -118,5 +118,5 @@ std::string	Webserv::getPath(Client &client, std::string path)
 
 int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 {
-
+	;
 }
