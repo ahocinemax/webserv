@@ -26,9 +26,9 @@ int main(int argc, char **argv)
 	{
 		int i = 1;
 		Parser parser(config_file.c_str());
-		std::vector<Server> *serv = parser.parse();
+		vecServer *serv = parser.parse();
 		std::cout << "\n> Displaying result ..." << std::endl;
-		for (std::vector<Server>::iterator it = serv->begin(); it != serv->end(); it++)
+		for (vecServer::iterator it = serv->begin(); it != serv->end(); it++)
 		{
 			it->printInfo(i++);
 		}

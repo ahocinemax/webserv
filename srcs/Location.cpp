@@ -37,7 +37,7 @@ void	Location::printLocation(void) const
 	for (size_t i = 0; i < this->_index.size(); i++)
 		std::cout << "\t" << this->_index[i] << std::endl;
 	std::cout << "> cgi_info: " << std::endl;
-	for (std::map<std::string, std::string>::const_iterator it = this->_cgi.begin();
+	for (mapString::const_iterator it = this->_cgi.begin();
 	it != this->_cgi.end(); it++)
 		std::cout << "\t" << it->first << ", " << it->second << std::endl;
 }
@@ -66,7 +66,7 @@ std::string	Location::getPath(void) const
 
 std::string	Location::getCgi(std::string extension) const
 {
-	for (std::map<std::string, std::string>::const_iterator it = this->_cgi.begin();
+	for (mapString::const_iterator it = this->_cgi.begin();
 	it != this->_cgi.end(); it++)
 	{
 		if (it->first == "." + extension)

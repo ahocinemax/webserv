@@ -38,9 +38,9 @@ Parser::Parser(const char *config_file)
 
 Parser::~Parser(void) {}
 
-std::vector<Server>	*Parser::parse(void)
+vecServer	*Parser::parse(void)
 {
-	std::vector<Server> *result = new std::vector<Server>();
+	vecServer *result = new vecServer();
 
 	std::cout << "> Parsing config file ..." << std::endl;
 	std::size_t prev = 0;
