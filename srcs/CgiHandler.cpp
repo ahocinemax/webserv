@@ -21,26 +21,17 @@ CgiHandler::CgiHandler(Response& response) : response(response),
                                              _env(getenv()),
 {
     if (!pathIsAccessible(script_path_)) {
-        throw 404;
+        throw 404;//エラー投げる
     }
-    setupSigpipe(0);
+    //setupSigpipe(0); pipe
 }
 
 CgiHandler::~CgiHandler()
 {
     _restore();
-    setupSigpipe(1);
+    //setupSigpipe(1);pipe
 }
 
-const std::string& CgiHandler::getProgram() const
-{
-    return response->getCgiProgram();
-}
-
-const std::string& CgiHandler::getScriptPath() const
-{
-    return script_path_;
-}
 
 const std::map<std::string, std::string>& CgiHandler::getEnv() const
 {
