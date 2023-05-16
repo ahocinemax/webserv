@@ -40,7 +40,7 @@ public:
 
     const std::string& getProgram() const;
     const std::string& getScriptPath() const;
-    const std::map<std::string, std::string>& getEnv() const;
+    const std::map<std::string, std::string>& GetEnv() const;
     char** GetEnvAsCstrArray() const;
     void FreeEnvCstrArray(char** env) const;
 
@@ -60,25 +60,26 @@ public:
     };
 
 private:
-    void _execute();
-    void _restore();
-    void _redirectToPipe();
-    void _setupPipe();
-    void _setupParentIo();
-    bool _waitForChild(int pid);
-    void _writeToStdin();
+    void Execute();
+    void Restore();
+    void RedirectOutputToPipe();
+    void PipeSet();
+    void SetupParentIO();
+    bool WaitforChild(int pid);
+    void WriteToStdin();
 
-    void _setCgiEnvironment();
+    void setCgiEnvironment();
     //getter for mime ? 
     
     Response *response;
     Request *request;
     int fd_in_[2];
     int fd_out_[2];
-    int in_;
-    int out_;
-    const std::string script_path_;
-    std::string request_body_;
+    int _in;
+    int _out;
+    const std::string _scriptPath;
+    const std::string _program;
+    std::string _request_body;
     std::map<std::string, std::string> _env;
 };
 

@@ -14,43 +14,56 @@
 */
 
 
-
-CgiHandler::CgiHandler(Response& response) : response(response),
-                                             script_path_(response.getBuiltPath()),
-                                             request_body_(response.getRequest()->getBody()),
-                                             _env(getenv()),
-{
-    if (!pathIsAccessible(script_path_)) {
-        throw 404;//エラー投げる
+CgiHandler::CgiHandler(Response& response) : 
+    //response(response),
+    //_scriptPath(response.GetBuiltPath()),
+    //_request_body(response.GetRequest()->GetBody()),
+    _in(-1),
+    _out(-1),
+    //_program(reponse.GetCgiProgram()),
+    _env(GetEnv())
+    {
+        if (!AccessiblePath(_scriptPath)) {
+            throw 404;//error投げる
+        }
+        SigpipeSet(0);
     }
-    //setupSigpipe(0); pipe
-}
 
 CgiHandler::~CgiHandler()
 {
-    _restore();
-    //setupSigpipe(1);pipe
+    Restore();
+    SigpipeSet(1);
 }
 
 
-const std::map<std::string, std::string>& CgiHandler::getEnv() const
+const std::map<std::string, std::string>& CgiHandler::GetEnv() const
 {
     return _env;
+}
+
+const std::string& CgiHandler::getScriptPath() const
+{
+	return (_scriptPath);
+}
+
+const std::string& CgiHandler::getProgram() const
+{
+	return (_program);
 }
 
 
 bool CgiHandler::getCgiOutput(std::string& output)
 {
-    _setupPipe();
+    PipeSet();
     int pid = fork();
     if (pid < 0) {
-        throw RuntimeError("cgihandler getCgiOutput (fork) error");
+        throw RuntimeError("cgihandler:getCgiOutput (fork) error");
     } else if (pid == 0) {
         usleep(900);
-        _execute();
+        Execute();
         return true;
     } else {
-        if (_waitForChild(pid)) {
+        if (WaitforChild(pid)) {
             output = readFd(fd_out_[0]);
             close(fd_out_[0]);
             return true;
@@ -61,7 +74,8 @@ bool CgiHandler::getCgiOutput(std::string& output)
     }
 }
 
-char** CgiHandler::GetEnvAsCstrArray() const {
+char** CgiHandler::GetEnvAsCstrArray() const
+{
     char** env = new char*[this->_env.size() + 1];
     int j = 0;
     for (std::map<std::string, std::string>::const_iterator i = this->_env.begin(); i != this->_env.end(); i++) {
@@ -74,87 +88,88 @@ char** CgiHandler::GetEnvAsCstrArray() const {
     return env;
 }
 
-void CgiHandler::FreeEnvCstrArray(char** env) const {
+void CgiHandler::FreeEnvCstrArray(char** env) const
+{
     for (int i = 0; env[i] != NULL; i++) {
         delete[] env[i];
     }
     delete[] env;
 }
 
-void CgiHandler::_execute()
+void CgiHandler::Execute()
 {
     char* av[] = {
         const_cast<char*>(getProgram().c_str()),
         const_cast<char*>(getScriptPath().c_str()),
         0 };
     char **env = GetEnvAsCstrArray();
-    _setCgiEnvironment();
-    _redirectToPipe();
+    setCgiEnvironment();
+    RedirectOutputToPipe();
     execve(av[0], av, env);
     if (close(fd_in_[0])) {
-        throw RuntimeError("cgihandler execute (close) error");
+        throw RuntimeError("cgihandler: Execute (close) error");
     }
     if (close(fd_out_[1])) {
-        throw RuntimeError("cgihandler execute (close) error");
+        throw RuntimeError("cgihandler: Execute (close) error");
     }
     for (size_t i = 0; env[i]; i++)
         delete[] env[i];
     delete[] env;
 }
 
-void CgiHandler::_restore()
+void CgiHandler::Restore()
 {
-    if (in_ == -1 && out_ == -1) {
+    if (_in == -1 && _out == -1) {
         return;
     }
 
-    if (dup2(in_, STDIN_FILENO) < 0) {
-        throw RuntimeError("cgihandler _restore (dup2) error");
+    if (dup2(_in, STDIN_FILENO) < 0) {
+        throw RuntimeError("cgihandler: Restore (dup2) error");
     }
-    if (close(in_)) {
-        throw RuntimeError("cgihandler _restore (close) error");
+    if (close(_in)) {
+        throw RuntimeError("cgihandler: Restore (close) error");
     }
-    if (dup2(out_, STDOUT_FILENO) < 0) {
-        throw RuntimeError("cgihandler _restore (dup2) error");
+    if (dup2(_out, STDOUT_FILENO) < 0) {
+        throw RuntimeError("cgihandler: Restore (dup2) error");
     }
-    if (close(out_)) {
-        throw RuntimeError("cgihandler _restore (close) error");
+    if (close(_out)) {
+        throw RuntimeError("cgihandler: Restore (close) error");
     }
 }
 
-void CgiHandler::_redirectToPipe()
+void CgiHandler::RedirectOutputToPipe()
 {
     if (close(fd_in_[1]) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (close) error");
+        throw RuntimeError("cgihandler: RedirectOutputToPipe (close) error");
     }
-    if ((in_ = dup(STDIN_FILENO)) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (dup) error");
+    if ((_in = dup(STDIN_FILENO)) < 0) {
+        throw RuntimeError("cgihandler: RedirectOutputToPipe (dup) error");
     }
     if (dup2(fd_in_[0], STDIN_FILENO) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (dup2) error");
+        throw RuntimeError("cgihandler: RedirectOutputToPipe (dup2) error");
     }
     if (close(fd_out_[0]) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (close) error");
+        throw RuntimeError("cgihandler: RedirectOutputToPipe (close) error");
     }
-    if ((out_ = dup(STDOUT_FILENO)) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (dup) error");
+    if ((_out = dup(STDOUT_FILENO)) < 0) {
+        throw RuntimeError("cgihandler: RedirectOutputToPipe (dup) error");
     }
     if (dup2(fd_out_[1], STDOUT_FILENO) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (dup2) error");
+        throw RuntimeError("cgihandler: RedirectOutputToPipe (dup2) error");
     }
 }
 
-void CgiHandler::_setupPipe()
+void CgiHandler::PipeSet()
 {
     if (pipe(fd_in_) < 0) {
-        throw RuntimeError("cgihandler getCgiOutput (pipe) error");
+        throw RuntimeError("cgihandler: getCgiOutput (pipe) error");
     }
     if (pipe(fd_out_) < 0) {
-        throw RuntimeError("cgihandler getCgiOutput (pipe) error");
+        throw RuntimeError("cgihandler: getCgiOutput (pipe) error");
     }
 }
 
-void CgiHandler::_setupParentIo()
+void CgiHandler::SetupParentIO()
 {
     if (close(fd_in_[0]) < 0) {
         throw 500;
@@ -164,12 +179,12 @@ void CgiHandler::_setupParentIo()
     }
 }
 
-bool CgiHandler::_waitForChild(int pid)
+bool CgiHandler::WaitforChild(int pid)
 {
     int wstatus;
     time_t start = std::time(0);
 
-    _writeToStdin();
+    WriteToStdin();
     while (true) {
         if (waitpid(pid, &wstatus, WNOHANG) == pid) {
             break;
@@ -186,18 +201,18 @@ bool CgiHandler::_waitForChild(int pid)
         return false;
 }
 
-void CgiHandler::_writeToStdin()
+void CgiHandler::WriteToStdin()
 {
-    _setupParentIo();
-    if (write(fd_in_[1], request_body_.c_str(), request_body_.size()) < 0) {
-        throw RuntimeError("cgihandler _writeToStdin (write) error");
+    SetupParentIO();
+    if (write(fd_in_[1], _request_body.c_str(), _request_body.size()) < 0) {
+        throw RuntimeError("cgihandler: WriteToStdin (write) error");
     }
     if (close(fd_in_[1]) < 0) {
-        throw RuntimeError("cgihandler _writeToStdin (close) error");
+        throw RuntimeError("cgihandler: WriteToStdin (close) error");
     }
 }
 
-void CgiHandler::_setCgiEnvironment() {
+void CgiHandler::setCgiEnvironment() {
 	// ...
 
 	// Set up the environment variables
@@ -232,5 +247,6 @@ void CgiHandler::_setCgiEnvironment() {
 
 /*
     memo: Is "mime" type required in CGI? - I don't think so
-
+    16/05 need to add:
+    c
 */
