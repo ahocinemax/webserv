@@ -59,7 +59,7 @@ void	Webserv::postMethod(Client &client, Request &request)
 		std::string	boundary = request._header["Content-Type"].substr(begin + 9);
 		begin = 0;
 		std::size_t	end = 0;
-		std::string		fileName;
+		std::string	fileName;
 		while (true)
 		{
 			begin = request._body.find("name=", begin) + 6;

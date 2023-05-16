@@ -35,7 +35,7 @@
 
 typedef std::vector<std::string>			StrVector;
 typedef std::map<int, std::string>			StatusMap;
-typedef std::map<std::string, std::string>	CgiMap;
+typedef std::map<std::string, std::string>	StringMap;
 
 enum MethodType
 {

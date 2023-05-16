@@ -20,7 +20,7 @@ class Location
 		StrVector				_index;
 		std::string				_path;
 		std::string				_root;
-		CgiMap					_cgi;
+		StringMap					_cgi;
 };
 
 #endif
