@@ -1,5 +1,7 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
+#include <map>
+#include <iostream>
 
 class Request
 {
@@ -13,6 +15,7 @@ class Request
 		std::string							_method;
 		std::string							_path;
 		std::string							_body;
+		std::string		GetHeader(const std::string& headerName);
 };
 
 #endif
