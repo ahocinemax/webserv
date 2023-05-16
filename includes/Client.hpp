@@ -44,7 +44,7 @@ class Client
 		int			charCounter(std::string str, char c);
 		void		clearRequest(void);
 
-		void		displayErrorPage(std::map<int, std::string>::iterator statutCode);
+		void		displayErrorPage(StatusMap::iterator statutCode);
 
 	private:
 		int		_socket;

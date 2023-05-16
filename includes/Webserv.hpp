@@ -24,9 +24,9 @@
 class Webserv
 {
 	private:
-		std::map<int, std::string>	_statutCode;
-		std::vector<Server>			_servers;
-		std::vector<Client>			_clients;
+		std::vector<Server>	_servers;
+		std::vector<Client>	_clients;
+		StatusMap			_statutCode;
 
 		void	deleteMethod(Client &client, std::string path);
 		void	postMethod(Client &client, Request &request);

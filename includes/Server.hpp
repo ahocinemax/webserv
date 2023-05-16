@@ -25,13 +25,13 @@
 class Server
 {
 	public:
-		int							client_body_limit;
-		bool						autoindex;
-		std::string 				root;
-		std::string 				server_name;
-		std::vector<std::string>	index;
-		std::vector<MethodType>		allowMethods;
-		std::map<int, std::string>	error_pages;
+		int						client_body_limit;
+		bool					autoindex;
+		std::string 			root;
+		std::string 			server_name;
+		StrVector				index;
+		std::vector<MethodType>	allowMethods;
+		StatusMap				error_pages;
 		
 		std::vector<Location>		locations;
 

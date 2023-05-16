@@ -33,6 +33,10 @@
 # define CYAN			"\033[36m"
 # define WHITE			"\033[37m"
 
+typedef std::vector<std::string>			StrVector;
+typedef std::map<int, std::string>			StatusMap;
+typedef std::map<std::string, std::string>	CgiMap;
+
 enum MethodType
 {
 	GET,
@@ -40,6 +44,6 @@ enum MethodType
 	DELETE,
 	UNKNOWN
 };
-std::vector<std::string> split(std::string input, char delimiter);
+StrVector split(std::string input, char delimiter);
 
 #endif
