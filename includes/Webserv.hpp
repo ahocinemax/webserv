@@ -20,6 +20,7 @@
 # include <cstdio>
 # include <unistd.h>
 # include <sys/stat.h>
+# include <sys/epoll.h>
 
 class Webserv
 {

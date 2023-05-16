@@ -25,6 +25,7 @@ class Client
 		struct sockaddr_storage		_addr;
 		char						_request[MAX_REQUEST_SIZE];
 		Server						*_server;
+		int							_epollFd;
 
 		Client(Server *server);
 		~Client(void);
