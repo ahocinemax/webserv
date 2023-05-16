@@ -33,10 +33,6 @@
 # define CYAN			"\033[36m"
 # define WHITE			"\033[37m"
 
-class Server;
-
-typedef std::vector<Server>	vecServer;
-
 enum MethodType
 {
 	GET,

@@ -3,8 +3,6 @@
 
 # include "Utils.hpp"
 
-typedef
-
 class Location
 {
 	public:
@@ -22,7 +20,7 @@ class Location
 		std::vector<std::string>			_index;
 		std::string							_path;
 		std::string							_root;
-		mapString	_cgi;
+		std::map<std::string, std::string>	_cgi;
 };
 
 #endif

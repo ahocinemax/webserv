@@ -23,7 +23,7 @@ class Parser
 		Parser(const char *config_file);
 		~Parser(void);
 
-		vecServer	*parse(void);
+		std::vector<Server>	*parse(void);
 
 	private:
 		std::string	_content;

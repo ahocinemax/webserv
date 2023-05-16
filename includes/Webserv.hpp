@@ -25,23 +25,20 @@ class Webserv
 {
 	private:
 		std::map<int, std::string>	_statutCode;
-		vecServer					_servers;
+		std::vector<Server>			_servers;
 		std::vector<Client>			_clients;
 
 		void	deleteMethod(Client &client, std::string path);
 		void	postMethod(Client &client, Request &request);
 		void	getMethod(Client &client, std::string path);
 
-		std::string	getPath(Client &client, std::string path);
+		std::string		getPath(Client &client, std::string path);
 
-		int			writeResponse(Client &client, std::string response, std::string path);
+		int				writeResponse(Client &client, std::string response, std::string path);
 
 	public:
 		Webserv(/* args */);
 		~Webserv();
-
-		fd_set		_readfds;
-		fd_set		_writefds;
 };
 
 

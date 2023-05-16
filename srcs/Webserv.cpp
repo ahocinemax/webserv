@@ -113,23 +113,10 @@ std::string	Webserv::getPath(Client &client, std::string path)
 		res = "";
 	std::string str = path.substr(res.length());
 	filePath.append(str);
-
 	return (filePath);	
 }
 
 int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 {
-	std::size_t	begin = path.find_last_of("/");
-	std::string	fileName = path.substr(begin + 1);
-	std::string	dirPath = path.substr(0, begin);
 
-	std::string	command = "mkdir -p " + dirPath;
-	system(command.c_str());
-	int	fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
-	if (fd < 0)
-	{
-		client.displayErrorPage(_statutCode.find(500));
-		return (-1);
-	}
-	
 }
