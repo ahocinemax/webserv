@@ -39,6 +39,7 @@ typedef std::vector<std::string>			StrVector;
 typedef std::map<int, std::string>			StatusMap;
 typedef std::map<std::string, std::string>	StringMap;
 typedef std::vector<Server>					ServerVector;
+typedef std::map<std::string, Server*>		ServerMap;
 
 enum MethodType
 {

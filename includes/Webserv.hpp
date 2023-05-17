@@ -13,7 +13,6 @@
 #ifndef WEBSERV_HPP
 # define WEBSERV_HPP
 
-# include "Utils.hpp"
 # include "Client.hpp"
 # include "Request.hpp"
 # include "Response.hpp"
@@ -24,10 +23,20 @@
 
 class Webserv
 {
+	public:
+		Webserv(ServerVector servers);
+		~Webserv(void);
+
+		void	createServers(void);
+		void	closeServers(void);
+
 	private:
 		std::vector<Client>	_clients;
-		ServerVector		_servers;
+		ServerVector		_serversVec;
+		ServerMap			_serversMap;
+		ServerMap			_defaultServers;
 		StatusMap			_statutCode;
+		int					_maxFd;
 
 		void	deleteMethod(Client &client, std::string path);
 		void	postMethod(Client &client, Request &request);
@@ -38,13 +47,6 @@ class Webserv
 		std::string		getPath(Client &client, std::string path);
 
 		int				writeResponse(Client &client, std::string response, std::string path);
-
-	public:
-		Webserv(ServerVector servers);
-		~Webserv(void);
-
-		void	createServers(void);
-		void	closeServers(void);
 
 };
 

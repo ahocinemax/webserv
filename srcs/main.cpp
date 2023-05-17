@@ -34,13 +34,14 @@ int main(int argc, char **argv)
 			it->printInfo(i++);
 		}
 		Webserv webserver(*serv);
+		webserver.createServers();
 
 		delete serv;
 	}
 	catch (const std::exception &e)
 	{
 		std::cerr << e.what() << std::endl;
-		return (1);
+		return (FAILED);
 	}
-	return (0);
+	return (SUCCESS);
 }
