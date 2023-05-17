@@ -47,9 +47,9 @@ public:
 
     bool getCgiOutput(std::string& output);
 
-    class RuntimeError : public virtual std::exception {
+    class Error : public virtual std::exception {
     public:
-        RuntimeError(const char* msg) : _msg(msg) {}
+        Error(const char* msg) : _msg(msg) {}
 
         const char* what() const throw() {
             return _msg;
@@ -69,6 +69,7 @@ private:
     void WriteToStdin();
 
     void setCgiEnvironment();
+    void TestEnv();
     //getter for mime ? 
     
     Response *response;

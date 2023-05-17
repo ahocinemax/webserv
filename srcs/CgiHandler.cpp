@@ -57,12 +57,14 @@ bool CgiHandler::getCgiOutput(std::string& output)
     PipeSet();
     int pid = fork();
     if (pid < 0) {
-        throw RuntimeError("cgihandler:getCgiOutput (fork) error");
+        throw Error("cgihandler:getCgiOutput (fork) error");
     } else if (pid == 0) {
+        /*child*/
         usleep(900);
         Execute();
         return true;
     } else {
+        /*parents*/
         if (WaitforChild(pid)) {
             output = readFd(fd_out_[0]);
             close(fd_out_[0]);
@@ -102,15 +104,15 @@ void CgiHandler::Execute()
         const_cast<char*>(getProgram().c_str()),
         const_cast<char*>(getScriptPath().c_str()),
         0 };
-    char **env = GetEnvAsCstrArray();
     setCgiEnvironment();
+    char **env = GetEnvAsCstrArray();
     RedirectOutputToPipe();
     execve(av[0], av, env);
     if (close(fd_in_[0])) {
-        throw RuntimeError("cgihandler: Execute (close) error");
+        throw Error("cgihandler: Execute (close) error");
     }
     if (close(fd_out_[1])) {
-        throw RuntimeError("cgihandler: Execute (close) error");
+        throw Error("cgihandler: Execute (close) error");
     }
     for (size_t i = 0; env[i]; i++)
         delete[] env[i];
@@ -124,48 +126,48 @@ void CgiHandler::Restore()
     }
 
     if (dup2(_in, STDIN_FILENO) < 0) {
-        throw RuntimeError("cgihandler: Restore (dup2) error");
+        throw Error("cgihandler: Restore (dup2) error");
     }
     if (close(_in)) {
-        throw RuntimeError("cgihandler: Restore (close) error");
+        throw Error("cgihandler: Restore (close) error");
     }
     if (dup2(_out, STDOUT_FILENO) < 0) {
-        throw RuntimeError("cgihandler: Restore (dup2) error");
+        throw Error("cgihandler: Restore (dup2) error");
     }
     if (close(_out)) {
-        throw RuntimeError("cgihandler: Restore (close) error");
+        throw Error("cgihandler: Restore (close) error");
     }
 }
 
 void CgiHandler::RedirectOutputToPipe()
 {
     if (close(fd_in_[1]) < 0) {
-        throw RuntimeError("cgihandler: RedirectOutputToPipe (close) error");
+        throw Error("cgihandler: RedirectOutputToPipe (close) error");
     }
     if ((_in = dup(STDIN_FILENO)) < 0) {
-        throw RuntimeError("cgihandler: RedirectOutputToPipe (dup) error");
+        throw Error("cgihandler: RedirectOutputToPipe (dup) error");
     }
     if (dup2(fd_in_[0], STDIN_FILENO) < 0) {
-        throw RuntimeError("cgihandler: RedirectOutputToPipe (dup2) error");
+        throw Error("cgihandler: RedirectOutputToPipe (dup2) error");
     }
     if (close(fd_out_[0]) < 0) {
-        throw RuntimeError("cgihandler: RedirectOutputToPipe (close) error");
+        throw Error("cgihandler: RedirectOutputToPipe (close) error");
     }
     if ((_out = dup(STDOUT_FILENO)) < 0) {
-        throw RuntimeError("cgihandler: RedirectOutputToPipe (dup) error");
+        throw Error("cgihandler: RedirectOutputToPipe (dup) error");
     }
     if (dup2(fd_out_[1], STDOUT_FILENO) < 0) {
-        throw RuntimeError("cgihandler: RedirectOutputToPipe (dup2) error");
+        throw Error("cgihandler: RedirectOutputToPipe (dup2) error");
     }
 }
 
 void CgiHandler::PipeSet()
 {
     if (pipe(fd_in_) < 0) {
-        throw RuntimeError("cgihandler: getCgiOutput (pipe) error");
+        throw Error("cgihandler: getCgiOutput (pipe) error");
     }
     if (pipe(fd_out_) < 0) {
-        throw RuntimeError("cgihandler: getCgiOutput (pipe) error");
+        throw Error("cgihandler: getCgiOutput (pipe) error");
     }
 }
 
@@ -205,12 +207,42 @@ void CgiHandler::WriteToStdin()
 {
     SetupParentIO();
     if (write(fd_in_[1], _request_body.c_str(), _request_body.size()) < 0) {
-        throw RuntimeError("cgihandler: WriteToStdin (write) error");
+        throw Error("cgihandler: WriteToStdin (write) error");
     }
     if (close(fd_in_[1]) < 0) {
-        throw RuntimeError("cgihandler: WriteToStdin (close) error");
+        throw Error("cgihandler: WriteToStdin (close) error");
     }
 }
+
+void CgiHandler::TestEnv()
+{
+    _env["AUTH_TYPE"] = "basic"; 
+    _env["DOCUMENT_ROOT"] = "";
+	_env["SERVER_PROTOCOL"] = "HTTP/1.0";
+    _env["CONTENT_TYPE"] = "";
+	_env["REQUEST_METHOD"] = "GET";
+	_env["SCRIPT_NAME"] = "";
+    _env["CONTENT_LENGH"] = 100;
+	_env["SERVER_PORT"] = 8080;
+    _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";
+	_env["PATH_INFO"] = "";
+    _env["REMOTE_IDENT"] = request->GetHeader("Autorization");
+	_env["REMOTE_ADDR"] = "localhost";
+    _env["SCRIPT_FILENAME"] = "ubuntu_cgi_tester";
+	_env["QUERY_STRING"] = "";
+    _env["REDIRECT_STATUS"] =  //status_code;
+
+	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	_env["SERVER_NAME"] = "webserv";
+	_env["SERVER_SOFTWARE"] = "webserv/1.0";
+
+    //_env["HTTP_ACCEPT"] = request->GetHeader("accept");
+    //_env["HTTP_ACCEPT_LANGAGE"] = request->GetHeader("accept-langage");
+    //_env["HTTP_USER_AGENT"] = request->GetHeader("user-agent");
+    //_env["HTTP_COOKIE"] = request->GetHeader("cookie");
+    //_env["HTTP_REFERER"] = request->GetHeader("referer");
+}
+
 
 void CgiHandler::setCgiEnvironment() {
 	// ...
@@ -225,7 +257,7 @@ void CgiHandler::setCgiEnvironment() {
 	//_env["SCRIPT_NAME"] = request->getter for path;
     //_env["CONTENT_LENGH"] = response->converter number to string;
 	//_env["SERVER_PORT"] = response->converter number to string;
-   // _env["PATH_TRANSLATED"] = request->getter for path;
+    // _env["PATH_TRANSLATED"] = request->getter for path;
     _env["REMOTE_IDENT"] = request->GetHeader("Autorization");
 	//_env["REMOTE_ADDR"] = //localhost;
     //_env["SCRIPT_FILENAME"] = response->cgi name;
@@ -240,7 +272,7 @@ void CgiHandler::setCgiEnvironment() {
     _env["HTTP_ACCEPT"] = request->GetHeader("accept");
     _env["HTTP_ACCEPT_LANGAGE"] = request->GetHeader("accept-langage");
     _env["HTTP_USER_AGENT"] = request->GetHeader("user-agent");
-    _env["HTTP_COOKIE"] = request->GetHeader("coockie");
+    _env["HTTP_COOKIE"] = request->GetHeader("cookie");
     _env["HTTP_REFERER"] = request->GetHeader("referer");
 }
 
