@@ -13,6 +13,7 @@
 #include "Utils.hpp"
 #include "Server.hpp"
 #include "Parser.hpp"
+#include "Webserv.hpp"
 
 int main(int argc, char **argv)
 {
@@ -32,6 +33,7 @@ int main(int argc, char **argv)
 		{
 			it->printInfo(i++);
 		}
+		Webserv webserver(*serv);
 
 		delete serv;
 	}
