@@ -26,16 +26,18 @@ public:
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <ctime>
+#include <map>
 
-#include "Response.hpp"
-#include "Request.hpp"
-#include "Utils_Cgi.hpp"
+//#include "Response.hpp"
+//#include "Request.hpp"
+#include "../includes/Utils_Cgi.hpp"
 
 #define TIMEOUT_LIMIT 5  // limit of timeout(sec)
 
 class CgiHandler {
 public:
-    CgiHandler(Response& response);
+    //CgiHandler(Response& response);
+    CgiHandler();//for test
     virtual ~CgiHandler();
 
     const std::string& getProgram() const;
@@ -68,12 +70,12 @@ private:
     bool WaitforChild(int pid);
     void WriteToStdin();
 
-    void setCgiEnvironment();
+//    void setCgiEnvironment();
     void TestEnv();
     //getter for mime ? 
     
-    Response *response;
-    Request *request;
+//    Response *response;
+//    Request *request;
     int fd_in_[2];
     int fd_out_[2];
     int _in;

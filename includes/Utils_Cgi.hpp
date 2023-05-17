@@ -8,7 +8,7 @@
 
 # define BUFSIZE 10000
 
-
+extern int child;
 std::string		readFd(int fd);
 bool	AccessiblePath(const std::string& path);
 void	SigpipeIgnore(int sig);

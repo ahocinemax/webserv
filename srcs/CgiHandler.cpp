@@ -1,4 +1,4 @@
-#include "CgiHandler.hpp"
+#include "../includes/CgiHandler.hpp"
 
 /*
   Cgi Handler 
@@ -14,21 +14,41 @@
 */
 
 
-CgiHandler::CgiHandler(Response& response) : 
+//CgiHandler::CgiHandler(Response& response) : 
+//    //response(response),
+//    //_scriptPath(response.GetBuiltPath()),
+//    //_request_body(response.GetRequest()->GetBody()),
+//    _in(-1),
+//    _out(-1),
+//    //_program(reponse.GetCgiProgram()),
+//    /*for test*/
+//    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),
+//    _program("/usr/local/bin/perl"),
+//    _env(GetEnv())
+//    {
+//        if (!AccessiblePath(_scriptPath)) {
+//            throw 404;//error投げる
+//        }
+//        SigpipeSet(0);
+//    }
+CgiHandler::CgiHandler() : 
     //response(response),
     //_scriptPath(response.GetBuiltPath()),
-    //_request_body(response.GetRequest()->GetBody()),
+    _request_body(""),
     _in(-1),
     _out(-1),
     //_program(reponse.GetCgiProgram()),
-    _env(GetEnv())
+    /*for test*/
+    _env(GetEnv()),
+    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),
+    _program("/usr/local/bin/perl")
+    //_env(GetEnv())
     {
         if (!AccessiblePath(_scriptPath)) {
             throw 404;//error投げる
         }
         SigpipeSet(0);
     }
-
 CgiHandler::~CgiHandler()
 {
     Restore();
@@ -56,6 +76,7 @@ bool CgiHandler::getCgiOutput(std::string& output)
 {
     PipeSet();
     int pid = fork();
+    //int pid = 0;
     if (pid < 0) {
         throw Error("cgihandler:getCgiOutput (fork) error");
     } else if (pid == 0) {
@@ -104,7 +125,8 @@ void CgiHandler::Execute()
         const_cast<char*>(getProgram().c_str()),
         const_cast<char*>(getScriptPath().c_str()),
         0 };
-    setCgiEnvironment();
+    //setCgiEnvironment();
+    TestEnv();
     char **env = GetEnvAsCstrArray();
     RedirectOutputToPipe();
     execve(av[0], av, env);
@@ -217,20 +239,20 @@ void CgiHandler::WriteToStdin()
 void CgiHandler::TestEnv()
 {
     _env["AUTH_TYPE"] = "basic"; 
-    _env["DOCUMENT_ROOT"] = "";
+    _env["DOCUMENT_ROOT"] = "test value";
 	_env["SERVER_PROTOCOL"] = "HTTP/1.0";
-    _env["CONTENT_TYPE"] = "";
+    _env["CONTENT_TYPE"] = "test value";
 	_env["REQUEST_METHOD"] = "GET";
-	_env["SCRIPT_NAME"] = "";
-    _env["CONTENT_LENGH"] = 100;
-	_env["SERVER_PORT"] = 8080;
+	_env["SCRIPT_NAME"] = "test value";
+    _env["CONTENT_LENGH"] = "100";
+	_env["SERVER_PORT"] = "8080";
     _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";
-	_env["PATH_INFO"] = "";
-    _env["REMOTE_IDENT"] = request->GetHeader("Autorization");
+	_env["PATH_INFO"] = "test value";
+    _env["REMOTE_IDENT"] = "test value";
 	_env["REMOTE_ADDR"] = "localhost";
-    _env["SCRIPT_FILENAME"] = "ubuntu_cgi_tester";
-	_env["QUERY_STRING"] = "";
-    _env["REDIRECT_STATUS"] =  //status_code;
+    _env["SCRIPT_FILENAME"] = "tohoho.pl";
+	_env["QUERY_STRING"] = "test value";
+    //_env["REDIRECT_STATUS"] =  //status_code;
 
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["SERVER_NAME"] = "webserv";
@@ -244,41 +266,34 @@ void CgiHandler::TestEnv()
 }
 
 
-void CgiHandler::setCgiEnvironment() {
-	// ...
-
-	// Set up the environment variables
-    //_env["AUTH_TYPE"] = //check rules 
-    //_env["DOCUMENT_ROOT"] = //check rules
-
-	//_env["SERVER_PROTOCOL"] = request->getter for Protocol;
-    _env["CONTENT_TYPE"] = request->GetHeader("Content-Type");
-	//_env["REQUEST_METHOD"] = request->getter for getMethod;
-	//_env["SCRIPT_NAME"] = request->getter for path;
-    //_env["CONTENT_LENGH"] = response->converter number to string;
-	//_env["SERVER_PORT"] = response->converter number to string;
-    // _env["PATH_TRANSLATED"] = request->getter for path;
-    _env["REMOTE_IDENT"] = request->GetHeader("Autorization");
-	//_env["REMOTE_ADDR"] = //localhost;
-    //_env["SCRIPT_FILENAME"] = response->cgi name;
-	//_env["PATH_INFO"] = response->getter for extra;
-	//_env["QUERY_STRING"] = response->getter for querystring;
-    //_env["REDIRECT_STATUS"] =  response->getter for status code;
-
-	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	//_env["SERVER_NAME"] = response-> getter for servername;
-	_env["SERVER_SOFTWARE"] = "webserv/1.0";
-
-    _env["HTTP_ACCEPT"] = request->GetHeader("accept");
-    _env["HTTP_ACCEPT_LANGAGE"] = request->GetHeader("accept-langage");
-    _env["HTTP_USER_AGENT"] = request->GetHeader("user-agent");
-    _env["HTTP_COOKIE"] = request->GetHeader("cookie");
-    _env["HTTP_REFERER"] = request->GetHeader("referer");
-}
-
-
-/*
-    memo: Is "mime" type required in CGI? - I don't think so
-    16/05 need to add:
-    c
-*/
+//void CgiHandler::setCgiEnvironment() {
+//	// ...
+//
+//	// Set up the environment variables
+//    //_env["AUTH_TYPE"] = //check rules 
+//    //_env["DOCUMENT_ROOT"] = //check rules
+//
+//	//_env["SERVER_PROTOCOL"] = request->getter for Protocol;
+//    _env["CONTENT_TYPE"] = request->GetHeader("Content-Type");
+//	//_env["REQUEST_METHOD"] = request->getter for getMethod;
+//	//_env["SCRIPT_NAME"] = request->getter for path;
+//    //_env["CONTENT_LENGH"] = response->converter number to string;
+//	//_env["SERVER_PORT"] = response->converter number to string;
+//    // _env["PATH_TRANSLATED"] = request->getter for path;
+//    _env["REMOTE_IDENT"] = request->GetHeader("Autorization");
+//	//_env["REMOTE_ADDR"] = //localhost;
+//    //_env["SCRIPT_FILENAME"] = response->cgi name;
+//	//_env["PATH_INFO"] = response->getter for extra;
+//	//_env["QUERY_STRING"] = response->getter for querystring;
+//    //_env["REDIRECT_STATUS"] =  response->getter for status code;
+//
+//	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+//	//_env["SERVER_NAME"] = response-> getter for servername;
+//	_env["SERVER_SOFTWARE"] = "webserv/1.0";
+//
+//    _env["HTTP_ACCEPT"] = request->GetHeader("accept");
+//    _env["HTTP_ACCEPT_LANGAGE"] = request->GetHeader("accept-langage");
+//    _env["HTTP_USER_AGENT"] = request->GetHeader("user-agent");
+//    _env["HTTP_COOKIE"] = request->GetHeader("cookie");
+//    _env["HTTP_REFERER"] = request->GetHeader("referer");
+//}
