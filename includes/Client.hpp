@@ -14,8 +14,10 @@
 # define CLIENT_HPP
 
 # define MAX_REQUEST_SIZE 4096
+
 # include "Utils.hpp"
 # include "Server.hpp"
+
 # include <sys/time.h>
 
 class Client

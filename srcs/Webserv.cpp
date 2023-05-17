@@ -3,7 +3,7 @@
 Webserv::Webserv(ServerVector server) : _serversVec(server), _maxFd(-1)
 {
 	setStatusCodes();
-
+	(void)_maxFd;
 	for (unsigned int i = 0 ; i < _serversVec.size() ; i++)
 	{
 		for (StatusMap::iterator it = _serversVec[i].error_pages.begin() ; it != _serversVec[i].error_pages.end() ; it++)

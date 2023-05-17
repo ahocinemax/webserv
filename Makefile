@@ -12,14 +12,14 @@ CC			= c++
 
 SRCS_DIR	= ./srcs/
 SRCS_PATH	= $(addprefix $(SRCS_DIR), $(SRCS))
-SRCS		= main.cpp \
-			  Server.cpp \
-			  Client.cpp \
-			  Request.cpp \
+SRCS		= Client.cpp \
 			  Location.cpp \
-			  Utils.cpp \
+			  main.cpp \
 			  Parser.cpp \
-			  Response.cpp	\
+			  Request.cpp \
+			  Response.cpp \
+			  Server.cpp \
+			  Utils.cpp \
 			  Webserv.cpp
 
 #-----------------------------------------------#
