@@ -26,25 +26,25 @@ class Server
 {
 	public:
 		int						client_body_limit;
-		bool					autoindex;
-		std::string 			root;
-		std::string 			server_name;
-		StrVector				index;
 		std::vector<MethodType>	allowMethods;
 		StatusMap				error_pages;
+		std::string 			server_name;
+		bool					autoindex;
+		StrVector				index;
+		std::string 			root;
 		
-		std::vector<Location>		locations;
+		std::vector<Location>	locations;
 
-		int							redirect_status;
-		std::string					redirect_url;
+		int						redirect_status;
+		std::string				redirect_url;
 
-		struct timeval				send_timeout;
-		struct timeval				recv_timeout;
+		struct timeval			send_timeout;
+		struct timeval			recv_timeout;
 
 	public:
-		std::string					_ipAddress;
-		std::string					_port;
-		int							_socket;
+		std::string				_ipAddress;
+		int						_socket;
+		std::string				_port;
 
 		~Server(void);
 		Server(void);
@@ -122,7 +122,6 @@ class Server
 					return ("Error: Cannot get address info");
 				}
 		};
-
 
 };
 

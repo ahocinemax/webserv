@@ -1,6 +1,6 @@
 #include "Response.hpp"
 
-Response::Response(void) {}
+Response::Response(void) : _statusCode(0) {}
 
 Response::Response(std::string statusCode) : _statusCode(statusCode) {}
 

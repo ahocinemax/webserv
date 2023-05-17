@@ -14,9 +14,9 @@
 
 Server::Server(void) :	client_body_limit(1024),
 						autoindex(false),
+						redirect_status(-1),
 						_ipAddress(""),
-						_port(""),
-						redirect_status(-1)
+						_port("")
 {
 	struct timeval timer;
 	timer.tv_sec = 60;

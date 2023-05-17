@@ -12,7 +12,7 @@
 
 #include "Client.hpp"
 
-Client::Client(Server *server) : _server(server), _addrLen(sizeof(_addr))
+Client::Client(Server *server) : _addrLen(sizeof(_addr)), _server(server)
 {
 	clearRequest();
 	gettimeofday(&_timer, NULL);
@@ -25,7 +25,7 @@ void	Client::setTimer(struct timeval &timer) { _timer = timer; }
 
 void	Client::setSocket(int socket)
 {
-	_socket;
+	_socket = socket;
 	fcntl(_socket, F_SETFL, O_NONBLOCK);
 	if (setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *)&_server->recv_timeout, sizeof(struct timeval)) < 0)
 		std::cerr << RED "Error:" RESET " setsockopt(SO_RCVTIMEO) failed" << std::endl;
