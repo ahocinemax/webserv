@@ -19,7 +19,8 @@ SRCS		= main.cpp \
 			  Location.cpp \
 			  Utils.cpp \
 			  Parser.cpp \
-			  Response.cpp
+			  Response.cpp	\
+			  Webserv.cpp
 
 #-----------------------------------------------#
 #                     OBJECTS                   #
