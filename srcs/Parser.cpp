@@ -161,14 +161,14 @@ int Parser::setLocation(Location *loc, std::string &key, std::string &val)
 		loc->_client_body_limit = atoi(val.c_str());
 	else if (key == "index")
 	{
-		std::vector<std::string> tmp = split(val, ' ');
-		for (std::vector<std::string>::iterator it = tmp.begin(); it != tmp.end(); it++)
+		StrVector tmp = split(val, ' ');
+		for (StrVector::iterator it = tmp.begin(); it != tmp.end(); it++)
 			loc->_index.push_back(*it);
 	}
 	else if (key == "allow_methods")
 	{
-		std::vector<std::string> tmp = split(val, ' ');
-		for (std::vector<std::string>::iterator it = tmp.begin(); it != tmp.end(); it++)
+		StrVector tmp = split(val, ' ');
+		for (StrVector::iterator it = tmp.begin(); it != tmp.end(); it++)
 			loc->_allowMethods.push_back(loc->methodType(*it));
 	}
 	else if (key == "cgi_info")
@@ -216,8 +216,8 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 		serv->root = val;
 	else if (key == "index")
 	{
-		std::vector<std::string> tmp = split(val, ' ');
-		for (std::vector<std::string>::iterator it = tmp.begin(); it != tmp.end(); it++)
+		StrVector tmp = split(val, ' ');
+		for (StrVector::iterator it = tmp.begin(); it != tmp.end(); it++)
 			serv->index.push_back(*it);
 	}
 	else if (key == "autoindex")
@@ -226,9 +226,9 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 		serv->client_body_limit = atoi(val.c_str()); // check before atoi
 	else if (key == "error_page")
 	{
-		std::vector<std::string> tmp = split(val, ' ');
+		StrVector tmp = split(val, ' ');
 		std::string tmp2 = tmp[tmp.size() - 1];
-		for (std::vector<std::string>::iterator it = tmp.begin(); it != tmp.end() - 1; it++)
+		for (StrVector::iterator it = tmp.begin(); it != tmp.end() - 1; it++)
 		{
 			int status = atoi((*it).c_str());
 			if (serv->error_pages.find(status) != serv->error_pages.end())
@@ -238,7 +238,7 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 	}
 	else if (key == "return")
 	{
-		std::vector<std::string> tmp = split(val, ' ');
+		StrVector tmp = split(val, ' ');
 		serv->redirect_status = atoi(tmp[0].c_str());
 		serv->redirect_url = tmp[1];
 	}
@@ -248,8 +248,8 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 		serv->send_timeout.tv_sec = atoi(val.c_str());
 	else if (key == "allow_methods")
 	{
-		std::vector<std::string> tmp = split(val, ' ');
-		for (std::vector<std::string>::iterator it = tmp.begin(); it != tmp.end(); it++)
+		StrVector tmp = split(val, ' ');
+		for (StrVector::iterator it = tmp.begin(); it != tmp.end(); it++)
 			serv->allowMethods.push_back(serv->methodType(*it));
 	}
 	else

@@ -59,7 +59,7 @@ void	Webserv::postMethod(Client &client, Request &request)
 		std::string	boundary = request._header["Content-Type"].substr(begin + 9);
 		begin = 0;
 		std::size_t	end = 0;
-		std::string		fileName;
+		std::string	fileName;
 		while (true)
 		{
 			begin = request._body.find("name=", begin) + 6;
@@ -104,19 +104,61 @@ void	Webserv::getMethod(Client &client, std::string path)
 std::string	Webserv::getPath(Client &client, std::string path)
 {
 	std::string		filePath = "";
-	std::string		res;
+	std::string		res = "";
+
 	filePath.append(client.setRootPath(path));
 	Location	*location = client._server->getLocation(path);
 	if (location != NULL)
 		res = location->getPath();
-	else
-		res = "";
-	std::string str = path.substr(res.length());
-	filePath.append(str);
+	filePath.append(path.substr(res.length()));
 	return (filePath);	
 }
 
 int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 {
-	;
+	std::size_t	begin = path.find_last_of("/");
+	std::string	dirPath = path.substr(0, begin);
+	std::string	fileName = path.substr(begin + 1);
+
+	if (dirPath != "")
+	{
+		struct stat		fileStat;
+		lstat(dirPath.c_str(), &fileStat);
+		if (!S_ISDIR(fileStat.st_mode))
+		{
+			client.displayErrorPage(_statutCode.find(400));
+			return (-1);
+		}
+	}
+	std::string	command = "mkdir -p " + dirPath;
+	int			fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	system(command.c_str());
+	if (fd < 0)
+	{
+		client.displayErrorPage(_statutCode.find(500));
+		return (-1);
+	}
+
+	// add fd to epoll
+	struct epoll_event	event;
+	event.events = EPOLLOUT | EPOLLET;
+	event.data.fd = fd;
+	if (epoll_ctl(client._epollFd, EPOLL_CTL_ADD, fd, &event) < 0)
+	{
+		client.displayErrorPage(_statutCode.find(500));
+		return (-1);
+	}
+
+	// write body to file
+	int		ret = write(fd, body.c_str(), body.length());
+	if (ret < 0)
+	{
+		// close fds
+		close(fd);
+		epoll_ctl(client._epollFd, EPOLL_CTL_DEL, fd, &event);
+		client.displayErrorPage(_statutCode.find(500));
+		return (-1);
+	}
+	close(fd);
+	return (0);
 }

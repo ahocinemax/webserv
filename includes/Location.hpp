@@ -15,12 +15,12 @@ class Location
 		std::string			getCgi(std::string extension) const;
 
 	public:
-		int									_client_body_limit;
-		std::vector<MethodType>				_allowMethods;
-		std::vector<std::string>			_index;
-		std::string							_path;
-		std::string							_root;
-		std::map<std::string, std::string>	_cgi;
+		int						_client_body_limit;
+		std::vector<MethodType>	_allowMethods;
+		StrVector				_index;
+		std::string				_path;
+		std::string				_root;
+		StringMap					_cgi;
 };
 
 #endif

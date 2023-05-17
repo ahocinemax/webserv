@@ -25,6 +25,7 @@ class Client
 		struct sockaddr_storage		_addr;
 		char						_request[MAX_REQUEST_SIZE];
 		Server						*_server;
+		int							_epollFd;
 
 		Client(Server *server);
 		~Client(void);
@@ -44,7 +45,7 @@ class Client
 		int			charCounter(std::string str, char c);
 		void		clearRequest(void);
 
-		void		displayErrorPage(std::map<int, std::string>::iterator statutCode);
+		void		displayErrorPage(StatusMap::iterator statutCode);
 
 	private:
 		int		_socket;
