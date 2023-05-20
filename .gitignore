@@ -34,3 +34,6 @@
 *.out
 *.app
 webserv
+
+#vscode
+.vscode

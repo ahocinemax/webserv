@@ -1,21 +1,3 @@
-/*
-#ifndef CGI_HANDLER_HPP
-#define CGI_HANDLER_HPP
-
-#include <string>
-
-class CGIHandler {
-public:
-    CGIHandler();
-    ~CGIHandler();
-
-    std::string executeCgiScript(const std::string& scriptPath, const std::string& requestBody);
-};
-*/
-
-//#endif
-
-
 #ifndef CGIHANDLER_HPP
 #define CGIHANDLER_HPP
 
@@ -26,30 +8,32 @@ public:
 #include <sys/wait.h>
 #include <fcntl.h>
 #include <ctime>
+#include <map>
 
-#include "Response.hpp"
-#include "Request.hpp"
-#include "Utils_Cgi.hpp"
+//#include "Response.hpp"
+//#include "Request.hpp"
+#include "../includes/Utils_Cgi.hpp"
 
 #define TIMEOUT_LIMIT 5  // limit of timeout(sec)
 
 class CgiHandler {
 public:
-    CgiHandler(Response& response);
+//    CgiHandler(Response& response);
+    CgiHandler();//now with test value (without other class)
     virtual ~CgiHandler();
 
     const std::string& getProgram() const;
     const std::string& getScriptPath() const;
-    const std::map<std::string, std::string>& getEnv() const;
+    const std::map<std::string, std::string>& GetEnv() const;
     char** GetEnvAsCstrArray() const;
     void FreeEnvCstrArray(char** env) const;
 
 
     bool getCgiOutput(std::string& output);
 
-    class RuntimeError : public virtual std::exception {
+    class Error : public virtual std::exception {
     public:
-        RuntimeError(const char* msg) : _msg(msg) {}
+        Error(const char* msg) : _msg(msg) {}
 
         const char* what() const throw() {
             return _msg;
@@ -60,25 +44,26 @@ public:
     };
 
 private:
-    void _execute();
-    void _restore();
-    void _redirectToPipe();
-    void _setupPipe();
-    void _setupParentIo();
-    bool _waitForChild(int pid);
-    void _writeToStdin();
+    void Execute();
+    void Restore();
+    void RedirectOutputToPipe();
+    void PipeSet();
+    void SetupParentIO();
+    bool WaitforChild(int pid);
+    void WriteToStdin();
 
-    void _setCgiEnvironment();
-    //getter for mime ? 
+    void setCgiEnvironment();
+    void TestEnv();
     
-    Response *response;
-    Request *request;
+//    Response *response;
+//    Request *request;
     int fd_in_[2];
     int fd_out_[2];
-    int in_;
-    int out_;
-    const std::string script_path_;
-    std::string request_body_;
+    int _in;
+    int _out;
+    const std::string _scriptPath;
+    const std::string _program;
+    std::string _request_body;
     std::map<std::string, std::string> _env;
 };
 

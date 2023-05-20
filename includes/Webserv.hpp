@@ -20,25 +20,32 @@
 # include <cstdio>
 # include <unistd.h>
 # include <sys/stat.h>
+# include <sys/epoll.h>
 
 class Webserv
 {
 	private:
-		std::map<int, std::string>	_statutCode;
-		std::vector<Server>			_servers;
-		std::vector<Client>			_clients;
+		std::vector<Client>	_clients;
+		ServerVector		_servers;
+		StatusMap			_statutCode;
 
 		void	deleteMethod(Client &client, std::string path);
 		void	postMethod(Client &client, Request &request);
 		void	getMethod(Client &client, std::string path);
+
+		void	setStatusCodes(void);
 
 		std::string		getPath(Client &client, std::string path);
 
 		int				writeResponse(Client &client, std::string response, std::string path);
 
 	public:
-		Webserv(/* args */);
-		~Webserv();
+		Webserv(ServerVector servers);
+		~Webserv(void);
+
+		void	createServers(void);
+		void	closeServers(void);
+
 };
 
 

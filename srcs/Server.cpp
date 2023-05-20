@@ -14,9 +14,9 @@
 
 Server::Server(void) :	client_body_limit(1024),
 						autoindex(false),
+						redirect_status(-1),
 						_ipAddress(""),
-						_port(""),
-						redirect_status(-1)
+						_port("")
 {
 	struct timeval timer;
 	timer.tv_sec = 60;
@@ -106,7 +106,7 @@ void	Server::printInfo(int i)
 		if (error_pages.size() > 0)
 		{
 			std::cout << std::endl;
-			for (std::map<int, std::string>::iterator it = error_pages.begin(); it != error_pages.end(); it++)
+			for (StatusMap::iterator it = error_pages.begin(); it != error_pages.end(); it++)
 				std::cout << "\t" << it->first << " " << it->second << std::endl;
 		}
 		else

@@ -12,7 +12,7 @@
 
 #include "Client.hpp"
 
-Client::Client(Server *server) : _server(server), _addrLen(sizeof(_addr))
+Client::Client(Server *server) : _addrLen(sizeof(_addr)), _server(server)
 {
 	clearRequest();
 	gettimeofday(&_timer, NULL);

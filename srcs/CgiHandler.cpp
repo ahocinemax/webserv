@@ -1,4 +1,5 @@
-#include "CgiHandler.hpp"
+#include "../includes/CgiHandler.hpp"
+
 
 /*
   Cgi Handler 
@@ -14,43 +15,79 @@
 */
 
 
+//CgiHandler::CgiHandler(Response& response) : 
+//    response(response),
+//    _request_body(response.GetRequest()->GetBody()),
+//    _in(-1),
+//    _out(-1),
+//    //_scriptPath(response.GetBuiltPath()),
+//    //_program(reponse.GetCgiProgram()),
+//    //for test
+//    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),
+//    _program("/usr/local/bin/perl"),
+//    _env(GetEnv())
+//    {
+//        if (!AccessiblePath(_scriptPath)) {
+//            throw 404;//error投げる
+//        }
+//        SigpipeSet(0);
+//    }
 
-CgiHandler::CgiHandler(Response& response) : response(response),
-                                             script_path_(response.getBuiltPath()),
-                                             request_body_(response.getRequest()->getBody()),
-                                             _env(getenv()),
-{
-    if (!pathIsAccessible(script_path_)) {
-        throw 404;//エラー投げる
+CgiHandler::CgiHandler() : 
+    //response(response),
+    //_scriptPath(response.GetBuiltPath()),
+    _request_body(""),
+    _in(-1),
+    _out(-1),
+    //_program(reponse.GetCgiProgram()),
+    /*for test*/
+    _env(GetEnv()),
+    //_scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),//cluter
+    _scriptPath("/home/tj/Documents/42/webserv/ahocine/document/tohoho.cgi"),//home
+    _program("/usr/bin/perl")
+    {
+        if (!AccessiblePath(_scriptPath)) {
+            throw 404;//->status code 404 = Not found
+        }
+        SigpipeSet(0);
     }
-    //setupSigpipe(0); pipe
-}
-
 CgiHandler::~CgiHandler()
 {
-    _restore();
-    //setupSigpipe(1);pipe
+    Restore();
+    SigpipeSet(1);
 }
 
 
-const std::map<std::string, std::string>& CgiHandler::getEnv() const
+const std::map<std::string, std::string>& CgiHandler::GetEnv() const
 {
     return _env;
+}
+
+const std::string& CgiHandler::getScriptPath() const
+{
+	return (_scriptPath);
+}
+
+const std::string& CgiHandler::getProgram() const
+{
+	return (_program);
 }
 
 
 bool CgiHandler::getCgiOutput(std::string& output)
 {
-    _setupPipe();
+    PipeSet();
     int pid = fork();
     if (pid < 0) {
-        throw RuntimeError("cgihandler getCgiOutput (fork) error");
+        throw Error("cgihandler:getCgiOutput (fork) error");
     } else if (pid == 0) {
+        /*child*/
         usleep(900);
-        _execute();
+        Execute();
         return true;
     } else {
-        if (_waitForChild(pid)) {
+        /*parents*/
+        if (WaitforChild(pid)) {
             output = readFd(fd_out_[0]);
             close(fd_out_[0]);
             return true;
@@ -61,7 +98,8 @@ bool CgiHandler::getCgiOutput(std::string& output)
     }
 }
 
-char** CgiHandler::GetEnvAsCstrArray() const {
+char** CgiHandler::GetEnvAsCstrArray() const
+{
     char** env = new char*[this->_env.size() + 1];
     int j = 0;
     for (std::map<std::string, std::string>::const_iterator i = this->_env.begin(); i != this->_env.end(); i++) {
@@ -74,87 +112,89 @@ char** CgiHandler::GetEnvAsCstrArray() const {
     return env;
 }
 
-void CgiHandler::FreeEnvCstrArray(char** env) const {
+void CgiHandler::FreeEnvCstrArray(char** env) const
+{
     for (int i = 0; env[i] != NULL; i++) {
         delete[] env[i];
     }
     delete[] env;
 }
 
-void CgiHandler::_execute()
+void CgiHandler::Execute()
 {
     char* av[] = {
         const_cast<char*>(getProgram().c_str()),
         const_cast<char*>(getScriptPath().c_str()),
         0 };
+    setCgiEnvironment();
+    //TestEnv();
     char **env = GetEnvAsCstrArray();
-    _setCgiEnvironment();
-    _redirectToPipe();
+    RedirectOutputToPipe();
     execve(av[0], av, env);
     if (close(fd_in_[0])) {
-        throw RuntimeError("cgihandler execute (close) error");
+        throw Error("cgihandler: Execute (close) error");
     }
     if (close(fd_out_[1])) {
-        throw RuntimeError("cgihandler execute (close) error");
+        throw Error("cgihandler: Execute (close) error");
     }
     for (size_t i = 0; env[i]; i++)
         delete[] env[i];
     delete[] env;
 }
 
-void CgiHandler::_restore()
+void CgiHandler::Restore()
 {
-    if (in_ == -1 && out_ == -1) {
+    if (_in == -1 && _out == -1) {
         return;
     }
 
-    if (dup2(in_, STDIN_FILENO) < 0) {
-        throw RuntimeError("cgihandler _restore (dup2) error");
+    if (dup2(_in, STDIN_FILENO) < 0) {
+        throw Error("cgihandler: Restore (dup2) error");
     }
-    if (close(in_)) {
-        throw RuntimeError("cgihandler _restore (close) error");
+    if (close(_in)) {
+        throw Error("cgihandler: Restore (close) error");
     }
-    if (dup2(out_, STDOUT_FILENO) < 0) {
-        throw RuntimeError("cgihandler _restore (dup2) error");
+    if (dup2(_out, STDOUT_FILENO) < 0) {
+        throw Error("cgihandler: Restore (dup2) error");
     }
-    if (close(out_)) {
-        throw RuntimeError("cgihandler _restore (close) error");
+    if (close(_out)) {
+        throw Error("cgihandler: Restore (close) error");
     }
 }
 
-void CgiHandler::_redirectToPipe()
+void CgiHandler::RedirectOutputToPipe()
 {
     if (close(fd_in_[1]) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (close) error");
+        throw Error("cgihandler: RedirectOutputToPipe (close) error");
     }
-    if ((in_ = dup(STDIN_FILENO)) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (dup) error");
+    if ((_in = dup(STDIN_FILENO)) < 0) {
+        throw Error("cgihandler: RedirectOutputToPipe (dup) error");
     }
     if (dup2(fd_in_[0], STDIN_FILENO) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (dup2) error");
+        throw Error("cgihandler: RedirectOutputToPipe (dup2) error");
     }
     if (close(fd_out_[0]) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (close) error");
+        throw Error("cgihandler: RedirectOutputToPipe (close) error");
     }
-    if ((out_ = dup(STDOUT_FILENO)) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (dup) error");
+    if ((_out = dup(STDOUT_FILENO)) < 0) {
+        throw Error("cgihandler: RedirectOutputToPipe (dup) error");
     }
     if (dup2(fd_out_[1], STDOUT_FILENO) < 0) {
-        throw RuntimeError("cgihandler _redirectToPipe (dup2) error");
+        throw Error("cgihandler: RedirectOutputToPipe (dup2) error");
     }
 }
 
-void CgiHandler::_setupPipe()
+void CgiHandler::PipeSet()
 {
     if (pipe(fd_in_) < 0) {
-        throw RuntimeError("cgihandler getCgiOutput (pipe) error");
+        throw Error("cgihandler: getCgiOutput (pipe) error");
     }
     if (pipe(fd_out_) < 0) {
-        throw RuntimeError("cgihandler getCgiOutput (pipe) error");
+        throw Error("cgihandler: getCgiOutput (pipe) error");
     }
 }
 
-void CgiHandler::_setupParentIo()
+void CgiHandler::SetupParentIO()
 {
     if (close(fd_in_[0]) < 0) {
         throw 500;
@@ -164,12 +204,12 @@ void CgiHandler::_setupParentIo()
     }
 }
 
-bool CgiHandler::_waitForChild(int pid)
+bool CgiHandler::WaitforChild(int pid)
 {
     int wstatus;
     time_t start = std::time(0);
 
-    _writeToStdin();
+    WriteToStdin();
     while (true) {
         if (waitpid(pid, &wstatus, WNOHANG) == pid) {
             break;
@@ -186,51 +226,78 @@ bool CgiHandler::_waitForChild(int pid)
         return false;
 }
 
-void CgiHandler::_writeToStdin()
+void CgiHandler::WriteToStdin()
 {
-    _setupParentIo();
-    if (write(fd_in_[1], request_body_.c_str(), request_body_.size()) < 0) {
-        throw RuntimeError("cgihandler _writeToStdin (write) error");
+    SetupParentIO();
+    if (write(fd_in_[1], _request_body.c_str(), _request_body.size()) < 0) {
+        throw Error("cgihandler: WriteToStdin (write) error");
     }
     if (close(fd_in_[1]) < 0) {
-        throw RuntimeError("cgihandler _writeToStdin (close) error");
+        throw Error("cgihandler: WriteToStdin (close) error");
     }
 }
 
-void CgiHandler::_setCgiEnvironment() {
-	// ...
+/*
+    Testenv()
+    test function for setCgiEnvironement();
+    to put test value in environement variable for CGI
 
-	// Set up the environment variables
-    //_env["AUTH_TYPE"] = //check rules 
-    //_env["DOCUMENT_ROOT"] = //check rules
-
-	//_env["SERVER_PROTOCOL"] = request->getter for Protocol;
-    _env["CONTENT_TYPE"] = request->GetHeader("Content-Type");
-	//_env["REQUEST_METHOD"] = request->getter for getMethod;
-	//_env["SCRIPT_NAME"] = request->getter for path;
-    //_env["CONTENT_LENGH"] = response->converter number to string;
-	//_env["SERVER_PORT"] = response->converter number to string;
-   // _env["PATH_TRANSLATED"] = request->getter for path;
-    _env["REMOTE_IDENT"] = request->GetHeader("Autorization");
-	//_env["REMOTE_ADDR"] = //localhost;
-    //_env["SCRIPT_FILENAME"] = response->cgi name;
-	//_env["PATH_INFO"] = response->getter for extra;
-	//_env["QUERY_STRING"] = response->getter for querystring;
-    //_env["REDIRECT_STATUS"] =  response->getter for status code;
+void CgiHandler::TestEnv()
+{
+    _env["AUTH_TYPE"] = "basic"; 
+    _env["DOCUMENT_ROOT"] = "test value";
+	_env["SERVER_PROTOCOL"] = "HTTP/1.0";
+    _env["CONTENT_TYPE"] = "test value";
+	_env["REQUEST_METHOD"] = "GET";
+	_env["SCRIPT_NAME"] = "test value";
+    _env["CONTENT_LENGTH"] = "100";
+	_env["SERVER_PORT"] = "8080";
+    _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";
+	_env["PATH_INFO"] = "test value";
+    _env["REMOTE_IDENT"] = "test value";
+	_env["REMOTE_ADDR"] = "localhost";
+    _env["SCRIPT_FILENAME"] = "tohoho.pl";
+	_env["QUERY_STRING"] = "test value";
+    _env["REDIRECT_STATUS"] = "test status_code";
 
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	//_env["SERVER_NAME"] = response-> getter for servername;
+	_env["SERVER_NAME"] = "webserv";
 	_env["SERVER_SOFTWARE"] = "webserv/1.0";
 
-    _env["HTTP_ACCEPT"] = request->GetHeader("accept");
-    _env["HTTP_ACCEPT_LANGAGE"] = request->GetHeader("accept-langage");
-    _env["HTTP_USER_AGENT"] = request->GetHeader("user-agent");
-    _env["HTTP_COOKIE"] = request->GetHeader("coockie");
-    _env["HTTP_REFERER"] = request->GetHeader("referer");
+    _env["HTTP_ACCEPT"] = "accept";
+    _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";
+    _env["HTTP_USER_AGENT"] = "user-agent";
+    _env["HTTP_COOKIE"] = "cookie";
+    _env["HTTP_REFERER"] = "referer";
 }
-
-
-/*
-    memo: Is "mime" type required in CGI? - I don't think so
-
 */
+
+void CgiHandler::setCgiEnvironment() {
+	// Set up the environment variables
+    _env["AUTH_TYPE"] = "test";//check rules 
+    _env["DOCUMENT_ROOT"] = "test";//check rules
+
+	_env["SERVER_PROTOCOL"] = "test";//request->getter for Protocol;
+    _env["CONTENT_TYPE"] = "Content-Type";//request->GetHeader("Content-Type");
+	_env["REQUEST_METHOD"] = "test";//request->getter for getMethod;
+	_env["SCRIPT_NAME"] = "test";//request->getter for path;
+    _env["CONTENT_LENGTH"] = "test";//response->converter number to string;
+	_env["SERVER_PORT"] = "8080";//response->converter number to string;
+    _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";//request->getter for path;
+    _env["REMOTE_IDENT"] = "Autorization";//request->GetHeader("Autorization");
+	_env["REMOTE_ADDR"] = "localhost";//localhost;
+    _env["SCRIPT_FILENAME"] = "tohoho.pl";//response->cgi name;
+	_env["PATH_INFO"] = "argument";//response->getter for extra;
+	_env["QUERY_STRING"] = "test";//response->getter for querystring;
+    _env["REDIRECT_STATUS"] =  "";//response->getter for status code;
+
+	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	_env["SERVER_NAME"] = "webserv";//response-> getter for servername;
+	_env["SERVER_SOFTWARE"] = "webserv/1.0";
+
+    _env["HTTP_ACCEPT"] = "accept";//request->GetHeader("accept");
+    _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";//request->GetHeader("accept-langage");
+    _env["HTTP_USER_AGENT"] = "user-agent";//request->GetHeader("user-agent");
+    _env["HTTP_COOKIE"] = "cookie";//request->GetHeader("cookie");
+    _env["HTTP_REFERER"] = "referer";//request->GetHeader("referer");
+}

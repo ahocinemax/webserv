@@ -1,8 +1,8 @@
 #include "Utils.hpp"
 
-std::vector<std::string> split(std::string input, char delimiter)
+StrVector split(std::string input, char delimiter)
 {
-	std::vector<std::string> answer;
+	StrVector answer;
 	std::stringstream ss(input);
 	std::string temp;
  
