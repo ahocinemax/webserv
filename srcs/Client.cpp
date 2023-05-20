@@ -3,7 +3,7 @@
 /*                                                        :::      ::::::::   */
 /*   Client.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: ahocine <marvin@42.fr>                     +#+  +:+       +#+        */
+/*   By: ahocine <ahocine@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/05/06 22:37:04 by ahocine           #+#    #+#             */
 /*   Updated: 2023/05/06 22:37:29 by ahocine          ###   ########.fr       */
@@ -31,6 +31,14 @@ void	Client::setSocket(int socket)
 		std::cerr << RED "Error:" RESET " setsockopt(SO_RCVTIMEO) failed" << std::endl;
 	if (setsockopt(_socket, SOL_SOCKET, SO_SNDTIMEO, (const char *)&_server->send_timeout, sizeof(struct timeval)) < 0)
 		std::cerr << RED "Error:" RESET " setsockopt(SO_SNDTIMEO) failed" << std::endl;
+	_epollFd = epoll_create(1);
+	if (_epollFd == -1)
+		std::cerr << RED "Error:" RESET " epoll_create() failed" << std::endl;
+	struct epoll_event event;
+	event.events = EPOLLIN | EPOLLET;
+	event.data.fd = _socket;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _socket, &event) == -1)
+		std::cerr << RED "Error:" RESET " epoll_ctl() failed" << std::endl;
 }
 
 void	Client::setRecvSize(int size) { _recvSize = size; }
@@ -98,4 +106,14 @@ void	Client::clearRequest(void)
 {
 	memset(_request, 0, MAX_REQUEST_SIZE + 1);
 	_recvSize = 0;
+}
+
+void	Client::displayErrorPage(StatusMap::iterator statusCode)
+{
+	if (statusCode == _server->error_pages.end())
+		return ;
+	std::cout << "Error: " << statusCode->first << " " << statusCode->second << std::endl;
+	std::ifstream file;
+
+	file.open(statusCode->second.c_str());
 }
