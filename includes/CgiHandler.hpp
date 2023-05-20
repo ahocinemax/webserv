@@ -1,21 +1,3 @@
-/*
-#ifndef CGI_HANDLER_HPP
-#define CGI_HANDLER_HPP
-
-#include <string>
-
-class CGIHandler {
-public:
-    CGIHandler();
-    ~CGIHandler();
-
-    std::string executeCgiScript(const std::string& scriptPath, const std::string& requestBody);
-};
-*/
-
-//#endif
-
-
 #ifndef CGIHANDLER_HPP
 #define CGIHANDLER_HPP
 
@@ -36,8 +18,8 @@ public:
 
 class CgiHandler {
 public:
-    //CgiHandler(Response& response);
-    CgiHandler();//for test
+//    CgiHandler(Response& response);
+    CgiHandler();//now with test value (without other class)
     virtual ~CgiHandler();
 
     const std::string& getProgram() const;
@@ -70,9 +52,8 @@ private:
     bool WaitforChild(int pid);
     void WriteToStdin();
 
-//    void setCgiEnvironment();
+    void setCgiEnvironment();
     void TestEnv();
-    //getter for mime ? 
     
 //    Response *response;
 //    Request *request;

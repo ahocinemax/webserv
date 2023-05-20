@@ -1,4 +1,4 @@
-#!/usr/local/bin/perl
+#!/usr/bin/perl
 # example template from: https://www.tohoho-web.com/wwwcgi4.htm
 
 
@@ -54,10 +54,10 @@ print "CONTENT_LENGTH = [ " . html($ENV{'CONTENT_LENGTH'}) . " ]\n";
 print "CONTENT_TYPE = [ " . html($ENV{'CONTENT_TYPE'}) . " ]\n";
 print "GATEWAY_INTERFACE = [ " . html($ENV{'GATEWAY_INTERFACE'}) . " ]\n";
 print "HTTP_ACCEPT = [ " . html($ENV{'HTTP_ACCEPT'}) . " ]\n";
-#print "HTTP_FORWARDED = [ " . html($ENV{'HTTP_FORWARDED'}) . " ]\n";
-#print "HTTP_REFERER = [ " . html($ENV{'HTTP_REFERER'}) . " ]\n";
-#print "HTTP_USER_AGENT = [ " . html($ENV{'HTTP_USER_AGENT'}) . " ]\n";
-#print "HTTP_X_FORWARDED_FOR = [ " . html($ENV{'HTTP_X_FORWARDED_FOR'}) . " ]\n";
+print "HTTP_FORWARDED = [ " . html($ENV{'HTTP_FORWARDED'}) . " ]\n";
+print "HTTP_REFERER = [ " . html($ENV{'HTTP_REFERER'}) . " ]\n";
+print "HTTP_USER_AGENT = [ " . html($ENV{'HTTP_USER_AGENT'}) . " ]\n";
+print "HTTP_X_FORWARDED_FOR = [ " . html($ENV{'HTTP_X_FORWARDED_FOR'}) . " ]\n";
 print "PATH_INFO = [ " . html($ENV{'PATH_INFO'}) . " ]\n";
 print "PATH_TRANSLATED = [ " . html($ENV{'PATH_TRANSLATED'}) . " ]\n";
 print "QUERY_STRING = [ " . html($ENV{'QUERY_STRING'}) . " ]\n";

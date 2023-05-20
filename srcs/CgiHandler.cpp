@@ -1,5 +1,6 @@
 #include "../includes/CgiHandler.hpp"
 
+
 /*
   Cgi Handler 
   - Constructor
@@ -15,13 +16,13 @@
 
 
 //CgiHandler::CgiHandler(Response& response) : 
-//    //response(response),
-//    //_scriptPath(response.GetBuiltPath()),
-//    //_request_body(response.GetRequest()->GetBody()),
+//    response(response),
+//    _request_body(response.GetRequest()->GetBody()),
 //    _in(-1),
 //    _out(-1),
+//    //_scriptPath(response.GetBuiltPath()),
 //    //_program(reponse.GetCgiProgram()),
-//    /*for test*/
+//    //for test
 //    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),
 //    _program("/usr/local/bin/perl"),
 //    _env(GetEnv())
@@ -31,6 +32,7 @@
 //        }
 //        SigpipeSet(0);
 //    }
+
 CgiHandler::CgiHandler() : 
     //response(response),
     //_scriptPath(response.GetBuiltPath()),
@@ -40,12 +42,12 @@ CgiHandler::CgiHandler() :
     //_program(reponse.GetCgiProgram()),
     /*for test*/
     _env(GetEnv()),
-    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),
-    _program("/usr/local/bin/perl")
-    //_env(GetEnv())
+    //_scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),//cluter
+    _scriptPath("/home/tj/Documents/42/webserv/ahocine/document/tohoho.cgi"),//home
+    _program("/usr/bin/perl")
     {
         if (!AccessiblePath(_scriptPath)) {
-            throw 404;//error投げる
+            throw 404;//->status code 404 = Not found
         }
         SigpipeSet(0);
     }
@@ -76,7 +78,6 @@ bool CgiHandler::getCgiOutput(std::string& output)
 {
     PipeSet();
     int pid = fork();
-    //int pid = 0;
     if (pid < 0) {
         throw Error("cgihandler:getCgiOutput (fork) error");
     } else if (pid == 0) {
@@ -125,8 +126,8 @@ void CgiHandler::Execute()
         const_cast<char*>(getProgram().c_str()),
         const_cast<char*>(getScriptPath().c_str()),
         0 };
-    //setCgiEnvironment();
-    TestEnv();
+    setCgiEnvironment();
+    //TestEnv();
     char **env = GetEnvAsCstrArray();
     RedirectOutputToPipe();
     execve(av[0], av, env);
@@ -236,6 +237,11 @@ void CgiHandler::WriteToStdin()
     }
 }
 
+/*
+    Testenv()
+    test function for setCgiEnvironement();
+    to put test value in environement variable for CGI
+
 void CgiHandler::TestEnv()
 {
     _env["AUTH_TYPE"] = "basic"; 
@@ -244,7 +250,7 @@ void CgiHandler::TestEnv()
     _env["CONTENT_TYPE"] = "test value";
 	_env["REQUEST_METHOD"] = "GET";
 	_env["SCRIPT_NAME"] = "test value";
-    _env["CONTENT_LENGH"] = "100";
+    _env["CONTENT_LENGTH"] = "100";
 	_env["SERVER_PORT"] = "8080";
     _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";
 	_env["PATH_INFO"] = "test value";
@@ -252,48 +258,46 @@ void CgiHandler::TestEnv()
 	_env["REMOTE_ADDR"] = "localhost";
     _env["SCRIPT_FILENAME"] = "tohoho.pl";
 	_env["QUERY_STRING"] = "test value";
-    //_env["REDIRECT_STATUS"] =  //status_code;
+    _env["REDIRECT_STATUS"] = "test status_code";
 
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
 	_env["SERVER_NAME"] = "webserv";
 	_env["SERVER_SOFTWARE"] = "webserv/1.0";
 
-    //_env["HTTP_ACCEPT"] = request->GetHeader("accept");
-    //_env["HTTP_ACCEPT_LANGAGE"] = request->GetHeader("accept-langage");
-    //_env["HTTP_USER_AGENT"] = request->GetHeader("user-agent");
-    //_env["HTTP_COOKIE"] = request->GetHeader("cookie");
-    //_env["HTTP_REFERER"] = request->GetHeader("referer");
+    _env["HTTP_ACCEPT"] = "accept";
+    _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";
+    _env["HTTP_USER_AGENT"] = "user-agent";
+    _env["HTTP_COOKIE"] = "cookie";
+    _env["HTTP_REFERER"] = "referer";
 }
+*/
 
+void CgiHandler::setCgiEnvironment() {
+	// Set up the environment variables
+    _env["AUTH_TYPE"] = "test";//check rules 
+    _env["DOCUMENT_ROOT"] = "test";//check rules
 
-//void CgiHandler::setCgiEnvironment() {
-//	// ...
-//
-//	// Set up the environment variables
-//    //_env["AUTH_TYPE"] = //check rules 
-//    //_env["DOCUMENT_ROOT"] = //check rules
-//
-//	//_env["SERVER_PROTOCOL"] = request->getter for Protocol;
-//    _env["CONTENT_TYPE"] = request->GetHeader("Content-Type");
-//	//_env["REQUEST_METHOD"] = request->getter for getMethod;
-//	//_env["SCRIPT_NAME"] = request->getter for path;
-//    //_env["CONTENT_LENGH"] = response->converter number to string;
-//	//_env["SERVER_PORT"] = response->converter number to string;
-//    // _env["PATH_TRANSLATED"] = request->getter for path;
-//    _env["REMOTE_IDENT"] = request->GetHeader("Autorization");
-//	//_env["REMOTE_ADDR"] = //localhost;
-//    //_env["SCRIPT_FILENAME"] = response->cgi name;
-//	//_env["PATH_INFO"] = response->getter for extra;
-//	//_env["QUERY_STRING"] = response->getter for querystring;
-//    //_env["REDIRECT_STATUS"] =  response->getter for status code;
-//
-//	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-//	//_env["SERVER_NAME"] = response-> getter for servername;
-//	_env["SERVER_SOFTWARE"] = "webserv/1.0";
-//
-//    _env["HTTP_ACCEPT"] = request->GetHeader("accept");
-//    _env["HTTP_ACCEPT_LANGAGE"] = request->GetHeader("accept-langage");
-//    _env["HTTP_USER_AGENT"] = request->GetHeader("user-agent");
-//    _env["HTTP_COOKIE"] = request->GetHeader("cookie");
-//    _env["HTTP_REFERER"] = request->GetHeader("referer");
-//}
+	_env["SERVER_PROTOCOL"] = "test";//request->getter for Protocol;
+    _env["CONTENT_TYPE"] = "Content-Type";//request->GetHeader("Content-Type");
+	_env["REQUEST_METHOD"] = "test";//request->getter for getMethod;
+	_env["SCRIPT_NAME"] = "test";//request->getter for path;
+    _env["CONTENT_LENGTH"] = "test";//response->converter number to string;
+	_env["SERVER_PORT"] = "8080";//response->converter number to string;
+    _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";//request->getter for path;
+    _env["REMOTE_IDENT"] = "Autorization";//request->GetHeader("Autorization");
+	_env["REMOTE_ADDR"] = "localhost";//localhost;
+    _env["SCRIPT_FILENAME"] = "tohoho.pl";//response->cgi name;
+	_env["PATH_INFO"] = "argument";//response->getter for extra;
+	_env["QUERY_STRING"] = "test";//response->getter for querystring;
+    _env["REDIRECT_STATUS"] =  "";//response->getter for status code;
+
+	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+	_env["SERVER_NAME"] = "webserv";//response-> getter for servername;
+	_env["SERVER_SOFTWARE"] = "webserv/1.0";
+
+    _env["HTTP_ACCEPT"] = "accept";//request->GetHeader("accept");
+    _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";//request->GetHeader("accept-langage");
+    _env["HTTP_USER_AGENT"] = "user-agent";//request->GetHeader("user-agent");
+    _env["HTTP_COOKIE"] = "cookie";//request->GetHeader("cookie");
+    _env["HTTP_REFERER"] = "referer";//request->GetHeader("referer");
+}
