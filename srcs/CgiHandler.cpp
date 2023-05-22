@@ -278,7 +278,6 @@ void CgiHandler::setCgiEnvironment() {
     _env["DOCUMENT_ROOT"] = "test";//check rules
 
 	_env["SERVER_PROTOCOL"] = "test";//request->getter for Protocol;
-    _env["CONTENT_TYPE"] = "Content-Type";//request->GetHeader("Content-Type");
 	_env["REQUEST_METHOD"] = "test";//request->getter for getMethod;
 	_env["SCRIPT_NAME"] = "test";//request->getter for path;
     _env["CONTENT_LENGTH"] = "test";//response->converter number to string;
@@ -295,9 +294,10 @@ void CgiHandler::setCgiEnvironment() {
 	_env["SERVER_NAME"] = "webserv";//response-> getter for servername;
 	_env["SERVER_SOFTWARE"] = "webserv/1.0";
 
-    _env["HTTP_ACCEPT"] = "accept";//request->GetHeader("accept");
-    _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";//request->GetHeader("accept-langage");
-    _env["HTTP_USER_AGENT"] = "user-agent";//request->GetHeader("user-agent");
-    _env["HTTP_COOKIE"] = "cookie";//request->GetHeader("cookie");
-    _env["HTTP_REFERER"] = "referer";//request->GetHeader("referer");
+    _env["CONTENT_TYPE"] = "Content-Type";//response->makeHeader("Content-Type");
+    _env["HTTP_ACCEPT"] = "accept";//response->GetHeader("accept");
+    _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";//response->GetHeader("accept-langage");
+    _env["HTTP_USER_AGENT"] = "user-agent";//response->makeHeader("user-agent");
+    _env["HTTP_COOKIE"] = "cookie";//response->makeHeader("cookie");
+    _env["HTTP_REFERER"] = "referer";//response->makeHeader("referer");
 }
