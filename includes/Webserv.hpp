@@ -40,7 +40,7 @@ class Webserv
 		ServerMap			_defaultServers;
 		StatusMap			_statutCode;
 		int					_maxFd;
-		struct epoll_event	_events[MAX_EPOLL_EVENTS];
+		// struct epoll_event	_events[MAX_EPOLL_EVENTS];
 
 		void				deleteMethod(Client &client, std::string path);
 		void				postMethod(Client &client, Request &request);

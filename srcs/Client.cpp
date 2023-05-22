@@ -110,10 +110,27 @@ void	Client::clearRequest(void)
 
 void	Client::displayErrorPage(StatusMap::iterator statusCode)
 {
-	if (statusCode == _server->error_pages.end())
-		return ;
-	std::cout << "Error: " << statusCode->first << " " << statusCode->second << std::endl;
+	std::cout << RED "> Sending error page: " RESET << statusCode->first << " " << statusCode->second << std::endl;
 	std::ifstream file;
+	if (statusCode != _server->error_pages.end())
+	{
+		file.open(_server->error_pages[statusCode->first].c_str());
+		// if (!file.is_open())
+		// 	statusCode->first = 404;
+	}
+	Response response(statusCode->second);
 
-	file.open(statusCode->second.c_str());
+	if (file.is_open())
+	{
+		std::string body;
+		std::string line;
+		while (file.eof())
+		{
+			getline(file, line);
+			body += line;
+			body += "\n";
+		}
+		response.setMessage(body);
+	}
+	
 }

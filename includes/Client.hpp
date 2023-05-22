@@ -15,18 +15,20 @@
 
 # define MAX_REQUEST_SIZE 4096
 
-# include "Utils.hpp"
+# include "Response.hpp"
 # include "Server.hpp"
+# include "Utils.hpp"
 
 # include <sys/epoll.h>
 # include <sys/time.h>
+# include <fstream>
 
 class Client
 {
 	public:
 		socklen_t					_addrLen;
 		struct sockaddr_storage		_addr;
-		char						_request[MAX_REQUEST_SIZE];
+		MethodType					_request[MAX_REQUEST_SIZE];
 		Server						*_server;
 		int							_epollFd;
 

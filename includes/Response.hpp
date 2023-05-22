@@ -13,7 +13,7 @@
 #ifndef RESPONSE_HPP
 # define RESPONSE_HPP
 
-#include "Utils.hpp"
+# include "Utils.hpp"
 
 class Response
 {
@@ -23,9 +23,11 @@ class Response
 		~Response();
 
 		std::string	makeHeader(bool appendBody = false);
+		void		makeMessage(void);
 
 		std::string	getStatusCode(void) const;
 		std::string	getStatusMessage(void) const;
+		void		setMessage(std::string &message);
 
 	private:
 		std::string	_statusCode;
