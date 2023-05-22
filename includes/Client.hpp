@@ -14,8 +14,11 @@
 # define CLIENT_HPP
 
 # define MAX_REQUEST_SIZE 4096
+
 # include "Utils.hpp"
 # include "Server.hpp"
+
+# include <sys/epoll.h>
 # include <sys/time.h>
 
 class Client
@@ -45,7 +48,7 @@ class Client
 		int			charCounter(std::string str, char c);
 		void		clearRequest(void);
 
-		void		displayErrorPage(StatusMap::iterator statutCode);
+		void		displayErrorPage(StatusMap::iterator statusCode);
 
 	private:
 		int		_socket;

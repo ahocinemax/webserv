@@ -16,18 +16,18 @@
 Parser::Parser(const char *config_file)
 {
 	std::string     line;
-	std::ifstream   fs;
+	std::ifstream   file;
 
 	line.clear();
-	fs.open(config_file, std::ifstream::in);
-	if (fs.is_open())
+	file.open(config_file, std::ifstream::in);
+	if (file.is_open())
 	{
-		while (!fs.eof())
+		while (!file.eof())
 		{
-			std::getline(fs, line);
+			std::getline(file, line);
 			_content.append(line + '\n');
 		}
-		fs.close();
+		file.close();
 	}
 	else
 	{
@@ -66,7 +66,7 @@ Location	Parser::parseLocation(std::size_t *i)
 {
 	Location  result;
 	std::size_t start;
-	std::size_t end;
+	int end;
 	std::size_t prev = _content.find_first_not_of(SEP, *i);
 	std::size_t curr = _content.find_first_of("\n{", prev);
 	result._path = _content.substr(prev, curr - prev);
@@ -96,7 +96,7 @@ Location	Parser::parseLocation(std::size_t *i)
 				exit(printError(7));
 			if ((end = checkSyntax(_content.substr(start, curr - start))) == FAILED)
 				exit(printError(8));
-			if (static_cast<int>(end) == EMPTY)
+			if (end == EMPTY)
 				continue ;
 			std::string val = _content.substr(prev, start + 1 + end - prev);
 			if (setLocation(&result, key, val) == FAILED)
@@ -108,15 +108,17 @@ Location	Parser::parseLocation(std::size_t *i)
 
 Server	Parser::parseServer(std::size_t *i)
 {
-	Server  result;
-	std::size_t start;
-	std::size_t end;
-	std::size_t prev = _content.find_first_not_of(SEP, *i);
+	Server		result;
+	std::size_t	start;
+	int			end;
+	std::size_t	curr;
+	std::size_t	prev = _content.find_first_not_of(SEP, *i);
+	std::string key;
 
 	if (prev == std::string::npos || _content[prev] != '{')
 		exit(printError(10));
 	prev++;
-	std::size_t curr = _content.find_first_not_of(SEP, prev);
+	curr = _content.find_first_not_of(SEP, prev);
 	while (curr != std::string::npos)
 	{
 		if ((prev = _content.find_first_not_of(SEP, curr)) == std::string::npos)
@@ -124,14 +126,13 @@ Server	Parser::parseServer(std::size_t *i)
 		start = prev;
 		if ((curr = _content.find_first_of(SEP, prev)) == std::string::npos)
 			exit(printError(12));
-		std::string key = _content.substr(start, curr - start);
+		key = _content.substr(start, curr - start);
 		if (key == "}")
 		{
 			*i = _content.find_first_not_of(SEP, curr + 1);
 			break ;
 		}
-
-		if (key == "location")
+		else if (key == "location")
 			result.locations.push_back(parseLocation(&curr));
 		else
 		{

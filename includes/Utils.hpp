@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Utils.hpp                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahocine <ahocine@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/05/06 22:37:04 by ahocine           #+#    #+#             */
+/*   Updated: 2023/05/06 22:37:29 by ahocine          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef UTILS_HPP
 # define UTILS_HPP
 
@@ -39,6 +51,7 @@ typedef std::vector<std::string>			StrVector;
 typedef std::map<int, std::string>			StatusMap;
 typedef std::map<std::string, std::string>	StringMap;
 typedef std::vector<Server>					ServerVector;
+typedef std::map<std::string, Server*>		ServerMap;
 
 enum MethodType
 {
