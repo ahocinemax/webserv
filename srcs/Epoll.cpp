@@ -1,30 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Epoll.cpp                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahocine <ahocine@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/05/06 22:37:04 by ahocine           #+#    #+#             */
+/*   Updated: 2023/05/06 22:37:29 by ahocine          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Webserv.hpp"
-
-void	Webserv::initEvent(struct epoll_event &event, uint32_t flag, int fd)
-{
-	memset(&event, 0, sizeof(event));
-	event.events = flag;
-	event.data.fd = fd;
-}
-
-void	Webserv::initConnection(int index)
-{
-	struct epoll_event	event;
-	struct sockaddr		clientAddr;
-	socklen_t			clientAddrLen = sizeof(clientAddr);
-	int					clientSock;
-
-	if ((clientSock = accept(index, &clientAddr, &clientAddrLen)) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK))
-		throw AcceptException();
-	if (_clients[index].setSocket(clientSock) == FAILED)
-		throw AcceptException();
-
-	initEvent(event, EPOLLIN | EPOLLET, clientSock);
-	std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(index) + " at " + _clients[index]._server->_ipAddress + ":" + _clients[index]._server->_port << std::endl;
-	std::cout << PURPLE << std::setw(52) << "socket " + to_string(clientSock) + " created to communicate" << RESET << std::endl;
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSock, &event) < SUCCESS)
-		throw EpollCtlException();
-}
 
 int	Webserv::routine(void)
 {
@@ -50,6 +36,32 @@ int	Webserv::routine(void)
 			handleRequest(_clients[i], events[i]);
 	}
 	return (SUCCESS);
+}
+
+void	Webserv::initEvent(struct epoll_event &event, uint32_t flag, int fd)
+{
+	memset(&event, 0, sizeof(event));
+	event.events = flag;
+	event.data.fd = fd;
+}
+
+void	Webserv::initConnection(int index)
+{
+	struct epoll_event	event;
+	struct sockaddr		clientAddr;
+	socklen_t			clientAddrLen = sizeof(clientAddr);
+	int					clientSock;
+
+	if ((clientSock = accept(index, &clientAddr, &clientAddrLen)) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK))
+		throw AcceptException();
+	if (_clients[index].setSocket(clientSock) == FAILED)
+		throw AcceptException();
+
+	initEvent(event, EPOLLIN | EPOLLET, clientSock);
+	std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(index) + " at " + _clients[index]._server->_ipAddress + ":" + _clients[index]._server->_port << std::endl;
+	std::cout << PURPLE << std::setw(52) << "socket " + to_string(clientSock) + " created to communicate" << RESET << std::endl;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSock, &event) < SUCCESS)
+		throw EpollCtlException();
 }
 
 int	Webserv::findClientIndex(int fd)
@@ -86,7 +98,6 @@ int	Webserv::connectEpollToSockets()
 	ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
 	if (ret < SUCCESS)
 		throw EpollCtlException();
-
 	return (SUCCESS);
 }
 
@@ -96,22 +107,10 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 	(void)client;
 }
 
-const char*	Webserv::EpollCreateException::what() const throw()
-{
-	return ("Error: Epoll_create() failed");
-}
+const char*	Webserv::EpollCreateException::what() const throw() { return ("Error: Epoll_create() failed"); }
 
-const char*	Webserv::EpollCtlException::what() const throw()
-{
-	return ("Error: Epoll_ctl() failed");
-}
+const char*	Webserv::EpollCtlException::what() const throw() { return ("Error: Epoll_ctl() failed"); }
 
-const char*	Webserv::EpollWaitException::what() const throw()
-{
-	return ("Error: Epoll_wait() failed");
-}
+const char*	Webserv::EpollWaitException::what() const throw() { return ("Error: Epoll_wait() failed"); }
 
-const char*	Webserv::AcceptException::what() const throw()
-{
-	return ("Error: Accept() failed");
-}
+const char*	Webserv::AcceptException::what() const throw() { return ("Error: Accept() failed"); }

@@ -52,7 +52,7 @@ void	Server::createSocket(void)
 			throw SocketConnectionException();
 		}
 		freeaddrinfo(info);
-		std::cout << "> Listening on socket..." << std::endl;
+		std::cout << "> Listening on socket...\n" << std::endl;
 		if (listen(newSocket, 100) < 0)
 			throw SocketListenException();
 		this->_socket = newSocket;

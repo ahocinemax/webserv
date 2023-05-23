@@ -39,9 +39,8 @@ class Webserv
 		/* EPOLL */
 		static void			initEvent(struct epoll_event &event, uint32_t flag, int fd);
 		void				initConnection(int index);
-		int					connectEpollToSockets(void);
-		void		        initEpoll(void);
 		int					findClientIndex(int socket);
+		int					connectEpollToSockets(void);
 
 		void				handleRequest(Client &client, struct epoll_event &event);
 
