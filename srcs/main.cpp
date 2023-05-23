@@ -35,7 +35,10 @@ int main(int argc, char **argv)
 		}
 		Webserv webserver(*serv);
 		webserver.createServers();
-
+		while (webserver.routine())
+			;
+		
+		webserver.closeServers();
 		delete serv;
 	}
 	catch (const std::exception &e)

@@ -170,7 +170,7 @@ int Parser::setLocation(Location *loc, std::string &key, std::string &val)
 	{
 		StrVector tmp = split(val, ' ');
 		for (StrVector::iterator it = tmp.begin(); it != tmp.end(); it++)
-			loc->_allowMethods.push_back(loc->methodType(*it));
+			loc->_allowMethods.push_back(strToMethodType(*it));
 	}
 	else if (key == "cgi_info")
 	{
@@ -251,7 +251,7 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 	{
 		StrVector tmp = split(val, ' ');
 		for (StrVector::iterator it = tmp.begin(); it != tmp.end(); it++)
-			serv->allowMethods.push_back(serv->methodType(*it));
+			serv->allowMethods.push_back(strToMethodType(*it));
 	}
 	else
 	{

@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Location.cpp                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: ahocine <ahocine@student.42.fr>            +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/05/22 16:06:54 by ahocine           #+#    #+#             */
+/*   Updated: 2023/05/22 16:06:56 by ahocine          ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Location.hpp"
 
 Location::Location() : _client_body_limit(0), _path(""), _root("")
@@ -40,18 +52,6 @@ void	Location::printLocation(void) const
 	for (std::map<std::string, std::string>::const_iterator it = this->_cgi.begin();
 	it != this->_cgi.end(); it++)
 		std::cout << "\t" << it->first << ", " << it->second << std::endl;
-}
-
-MethodType	Location::methodType(std::string str)
-{
-	if (str == "GET")
-		return (GET);
-	else if (str == "POST")
-		return (POST);
-	else if (str == "DELETE")
-		return (DELETE);
-	else
-		return (UNKNOWN);
 }
 
 std::string	Location::getRoot(void) const

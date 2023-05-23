@@ -23,22 +23,25 @@ Client::~Client(void) {}
 
 void	Client::setTimer(struct timeval &timer) { _timer = timer; }
 
-void	Client::setSocket(int socket)
+int	Client::setSocket(int socket)
 {
 	_socket = socket;
-	fcntl(_socket, F_SETFL, O_NONBLOCK);
+	if (fcntl(_socket, F_SETFL, O_NONBLOCK) < SUCCESS)
+	{
+		std::cerr << RED "Error:" RESET " fcntl() failed" << std::endl;
+		return (FAILED);
+	}
 	if (setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *)&_server->recv_timeout, sizeof(struct timeval)) < 0)
+	{
 		std::cerr << RED "Error:" RESET " setsockopt(SO_RCVTIMEO) failed" << std::endl;
+		return (FAILED);
+	}
 	if (setsockopt(_socket, SOL_SOCKET, SO_SNDTIMEO, (const char *)&_server->send_timeout, sizeof(struct timeval)) < 0)
+	{
 		std::cerr << RED "Error:" RESET " setsockopt(SO_SNDTIMEO) failed" << std::endl;
-	_epollFd = epoll_create(1);
-	if (_epollFd == -1)
-		std::cerr << RED "Error:" RESET " epoll_create() failed" << std::endl;
-	struct epoll_event event;
-	event.events = EPOLLIN | EPOLLET;
-	event.data.fd = _socket;
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, _socket, &event) == -1)
-		std::cerr << RED "Error:" RESET " epoll_ctl() failed" << std::endl;
+		return (FAILED);
+	}
+	return (SUCCESS);
 }
 
 void	Client::setRecvSize(int size) { _recvSize = size; }
@@ -110,10 +113,53 @@ void	Client::clearRequest(void)
 
 void	Client::displayErrorPage(StatusMap::iterator statusCode)
 {
-	if (statusCode == _server->error_pages.end())
-		return ;
-	std::cout << "Error: " << statusCode->first << " " << statusCode->second << std::endl;
+	std::cout << RED "> Sending error page: " RESET << statusCode->first << " " << statusCode->second << std::endl;
 	std::ifstream file;
+	if (statusCode != _server->error_pages.end())
+	{
+		file.open(_server->error_pages[statusCode->first].c_str());
+		if (!file.is_open())
+			statusCode = _server->error_pages.find(NOT_FOUND);
+	}
 
-	file.open(statusCode->second.c_str());
+	Response response(statusCode->second);
+
+	if (file.is_open()) // Une page d'erreur a été trouvée
+	{
+		std::string body;
+		std::string line;
+		while (!file.eof())
+		{
+			getline(file, line);
+			body += line;
+			body += "\n";
+		}
+		response.setCustomizeErrorMessage(body);
+		file.close();
+	}
+	else // Pas de page d'erreur trouvée, page par défaut
+		response.setDefaultErrorMessage();
+	response.addHeader("Content-Type", "text/html");
+	response.addHeader("Content-Length", to_string(response.getBody().length()));
+	if (statusCode->first == METHOD_NOT_ALLOWED)
+	{
+		std::string allowedMethods;
+		for (MethodVector::iterator it = _server->allowMethods.begin() ; it != _server->allowMethods.end() ; it++)
+		{
+			if (it != _server->allowMethods.begin())
+				allowedMethods += ", ";
+			allowedMethods += methodTypeToStr(*it);
+		}
+		response.addHeader("Allow", allowedMethods);
+	}
+
+	std::string	result = response.makeHeader(true);
+	int			sendSize = send(_socket, result.c_str(), result.length(), 0);
+	if (sendSize < 0)
+		std::cerr << RED "Error:" RESET " send() failed" << std::endl;
+	else if (sendSize == 0)
+		std::cerr << RED "Error:" RESET " send() failed: connection closed" << std::endl;
+	else
+		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes" << std::endl;
+	clearRequest();
 }

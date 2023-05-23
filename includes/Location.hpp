@@ -21,14 +21,13 @@ class Location
 		Location(/* args */);
 		~Location();
 		void				printLocation(void) const;
-		static MethodType	methodType(std::string str);
 		std::string			getRoot(void) const;
 		std::string			getPath(void) const;
 		std::string			getCgi(std::string extension) const;
 
 	public:
 		int						_client_body_limit;
-		std::vector<MethodType>	_allowMethods;
+		MethodVector	_allowMethods;
 		StrVector				_index;
 		std::string				_path;
 		std::string				_root;
