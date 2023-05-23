@@ -28,7 +28,7 @@
 //    _env(GetEnv())
 //    {
 //        if (!AccessiblePath(_scriptPath)) {
-//            throw 404;//error投げる
+//            throw (NOT FOUND);//error投げる
 //        }
 //        SigpipeSet(0);
 //    }

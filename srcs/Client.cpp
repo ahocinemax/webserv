@@ -163,3 +163,19 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes" << std::endl;
 	clearRequest();
 }
+
+
+int	Client::getFd() const
+{
+	return (_epollfd);
+}
+
+t_StatusRequest	Client::parse(const std::string str)
+{
+	t_StatusRequest status;
+	if (!_request)
+		_request = new Request(str, getfd());
+	status = _request->parse();
+	return (status);
+
+}

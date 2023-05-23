@@ -17,6 +17,7 @@
 
 # include "Response.hpp"
 # include "Server.hpp"
+#include "Request.hpp"
 # include "Utils.hpp"
 
 # include <sys/epoll.h>
@@ -51,11 +52,14 @@ class Client
 		void		clearRequest(void);
 
 		void		displayErrorPage(StatusMap::iterator statusCode);
+		int			getFd() const;
+		t_StatusRequest	parse(const std::string& str);
 
 	private:
 		int		_socket;
 		int		_recvSize;
 		timeval	_timer;
+		Request* _request;
 };
 
 #endif
