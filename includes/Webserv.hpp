@@ -17,10 +17,12 @@
 # include "Request.hpp"
 # include "Client.hpp"
 
-# include <cstdio>
-# include <unistd.h>
-# include <sys/stat.h>
 # include <sys/epoll.h>
+# include <sys/stat.h>
+# include <unistd.h>
+# include <cstdio>
+# include <limits>
+# include <iomanip>
 
 # define MAX_EPOLL_EVENTS 1000
 
@@ -32,6 +34,16 @@ class Webserv
 
 		void				createServers(void);
 		void				closeServers(void);
+		int					routine(void);
+
+		/* EPOLL */
+		static void			initEvent(struct epoll_event &event, uint32_t flag, int fd);
+		void				initConnection(int index);
+		int					connectEpollToSockets(void);
+		void		        initEpoll(void);
+		int					findClientIndex(int socket);
+
+		void				handleRequest(Client &client, struct epoll_event &event);
 
 	private:
 		std::vector<Client>	_clients;
@@ -39,8 +51,7 @@ class Webserv
 		ServerMap			_serversMap;
 		ServerMap			_defaultServers;
 		StatusMap			_statutCode;
-		int					_maxFd;
-		// struct epoll_event	_events[MAX_EPOLL_EVENTS];
+		int					_epollFd;
 
 		void				deleteMethod(Client &client, std::string path);
 		void				postMethod(Client &client, Request &request);
@@ -52,6 +63,29 @@ class Webserv
 
 		int					writeResponse(Client &client, std::string response, std::string path);
 
+		class EpollCreateException : public std::exception
+		{
+			public:
+				virtual const char* what() const throw();
+		};
+
+		class EpollCtlException : public std::exception
+		{
+			public:
+				virtual const char* what() const throw();
+		};
+
+		class EpollWaitException : public std::exception
+		{
+			public:
+				virtual const char* what() const throw();
+		};
+
+		class AcceptException : public std::exception
+		{
+			public:
+				virtual const char* what() const throw();
+		};
 };
 
 

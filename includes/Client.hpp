@@ -36,7 +36,7 @@ class Client
 		~Client(void);
 
 		void		setTimer(struct timeval &timer);
-		void		setSocket(int socket);
+		int			setSocket(int socket);
 		void		setRecvSize(int size);
 
 		std::string	setRootPath(std::string path);

@@ -13,10 +13,9 @@
 #include "Webserv.hpp"
 #include "Epoll.hpp"
 
-Webserv::Webserv(ServerVector server) : _serversVec(server), _maxFd(-1)
+Webserv::Webserv(ServerVector server) : _serversVec(server)
 {
 	setStatusCodes();
-	(void)_maxFd;
 	for (unsigned int i = 0 ; i < _serversVec.size() ; i++)
 	{
 		for (StatusMap::iterator it = _serversVec[i].error_pages.begin() ; \
@@ -47,11 +46,10 @@ void Webserv::createServers(void)
 {
 	for (ServerMap::iterator it = _defaultServers.begin() ; it != _defaultServers.end() ; it ++)
 	{
-		std::cout << "> Creating server: " << it->first << std::endl;
+		std::cout << "> Creating server: " BLUE << it->second->_ipAddress << RESET << std::endl;
 		it->second->createSocket();
 	}
-	Epoll	ep;
-	ep.initEpoll();
+	connectEpollToSockets();
 }
 
 void	Webserv::closeServers(void)

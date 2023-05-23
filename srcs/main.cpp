@@ -35,14 +35,8 @@ int main(int argc, char **argv)
 		}
 		Webserv webserver(*serv);
 		webserver.createServers();
-		while (true)
-		{
-			// init epoll
-			
-			// Waiting for a connection
-			// Accepting the connection
-			// Handle the request
-		}
+		while (webserver.routine())
+			;
 		
 		webserver.closeServers();
 		delete serv;
