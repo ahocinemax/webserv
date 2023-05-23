@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.hpp                                        :+:      :+:    :+:   */
+/*   Request.cpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ahocine <ahocine@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -13,18 +13,20 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
+# include "Utils.hpp"
+
 class Request
 {
 	public:
 		Request(/* args */);
 		~Request();
 
-		std::map<std::string, std::string>	_header;
+		StringMap	_header;
 
-		std::size_t							_contentLength;
-		std::string							_method;
-		std::string							_path;
-		std::string							_body;
+		std::size_t	_contentLength;
+		std::string	_method;
+		std::string	_path;
+		std::string	_body;
 };
 
 #endif

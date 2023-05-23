@@ -118,18 +118,6 @@ void	Server::printInfo(int i)
 	std::cout << "--------------------------------------------------\n" << std::endl;
 }
 
-MethodType	Server::methodType(std::string uriRequest)
-{
-	if (uriRequest == "GET")
-		return GET;
-	else if (uriRequest == "POST")
-		return POST;
-	else if (uriRequest == "DELETE")
-		return DELETE;
-	else
-		return UNKNOWN;
-}
-
 Location	*Server::getLocation(std::string uriRequest) const
 {
 	if (this->locations.size() == 0)

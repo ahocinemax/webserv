@@ -26,7 +26,7 @@ class Server
 {
 	public:
 		int						client_body_limit;
-		std::vector<MethodType>	allowMethods;
+		MethodVector			allowMethods;
 		StatusMap				error_pages;
 		std::string 			server_name;
 		bool					autoindex;
@@ -48,8 +48,6 @@ class Server
 
 		~Server(void);
 		Server(void);
-
-		static MethodType	methodType(std::string str);
 
 		void	createSocket(void);
 		void	printInfo(int i);

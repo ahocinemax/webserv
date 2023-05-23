@@ -23,11 +23,13 @@ class Response
 		~Response();
 
 		std::string	makeHeader(bool appendBody = false);
-		void		makeMessage(void);
+		void		setDefaultErrorMessage(void);
 
 		std::string	getStatusCode(void) const;
 		std::string	getStatusMessage(void) const;
-		void		setMessage(std::string &message);
+		void		setCustomizeErrorMessage(std::string &message);
+		void		addHeader(std::string key, std::string value);
+		std::string	getBody(void) const { return (_message); }
 
 	private:
 		std::string	_statusCode;

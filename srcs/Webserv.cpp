@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
+#include "Epoll.hpp"
 
 Webserv::Webserv(ServerVector server) : _serversVec(server), _maxFd(-1)
 {
@@ -18,11 +19,17 @@ Webserv::Webserv(ServerVector server) : _serversVec(server), _maxFd(-1)
 	(void)_maxFd;
 	for (unsigned int i = 0 ; i < _serversVec.size() ; i++)
 	{
-		for (StatusMap::iterator it = _serversVec[i].error_pages.begin() ; it != _serversVec[i].error_pages.end() ; it++)
+		for (StatusMap::iterator it = _serversVec[i].error_pages.begin() ; \
+		it != _serversVec[i].error_pages.end() ; it++)
 		{
 			int statusCode = it->first;
-			if (statusCode < 400 || (statusCode > 429 && statusCode < 500) || statusCode > 505)
-				std::cout << RED "Error: Invalid status code \"" << statusCode << "\" in server \"" << _serversVec[i].server_name << "\"" RESET << std::endl;
+			if (statusCode < BAD_REQUEST || \
+			(statusCode > TOO_MANY_REQUESTS &&  statusCode < INTERNAL_SERVER_ERROR) || \
+			statusCode > HTTP_VERSION_NOT_SUPPORTED)
+			{
+				std::cout << RED "Error: Invalid status code \"" << \
+				statusCode << "\" in server \"" << _serversVec[i].server_name << "\"" RESET << std::endl;
+			}
 		}
 		if (!_defaultServers[_serversVec[i]._port])
 			_defaultServers[_serversVec[i]._port] = &_serversVec[i];
@@ -43,6 +50,8 @@ void Webserv::createServers(void)
 		std::cout << "> Creating server: " << it->first << std::endl;
 		it->second->createSocket();
 	}
+	Epoll	ep;
+	ep.initEpoll();
 }
 
 void	Webserv::closeServers(void)
@@ -169,38 +178,38 @@ void	Webserv::getMethod(Client &client, std::string path)
 
 void Webserv::setStatusCodes(void)
 {
-	_statutCode[200] = "200 OK";
-	_statutCode[201] = "201 Created";
-	_statutCode[202] = "202 Accepted";
-	_statutCode[204] = "204 No Content";
-	_statutCode[301] = "301 Moved Permanently";
-	_statutCode[302] = "302 Found";
-	_statutCode[303] = "303 See Other";
-	_statutCode[304] = "304 Not Modified";
-	_statutCode[307] = "307 Temporary Redirect";
-	_statutCode[308] = "308 Permanent Redirect";
-	_statutCode[400] = "400 Bad Request";
-	_statutCode[401] = "401 Unauthorized";
-	_statutCode[403] = "403 Forbidden";
-	_statutCode[404] = "404 Not Found";
-	_statutCode[405] = "405 Method Not Allowed";
-	_statutCode[406] = "406 Not Acceptable";
-	_statutCode[408] = "408 Request Timeout";
-	_statutCode[409] = "409 Conflict";
-	_statutCode[410] = "410 Gone";
-	_statutCode[411] = "411 Length Required";
-	_statutCode[413] = "413 Payload Too Large";
-	_statutCode[414] = "414 URI Too Long";
-	_statutCode[415] = "415 Unsupported Media Type";
-	_statutCode[416] = "416 Range Not Satisfiable";
-	_statutCode[417] = "417 Expectation Failed";
-	_statutCode[429] = "429 Too Many Requests";
-	_statutCode[500] = "500 Internal Server Error";
-	_statutCode[501] = "501 Not Implemented";
-	_statutCode[502] = "502 Bad Gateway";
-	_statutCode[503] = "503 Service Unavailable";
-	_statutCode[504] = "504 Gateway Timeout";
-	_statutCode[505] = "505 HTTP Version Not Supported";
+	_statutCode[OK] = "200 OK";
+	_statutCode[CREATED] = "201 Created";
+	_statutCode[ACCEPTED] = "202 Accepted";
+	_statutCode[NO_CONTENT] = "204 No Content";
+	_statutCode[MOVED_PERMANENTLY] = "301 Moved Permanently";
+	_statutCode[FOUND] = "302 Found";
+	_statutCode[SEE_OTHER] = "303 See Other";
+	_statutCode[NOT_MODIFIED] = "304 Not Modified";
+	_statutCode[TEMPORARY_REDIRECT] = "307 Temporary Redirect";
+	_statutCode[PERMANENT_REDIRECT] = "308 Permanent Redirect";
+	_statutCode[BAD_REQUEST] = "400 Bad Request";
+	_statutCode[UNAUTHORIZED] = "401 Unauthorized";
+	_statutCode[FORBIDDEN] = "403 Forbidden";
+	_statutCode[NOT_FOUND] = "404 Not Found";
+	_statutCode[METHOD_NOT_ALLOWED] = "405 Method Not Allowed";
+	_statutCode[NOT_ACCEPTABLE] = "406 Not Acceptable";
+	_statutCode[REQUEST_TIMEOUT] = "408 Request Timeout";
+	_statutCode[CONFLICT] = "409 Conflict";
+	_statutCode[GONE] = "410 Gone";
+	_statutCode[LENGTH_REQUIRED] = "411 Length Required";
+	_statutCode[PAYLOAD_TOO_LARGE] = "413 Payload Too Large";
+	_statutCode[URI_TOO_LONG] = "414 URI Too Long";
+	_statutCode[UNSUPPORTED_MEDIA_TYPE] = "415 Unsupported Media Type";
+	_statutCode[RANGE_NOT_SATISFIABLE] = "416 Range Not Satisfiable";
+	_statutCode[EXPECTATION_FAILED] = "417 Expectation Failed";
+	_statutCode[TOO_MANY_REQUESTS] = "429 Too Many Requests";
+	_statutCode[INTERNAL_SERVER_ERROR] = "500 Internal Server Error";
+	_statutCode[NOT_IMPLEMENTED] = "501 Not Implemented";
+	_statutCode[BAD_GATEWAY] = "502 Bad Gateway";
+	_statutCode[SERVICE_UNAVAILABLE] = "503 Service Unavailable";
+	_statutCode[GATEWAY_TIMEOUT] = "504 Gateway Timeout";
+	_statutCode[HTTP_VERSION_NOT_SUPPORTED] = "505 HTTP Version Not Supported";
 }
 
 std::string	Webserv::getPath(Client &client, std::string path)

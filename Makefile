@@ -13,6 +13,7 @@ CC			= c++
 SRCS_DIR	= ./srcs/
 SRCS_PATH	= $(addprefix $(SRCS_DIR), $(SRCS))
 SRCS		= Client.cpp \
+			  Epoll.cpp \
 			  Location.cpp \
 			  main.cpp \
 			  Parser.cpp \

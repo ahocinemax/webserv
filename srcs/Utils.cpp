@@ -23,3 +23,27 @@ StrVector split(std::string input, char delimiter)
  
 	return answer;
 }
+
+MethodType	strToMethodType(std::string str)
+{
+	if (str == "GET")
+		return (GET);
+	else if (str == "POST")
+		return (POST);
+	else if (str == "DELETE")
+		return (DELETE);
+	else
+		return (UNKNOWN);
+}
+
+std::string	methodTypeToStr(MethodType method)
+{
+	if (method == GET)
+		return ("GET");
+	else if (method == POST)
+		return ("POST");
+	else if (method == DELETE)
+		return ("DELETE");
+	else
+		return ("UNKNOWN");
+}

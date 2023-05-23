@@ -54,18 +54,6 @@ void	Location::printLocation(void) const
 		std::cout << "\t" << it->first << ", " << it->second << std::endl;
 }
 
-MethodType	Location::methodType(std::string str)
-{
-	if (str == "GET")
-		return (GET);
-	else if (str == "POST")
-		return (POST);
-	else if (str == "DELETE")
-		return (DELETE);
-	else
-		return (UNKNOWN);
-}
-
 std::string	Location::getRoot(void) const
 {
 	return (this->_root);
