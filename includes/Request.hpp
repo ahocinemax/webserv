@@ -15,20 +15,16 @@
 
 # include "Utils.hpp"
 
-
-typedef enum t_StatusRequest
-{
-	INCOMPLETE	= 0,
-	COMPLETE	= 1,
-	INVALID		= 2,
-}	t_StatusRequest;
+# define INCOMPLETE	0
+# define COMPLETE	1
+# define INVALID	2
 
 class Request
 {
 	public:
 		/* member type */
 		//typedef std::vector<void (Request::*)()> listFuncForParse;
-		typedef void (Request::*FoncForParse)();
+		typedef void (*FuncForParse)();
 		typedef std::vector<FuncForParse>	listFuncForParse;
 		Request(void);
 		Request(/* args */);
@@ -45,7 +41,7 @@ class Request
 		
 		/*Parse*/
 		void	parseMethod();
-		t_StatusRequest	parse();
+		int		parse();
 		void	FuncForParse();
 		void	parsePath();
 
@@ -56,6 +52,15 @@ class Request
 		std::string		GetHeader(const std::string& headerName);
 		size_t			getNextWord(std::string& word, const std::string& delimiter);
 		std::string		getNextWord(size_t sizeWord);
+
+		class InvalidMethodException : public std::exception
+		{
+			public:
+				virtual const char* what() const throw()
+				{
+					return ("Invalid Method");
+				}
+		};
 
 	private:
 		MethodType	_method;

@@ -102,9 +102,9 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 	// Envoyer la réponse
 	// Fermer le client (keep-alive ?)
 	std::string	str;
-	str = readfd(client->getfd());
-	t_StatusRequest = client->parse(str);
-	if (StatusRequest == INCOMPLETE)
+	str = readfd(client.getfd());
+	int a = client.parse(str);
+	if (a == INCOMPLETE)
 		return;
 	else if 
 		//gestion pour creation socket? je ne suis pas sure pour epoll()

@@ -45,7 +45,7 @@ Request::Request(): _request(""),
 }
 void	Request::initVariables()
 {
-	_statusCode = INCOMPLETE;
+	_statusCode = to_string(INCOMPLETE);
 	_method = UNKNOWN;
 	_path = "";
 	_protocolHTTP = "";
@@ -55,15 +55,13 @@ void	Request::initVariables()
 	_port = 0;
 	_payloadSize = 0;
 	_headerParsed = false;
-	_methods = {
-        {GET, "GET"},
-        {POST, "POST"},
-        {DELETE, "DELETE"},
-        {UNKNOWN, "UNKNOWN"}
-    };
+	_methods.insert(std::make_pair(GET, "GET"));
+	_methods.insert(std::make_pair(POST, "POST"));
+	_methods.insert(std::make_pair(DELETE, "DELETE"));
+	_methods.insert(std::make_pair(UNKNOWN, "UNKNOWN"));
 }
 
-void	Request::initfuncForParse();
+void	Request::initFuncForParse()
 {
     _funcforparse.push_back(&_parseMethod);
     _funcforparse.push_back(&_parsePath);
@@ -79,9 +77,9 @@ void Request::parseMethod()
     getNextWord(method, " ");
     if (isHttpMethod(method) == false)
     {
-        throw (NOT_IMPLEMENTED);
+        throw InvalidMethodException();
     }
-    _method = getMethod(method);
+    _method = strToMethodType(method);
 }
 
 void	Request::parsePath()
@@ -121,7 +119,7 @@ std::string Request::getNextWord(size_t sizeWord)
     _request.erase(0, sizeWord);
 	//_payloadsize : taille totale de data recues
     _payloadSize += sizeWord + 2;
-    std::cerr << "'" << GREEN << nextWord << "'" << RESET << NL;
+    std::cerr << "'" << GREEN << nextWord << "'" << RESET << std::endl;
     return nextWord;
 }
 
@@ -148,21 +146,21 @@ void	Request::FuncForParse()
 	Request::listFuncForParse::const_iterator	func;
 
 	for (func = _funcforparse.begin();
-		_statuscode != COMPLETE_REQUEST && func != _funcforparse.end();
+		_statusCode != COMPLETE && func != _funcforparse.end();
 			func++)
 	{
 		(this->**func)();
 	}
 }
 
-t_StatusRequest	Request::parse()
+int	Request::parse()
 {
 	try
 	{
 		if (_request.find("\r\n\r\n") == std::string::npos)
 		{
 			/* Header is incomplete */
-			return (_statusCode);
+			return (atoi(_statusCode.c_str()));
 		}
 		else
 		{
@@ -170,5 +168,9 @@ t_StatusRequest	Request::parse()
 				FuncForParse(); // +ajouter  parsing for body
 		}
 	}
-	return (_statusCode);
+	catch (std::exception &e)
+	{
+		std::cerr << e.what() << std::endl;
+	}
+	return (atoi(_statusCode.c_str()));
 }
