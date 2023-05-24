@@ -134,7 +134,7 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 			body += line;
 			body += "\n";
 		}
-		response.setCustomizeErrorMessage(body);
+		response.setCustomizedErrorMessage(body);
 		file.close();
 	}
 	else // Pas de page d'erreur trouvée, page par défaut

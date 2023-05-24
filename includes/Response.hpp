@@ -27,7 +27,7 @@ class Response
 
 		std::string	getStatusCode(void) const;
 		std::string	getStatusMessage(void) const;
-		void		setCustomizeErrorMessage(std::string &message);
+		void		setCustomizedErrorMessage(std::string &message);
 		void		addHeader(std::string key, std::string value);
 		std::string	getBody(void) const { return (_message); }
 

@@ -36,7 +36,7 @@ std::string	Response::getStatusCode(void) const { return (_statusCode); }
 
 std::string	Response::getStatusMessage(void) const { return (_statusMessage); }
 
-void	Response::setCustomizeErrorMessage(std::string &message) { _message = message; }
+void	Response::setCustomizedErrorMessage(std::string &message) { _message = message; }
 
 void	Response::setDefaultErrorMessage() // page d'erreur par défaut
 {
