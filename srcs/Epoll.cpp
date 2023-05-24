@@ -87,6 +87,7 @@ int	Webserv::connectEpollToSockets()
 	{
 		initEvent(event, EPOLLIN, _serversVec[i]._socket);
 		ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serversVec[i]._socket, &event);
+		if (ret < SUCCESS)
 			throw EpollCtlException();
 	}
 
