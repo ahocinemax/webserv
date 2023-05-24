@@ -50,7 +50,7 @@ class Request
 		void	parsePath();
 
 		/*Util*/
-		isHttpMethod(const std::string& str) const;
+		bool	isHttpMethod(const std::string& str) const;
 
 		/* Getter */
 		std::string		GetHeader(const std::string& headerName);

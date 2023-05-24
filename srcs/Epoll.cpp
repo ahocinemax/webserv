@@ -94,6 +94,13 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 {
 	(void)event;
 	(void)client;
+	// Créer le client
+
+	// Lire la requête
+	// Parser la requête
+	// Créer la réponse
+	// Envoyer la réponse
+	// Fermer le client (keep-alive ?)
 	std::string	str;
 	str = readfd(client->getfd());
 	t_StatusRequest = client->parse(str);

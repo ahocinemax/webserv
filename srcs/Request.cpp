@@ -128,12 +128,10 @@ std::string Request::getNextWord(size_t sizeWord)
 
 std::string		Request::GetHeader(const std::string& headerName)
 {
-	if (_header.find(headerName) != _header.end())
-		return (_header[headerName]);
-	return ("");
+	return (_header.find(headerName) != _header.end() ? _header[headerName] : "");
 }
 
-bool        Request::isHttpMethod(std::string const& str)
+bool        Request::isHttpMethod(std::string const& str) const
 {
     std::map<MethodType, std::string>::const_iterator ite;
 
