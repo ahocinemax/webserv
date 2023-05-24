@@ -38,7 +38,7 @@
 	Cookie: sessionId=yekwp6nv9y1po66y
 
 */
-Request::Request(): _request(""), 
+Request::Request(): _request("")
 {
 	initVariables();
 	initFuncForParse();
@@ -63,23 +63,23 @@ void	Request::initVariables()
 
 void	Request::initFuncForParse()
 {
-    _funcforparse.push_back(&_parseMethod);
-    _funcforparse.push_back(&_parsePath);
-    _funcforparse.push_back(&_parseHttpProtocol);// pas encore
+	_funcforparse.push_back(&_parseMethod);
+	_funcforparse.push_back(&_parsePath);
+	_funcforparse.push_back(&_parseHttpProtocol);// pas encore
 	_funcforparse.push_back(&_parseHeaders);// pas encore
 	_funcforparse.push_back(&_checkHeaders);// pas encore
 }
 
 void Request::parseMethod()
 {
-    std::string method;
+	std::string method;
 
-    getNextWord(method, " ");
-    if (isHttpMethod(method) == false)
-    {
-        throw InvalidMethodException();
-    }
-    _method = strToMethodType(method);
+	getNextWord(method, " ");
+	if (isHttpMethod(method) == false)
+	{
+		throw InvalidMethodException();
+	}
+	_method = strToMethodType(method);
 }
 
 void	Request::parsePath()
@@ -97,30 +97,30 @@ void	Request::parsePath()
 
 size_t Request::getNextWord(std::string& word, const std::string& delimiter)
 {
-    size_t pos = _request.find(delimiter);
-    if (pos == std::string::npos)
-    {
-        // si'on trouve pas delimiteur
-        throw std::runtime_error("No delimiter");
-    }
-    word = _request.substr(0, pos);
-    _request.erase(0, pos + delimiter.length());
-    _payloadSize += pos + delimiter.length();
-    return pos;
+	size_t pos = _request.find(delimiter);
+	if (pos == std::string::npos)
+	{
+		// si'on trouve pas delimiteur
+		throw std::runtime_error("No delimiter");
+	}
+	word = _request.substr(0, pos);
+	_request.erase(0, pos + delimiter.length());
+	_payloadSize += pos + delimiter.length();
+	return pos;
 }
 
 std::string Request::getNextWord(size_t sizeWord)
 {
-    if (_request.length() < sizeWord)
-    {
-        throw std::runtime_error("String length is shorter than the specified size");
-    }
-    std::string nextWord = _request.substr(0, sizeWord);
-    _request.erase(0, sizeWord);
+	if (_request.length() < sizeWord)
+	{
+		throw std::runtime_error("String length is shorter than the specified size");
+	}
+	std::string nextWord = _request.substr(0, sizeWord);
+	_request.erase(0, sizeWord);
 	//_payloadsize : taille totale de data recues
-    _payloadSize += sizeWord + 2;
-    std::cerr << "'" << GREEN << nextWord << "'" << RESET << std::endl;
-    return nextWord;
+	_payloadSize += sizeWord + 2;
+	std::cerr << "'" << GREEN << nextWord << "'" << RESET << std::endl;
+	return nextWord;
 }
 
 
@@ -131,13 +131,13 @@ std::string		Request::GetHeader(const std::string& headerName)
 
 bool        Request::isHttpMethod(std::string const& str) const
 {
-    std::map<MethodType, std::string>::const_iterator ite;
+	std::map<MethodType, std::string>::const_iterator ite;
 
-    for (ite = _methods.begin(); ite != _methods.end(); ite++)
-    {
-        if (ite->second == str)
-            return (true);
-    }
+	for (ite = _methods.begin(); ite != _methods.end(); ite++)
+	{
+		if (ite->second == str)
+			return (true);
+	}
 	return (false);
 }
 
