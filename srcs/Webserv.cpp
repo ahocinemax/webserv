@@ -46,7 +46,7 @@ void Webserv::createServers(void)
 {
 	for (ServerMap::iterator it = _defaultServers.begin() ; it != _defaultServers.end() ; it ++)
 	{
-		std::cout << "> Creating server: " BLUE << it->second->_ipAddress << RESET << std::endl;
+		std::cout << "> Creating server: " BLUE << it->second->server_name << RESET << std::endl;
 		it->second->createSocket();
 	}
 	connectEpollToSockets();
