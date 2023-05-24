@@ -172,7 +172,7 @@ int	Client::getFd() const
 
 t_StatusRequest	Client::parse(const std::string str)
 {
-	t_StatusRequest status;
+	int status;
 	if (!_request)
 		_request = new Request(str, getfd());
 	status = _request->parse();

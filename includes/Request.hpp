@@ -13,7 +13,8 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
-# include "Utils.hpp"
+# include "../includes/Utils.hpp"
+# include <stdexcept>
 
 # define INCOMPLETE	0
 # define COMPLETE	1
@@ -44,9 +45,13 @@ class Request
 		int		parse();
 		void	FuncForParse();
 		void	parsePath();
+		void	parseHttpProtocol();
+		void	parseHeaders();
+		void	checkHeaders();
 
 		/*Util*/
 		bool	isHttpMethod(const std::string& str) const;
+		bool	isHeader(const std::string& headerName);
 
 		/* Getter */
 		std::string		GetHeader(const std::string& headerName);
@@ -61,11 +66,23 @@ class Request
 					return ("Invalid Method");
 				}
 		};
+	    class Error : public virtual std::exception {
+	    public:
+	        Error(const char* msg) : _msg(msg) {}
+
+	        const char* what() const throw() {
+	            return _msg;
+	        }
+
+	    private:
+	        const char* _msg;
+	    };
 
 	private:
 		MethodType	_method;
 		listFuncForParse	_funcforparse;
 		std::string			_statusCode;
+		int					_requestStatus;
 		std::string			_path;
 		std::string			_request;
 		bool				_headerParsed;

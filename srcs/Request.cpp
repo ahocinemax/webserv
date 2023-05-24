@@ -45,7 +45,8 @@ Request::Request(): _request(""),
 }
 void	Request::initVariables()
 {
-	_statusCode = to_string(INCOMPLETE);
+	_statusCode = OK;
+	_requestStatus = INCOMPLETE
 	_method = UNKNOWN;
 	_path = "";
 	_protocolHTTP = "";
@@ -63,11 +64,11 @@ void	Request::initVariables()
 
 void	Request::initFuncForParse()
 {
-    _funcforparse.push_back(&_parseMethod);
-    _funcforparse.push_back(&_parsePath);
-    _funcforparse.push_back(&_parseHttpProtocol);// pas encore
-	_funcforparse.push_back(&_parseHeaders);// pas encore
-	_funcforparse.push_back(&_checkHeaders);// pas encore
+    _funcforparse.insert(_funcforparse.end(), &Request::parseMethod);
+    _funcforparse.insert(_funcforparse.end(), &Request::parsePath);
+    _funcforparse.insert(_funcforparse.end(), &Request::parseHttpProtocol);
+    _funcforparse.insert(_funcforparse.end(), &Request::parseHeaders);
+    _funcforparse.insert(_funcforparse.end(), &Request::checkHeaders);
 }
 
 void Request::parseMethod()
@@ -89,10 +90,65 @@ void	Request::parsePath()
 
 	getNextWord(path, " ");
 	if (path == "" || path[0] != '/')
-		throw (BAD_REQUEST);
+	{
+		_statusCode = BAD_REQUEST;
+		throw Error("400 Bad Request");
+	}
 	if (path.length() > 2000)// ou bien 3000? max longuer de URL
-		throw (URI_TOO_LONG);
+	{
+		_statusCode = URI_TOO_LONG;
+		throw Error("414 URI Too Long");
+	}
 	_path = path;
+}
+void	Request::parseHttpProtocol()
+{
+	std::string protocolHTTP;
+	
+	_getNextWord(protocolHTTP, "\r\n");
+	if (protocolHTTP.find("HTTP") == std::string::npos)
+	{
+		_statusCode = BAD_REQUEST;
+		throw Error("400 Bad Request");
+	}
+	if (protocolHTTP != "HTTP/1.1")
+	{
+		_statusCode = HTTP_VERSION_NOT_SUPPORTED;
+		throw Error("505 HTTP Version Not Supported");
+	}
+	_protocolHTTP = protocolHTTP;
+}
+
+void	Request::parseHeaders()
+{
+		std::string	headerName;
+		std::string headerVal;
+		size_t pos;
+
+		pos = 0;
+		while (pos != std::string::npos && _request.find("\r\n"))
+		{
+			pos = getNextWord(headerName, ":");
+			if (pos == std:;string::npos)
+				break;
+			getNextWord(headerVal, "\r\n");	
+			trimSpacesStr(&headerVal);
+			if (isHeader(headerName))
+				throw Error("400 Bad Request");	//->this header is already existed
+			_header[headerName] = headerVal;		
+		}
+		getNextWord(headerName, "\r\n");// separete between header/body
+}
+
+void	Request::checkHeaders()
+{
+	/*
+		memo:
+		il faut faire:
+		-> parser entre host / port (localhost:8080)
+		-> checker content-length
+		enfin, bool _headerParsed = true
+	*/
 }
 
 size_t Request::getNextWord(std::string& word, const std::string& delimiter)
@@ -101,7 +157,7 @@ size_t Request::getNextWord(std::string& word, const std::string& delimiter)
     if (pos == std::string::npos)
     {
         // si'on trouve pas delimiteur
-        throw std::runtime_error("No delimiter");
+        throw Error("No delimiter");
     }
     word = _request.substr(0, pos);
     _request.erase(0, pos + delimiter.length());
@@ -113,7 +169,7 @@ std::string Request::getNextWord(size_t sizeWord)
 {
     if (_request.length() < sizeWord)
     {
-        throw std::runtime_error("String length is shorter than the specified size");
+        throw Error("String length is shorter than the specified size");
     }
     std::string nextWord = _request.substr(0, sizeWord);
     _request.erase(0, sizeWord);
@@ -141,12 +197,20 @@ bool        Request::isHttpMethod(std::string const& str) const
 	return (false);
 }
 
+bool	Request::isHeader(const std::string& headerName)
+{
+	StringMap::const_iterator	ite;
+
+	ite = _header.find(headerName);
+	return (ite != _header.end());
+}
+
 void	Request::FuncForParse()
 {
 	Request::listFuncForParse::const_iterator	func;
 
 	for (func = _funcforparse.begin();
-		_statusCode != COMPLETE && func != _funcforparse.end();
+		_requestStatus != COMPLETE && func != _funcforparse.end();
 			func++)
 	{
 		(this->**func)();
@@ -160,7 +224,7 @@ int	Request::parse()
 		if (_request.find("\r\n\r\n") == std::string::npos)
 		{
 			/* Header is incomplete */
-			return (atoi(_statusCode.c_str()));
+			return (_requestStatus);
 		}
 		else
 		{
@@ -172,5 +236,5 @@ int	Request::parse()
 	{
 		std::cerr << e.what() << std::endl;
 	}
-	return (atoi(_statusCode.c_str()));
+	return (_requestStatus);
 }

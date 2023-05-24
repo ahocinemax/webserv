@@ -47,3 +47,11 @@ std::string	methodTypeToStr(MethodType method)
 	else
 		return ("UNKNOWN");
 }
+
+std::string	trimSpacesStr(std::string *str)
+{
+	const char* whitespaceChars = " \t"; // Space and tab
+	str->erase(0, str->find_first_not_of(whitespaceChars));
+	str->erase(str->find_last_not_of(whitespaceChars) + 1);
+	return (*str);
+}

@@ -57,7 +57,7 @@
 #	define	EXPECTATION_FAILED			417
 #	define	TOO_MANY_REQUESTS			429
 #	define	INTERNAL_SERVER_ERROR		500
-#	define	NOT_IMPLEMENTED				
+#	define	NOT_IMPLEMENTED				501	
 #	define	BAD_GATEWAY					502
 #	define	SERVICE_UNAVAILABLE			503
 #	define	GATEWAY_TIMEOUT				504
@@ -102,6 +102,7 @@ typedef std::map<std::string, Server*>		ServerMap;
 StrVector split(std::string input, char delimiter);
 MethodType	strToMethodType(std::string str);
 std::string methodTypeToStr(MethodType method);
+std::string	trimSpacesStr(std::string *str);
 
 template <typename T>
 std::string to_string(T input)
