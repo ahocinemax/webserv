@@ -38,15 +38,16 @@
 	Cookie: sessionId=yekwp6nv9y1po66y
 
 */
-Request::Request(): _request(""), 
+Request::Request(): _request("")
 {
 	initVariables();
 	initFuncForParse();
 }
+
 void	Request::initVariables()
 {
 	_statusCode = OK;
-	_requestStatus = INCOMPLETE
+	_requestStatus = INCOMPLETE;
 	_method = UNKNOWN;
 	_path = "";
 	_protocolHTTP = "";
@@ -105,7 +106,7 @@ void	Request::parseHttpProtocol()
 {
 	std::string protocolHTTP;
 	
-	_getNextWord(protocolHTTP, "\r\n");
+	getNextWord(protocolHTTP, "\r\n");
 	if (protocolHTTP.find("HTTP") == std::string::npos)
 	{
 		_statusCode = BAD_REQUEST;
@@ -116,7 +117,7 @@ void	Request::parseHttpProtocol()
 		_statusCode = HTTP_VERSION_NOT_SUPPORTED;
 		throw Error("505 HTTP Version Not Supported");
 	}
-	_protocolHTTP = protocolHTTP;
+	protocolHTTP = protocolHTTP;
 }
 
 void	Request::parseHeaders()
@@ -129,7 +130,7 @@ void	Request::parseHeaders()
 		while (pos != std::string::npos && _request.find("\r\n"))
 		{
 			pos = getNextWord(headerName, ":");
-			if (pos == std:;string::npos)
+			if (pos == std::string::npos)
 				break;
 			getNextWord(headerVal, "\r\n");	
 			trimSpacesStr(&headerVal);
@@ -140,6 +141,11 @@ void	Request::parseHeaders()
 		getNextWord(headerName, "\r\n");// separete between header/body
 }
 
+void	Request::parseHeaderHost()
+{
+
+}
+
 void	Request::checkHeaders()
 {
 	/*
@@ -148,7 +154,15 @@ void	Request::checkHeaders()
 		-> parser entre host / port (localhost:8080)
 		-> checker content-length
 		enfin, bool _headerParsed = true
+		ホスト名とポートの抽出
+		content-lengthのチェック
+		transfer-encodingのチェック
+		その他ヘッダのチェック
+		ヘッダの正当性と完全性の確認
 	*/
+	ContentLength();
+
+
 }
 
 size_t Request::getNextWord(std::string& word, const std::string& delimiter)
@@ -203,6 +217,26 @@ bool	Request::isHeader(const std::string& headerName)
 
 	ite = _header.find(headerName);
 	return (ite != _header.end());
+}
+
+void	Request::ContentLength()
+{
+	std::string	ContentLength;
+	size_t	size;
+	if (_header.find("Content-Length") == _header.end());
+		return ;
+	ContentLength = _header["Content-Length"];
+	if (ContentLength.find_first_not_of("0123456789") != std::string::npos)
+		return ;
+	if (ContentLength == "0")
+	{
+		_size = 0; // body is empty!
+		return ;
+	}
+	size = std::strtoul(ContentLength.c_str(), NULL, 10); // str to unsigned long
+	if (!size || size == ULONG_MAX)
+		return ;
+	_size = size;
 }
 
 void	Request::FuncForParse()

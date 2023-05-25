@@ -15,6 +15,7 @@
 
 # include "../includes/Utils.hpp"
 # include <stdexcept>
+# include <climits>
 
 # define INCOMPLETE	0
 # define COMPLETE	1
@@ -24,9 +25,9 @@ class Request
 {
 	public:
 		/* member type */
-		//typedef std::vector<void (Request::*)()> listFuncForParse;
-		typedef void (*FuncForParse)();
+		typedef void (Request::*FuncForParse)();
 		typedef std::vector<FuncForParse>	listFuncForParse;
+		//typedef void (*FuncForParse)();
 		Request(void);
 		Request(/* args */);
 		~Request();
@@ -47,11 +48,13 @@ class Request
 		void	parsePath();
 		void	parseHttpProtocol();
 		void	parseHeaders();
+		void	parseHeaderHost();
 		void	checkHeaders();
 
 		/*Util*/
 		bool	isHttpMethod(const std::string& str) const;
 		bool	isHeader(const std::string& headerName);
+		void	ContentLength();
 
 		/* Getter */
 		std::string		GetHeader(const std::string& headerName);
