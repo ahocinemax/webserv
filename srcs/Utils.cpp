@@ -55,3 +55,12 @@ std::string	trimSpacesStr(std::string *str)
 	str->erase(str->find_last_not_of(whitespaceChars) + 1);
 	return (*str);
 }
+
+void toLower(std::string *str)
+{
+	std::string::iterator ite;
+	for (ite = str->begin(); ite != str->end(); ite++)
+	{
+		*ite = std::tolower(*ite);
+	}
+}

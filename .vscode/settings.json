@@ -51,5 +51,6 @@
         "ranges": "cpp",
         "span": "cpp",
         "ctime": "cpp"
-    }
+    },
+    "C_Cpp.errorSquiggles": "disabled"
 }

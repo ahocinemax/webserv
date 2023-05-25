@@ -53,7 +53,7 @@ class Client
 
 		void		displayErrorPage(StatusMap::iterator statusCode);
 		int			getFd() const;
-		t_StatusRequest	parse(const std::string& str);
+		int	parse(const std::string& str);
 
 	private:
 		int		_socket;

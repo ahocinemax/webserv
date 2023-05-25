@@ -35,7 +35,6 @@ class Request
 		StringMap	_header;
 		std::size_t	_contentLength;
 		//std::string	_method;
-		std::string	_body;
 
 		/* Init */
 		void	initVariables();
@@ -44,12 +43,15 @@ class Request
 		/*Parse*/
 		void	parseMethod();
 		int		parse();
-		void	FuncForParse();
+		void	FuncForParseHeader();
 		void	parsePath();
 		void	parseHttpProtocol();
 		void	parseHeaders();
-		void	parseHeaderHost();
+		bool	ConversionPort(const std::string & str, int *num);
+		bool	parseHeaderHost();
 		void	checkHeaders();
+		void	checkChunk();
+		void	parseBody();
 
 		/*Util*/
 		bool	isHttpMethod(const std::string& str) const;
@@ -87,13 +89,15 @@ class Request
 		std::string			_statusCode;
 		int					_requestStatus;
 		std::string			_path;
+		std::string			_query;
 		std::string			_request;
+		std::string			_body;
 		bool				_headerParsed;
+		bool				_chunked;
 		size_t				_size;
 		std::string			_protocolHTTP;
 		std::string			_host;
 		int					_port;
-		size_t				_payloadSize;
 		std::map<MethodType, std::string> _methods;
 };
 

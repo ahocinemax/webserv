@@ -24,6 +24,7 @@
 # include <unistd.h>
 # include <fcntl.h>
 # include <stdlib.h>
+# include <cstdlib>
 
 # define BUFFER_SIZE	30720
 # define SUCCESS		0
@@ -103,6 +104,7 @@ StrVector split(std::string input, char delimiter);
 MethodType	strToMethodType(std::string str);
 std::string methodTypeToStr(MethodType method);
 std::string	trimSpacesStr(std::string *str);
+void	toLower(std::string *str);
 
 template <typename T>
 std::string to_string(T input)
