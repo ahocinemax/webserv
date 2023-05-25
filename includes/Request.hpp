@@ -13,7 +13,9 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
-# include "Utils.hpp"
+# include "../includes/Utils.hpp"
+# include <stdexcept>
+# include <climits>
 
 # define INCOMPLETE	0
 # define COMPLETE	1
@@ -23,9 +25,9 @@ class Request
 {
 	public:
 		/* member type */
-		//typedef std::vector<void (Request::*)()> listFuncForParse;
-		typedef void (*FuncForParse)();
+		typedef void (Request::*FuncForParse)();
 		typedef std::vector<FuncForParse>	listFuncForParse;
+		//typedef void (*FuncForParse)();
 		Request(void);
 		Request(/* args */);
 		~Request();
@@ -33,7 +35,6 @@ class Request
 		StringMap	_header;
 		std::size_t	_contentLength;
 		//std::string	_method;
-		std::string	_body;
 
 		/* Init */
 		void	initVariables();
@@ -42,11 +43,20 @@ class Request
 		/*Parse*/
 		void	parseMethod();
 		int		parse();
-		void	FuncForParse();
+		void	FuncForParseHeader();
 		void	parsePath();
+		void	parseHttpProtocol();
+		void	parseHeaders();
+		bool	ConversionPort(const std::string & str, int *num);
+		bool	parseHeaderHost();
+		void	checkHeaders();
+		void	checkChunk();
+		void	parseBody();
 
 		/*Util*/
 		bool	isHttpMethod(const std::string& str) const;
+		bool	isHeader(const std::string& headerName);
+		void	ContentLength();
 
 		/* Getter */
 		std::string		GetHeader(const std::string& headerName);
@@ -61,19 +71,33 @@ class Request
 					return ("Invalid Method");
 				}
 		};
+	    class Error : public virtual std::exception {
+	    public:
+	        Error(const char* msg) : _msg(msg) {}
+
+	        const char* what() const throw() {
+	            return _msg;
+	        }
+
+	    private:
+	        const char* _msg;
+	    };
 
 	private:
 		MethodType	_method;
 		listFuncForParse	_funcforparse;
 		std::string			_statusCode;
+		int					_requestStatus;
 		std::string			_path;
+		std::string			_query;
 		std::string			_request;
+		std::string			_body;
 		bool				_headerParsed;
+		bool				_chunked;
 		size_t				_size;
 		std::string			_protocolHTTP;
 		std::string			_host;
 		int					_port;
-		size_t				_payloadSize;
 		std::map<MethodType, std::string> _methods;
 };
 

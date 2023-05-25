@@ -5,6 +5,7 @@
 #include <sstream>
 #include <unistd.h>
 #include <signal.h>
+#include <stdexcept>
 
 # define BUFSIZE 10000
 

@@ -167,12 +167,12 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 
 int	Client::getFd() const
 {
-	return (_epollfd);
+	return (_socket);
 }
 
-t_StatusRequest	Client::parse(const std::string str)
+int	Client::parse(const std::string str)
 {
-	t_StatusRequest status;
+	int status;
 	if (!_request)
 		_request = new Request(str, getfd());
 	status = _request->parse();

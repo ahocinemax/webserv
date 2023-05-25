@@ -27,20 +27,18 @@ public:
     const std::map<std::string, std::string>& GetEnv() const;
     char** GetEnvAsCstrArray() const;
     void FreeEnvCstrArray(char** env) const;
-
-
     bool getCgiOutput(std::string& output);
 
-    class Error : public virtual std::exception {
-    public:
-        Error(const char* msg) : _msg(msg) {}
+    class CgiError : public virtual std::exception {
+        public:
+            CgiError(const char* msg) : _msg(msg) {}
 
-        const char* what() const throw() {
-            return _msg;
-        }
+            const char* what() const throw() {
+                return (_msg);
+            }
 
-    private:
-        const char* _msg;
+        private:
+            const char* _msg;
     };
 
 private:
@@ -59,12 +57,12 @@ private:
 //    Request *request;
     int fd_in_[2];
     int fd_out_[2];
+    std::string _request_body;
     int _in;
     int _out;
+    std::map<std::string, std::string> _env;
     const std::string _scriptPath;
     const std::string _program;
-    std::string _request_body;
-    std::map<std::string, std::string> _env;
 };
 
 #endif
