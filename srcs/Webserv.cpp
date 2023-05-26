@@ -32,9 +32,9 @@ Webserv::Webserv(ServerVector server) : _serversVec(server)
 		}
 		if (!_defaultServers[_serversVec[i]._port])
 			_defaultServers[_serversVec[i]._port] = &_serversVec[i];
-		
-		if (!_serversMap[_serversVec[i].server_name + ":" + _serversVec[i]._port])
-			_serversMap[_serversVec[i].server_name + ":" + _serversVec[i]._port] = &_serversVec[i];
+
+		if (!_serversMap[_serversVec[i]._socket])
+			_serversMap[_serversVec[i]._socket] = &_serversVec[i];
 		else
 			std::cout << RED "Error: Server \"" << _serversVec[i].server_name << "\" already exists" RESET << std::endl;
 	}
@@ -101,16 +101,10 @@ void	Webserv::postMethod(Client &client, Request &request)
 	if (S_ISDIR(fileStat.st_mode))
 	{
 		if (request._header.find("Content-Type") == request._header.end())
-		{
-			client.displayErrorPage(_statutCode.find(400));
-			return ;
-		}
+			return (client.displayErrorPage(_statutCode.find(400)));
 		std::size_t	begin = request._header["Content-Type"].find("boundary=");
 		if (begin == std::string::npos)
-		{
-			client.displayErrorPage(_statutCode.find(400));
-			return ;
-		}
+			return (client.displayErrorPage(_statutCode.find(400)));
 		std::string	boundary = request._header["Content-Type"].substr(begin + 9);
 		begin = 0;
 		std::size_t	end = 0;
@@ -133,9 +127,7 @@ void	Webserv::postMethod(Client &client, Request &request)
 		}		
 	}
 	else
-	{
 		writeResponse(client, request._body, filePath);
-	}
 	int	code = 201;
 	if (request._header["Content-Lenght"] == "0")
 		code = 204;
@@ -157,10 +149,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 	FILE			*file = fopen(filePath.c_str(), "r");
 
 	if (file == NULL)
-	{
-		client.displayErrorPage(_statutCode.find(404));
-		return ;
-	}
+		return (client.displayErrorPage(_statutCode.find(404)));
 	fclose(file);
 
 	Response	response(_statutCode[200]);
@@ -234,29 +223,20 @@ int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 		struct stat		fileStat;
 		lstat(dirPath.c_str(), &fileStat);
 		if (!S_ISDIR(fileStat.st_mode))
-		{
-			client.displayErrorPage(_statutCode.find(400));
-			return (FAILED);
-		}
+			return (client.displayErrorPage(_statutCode.find(400)), FAILED);
 	}
 	std::string	command = "mkdir -p " + dirPath;
 	int			fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	system(command.c_str());
 	if (fd < 0)
-	{
-		client.displayErrorPage(_statutCode.find(500));
-		return (FAILED);
-	}
+		return (client.displayErrorPage(_statutCode.find(500)), FAILED);
 
 	// add fd to epoll
 	struct epoll_event	event;
 	event.events = EPOLLOUT | EPOLLET;
 	event.data.fd = fd;
-	if (epoll_ctl(client._epollFd, EPOLL_CTL_ADD, fd, &event) < 0)
-	{
-		client.displayErrorPage(_statutCode.find(500));
-		return (FAILED);
-	}
+	if (epoll_ctl(client.getSocket(), EPOLL_CTL_ADD, fd, &event) < 0)
+		return (client.displayErrorPage(_statutCode.find(500)), FAILED);
 
 	// write body to file
 	int		ret = write(fd, body.c_str(), body.length());
@@ -264,10 +244,18 @@ int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 	{
 		// close fds
 		close(fd);
-		epoll_ctl(client._epollFd, EPOLL_CTL_DEL, fd, &event);
-		client.displayErrorPage(_statutCode.find(500));
-		return (FAILED);
+		epoll_ctl(client.getSocket(), EPOLL_CTL_DEL, fd, &event);
+		return (client.displayErrorPage(_statutCode.find(500)), FAILED);
 	}
-	close(fd);
-	return (SUCCESS);
+	return (close(fd), SUCCESS);
+}
+
+bool	Webserv::clientNotConnected(int socket)
+{
+	for (ServerVector::iterator it = _serversVec.begin(); it != _serversVec.end(); it++)
+	{
+		if (it->_socket == socket)
+			return (false);
+	}
+	return (true);
 }

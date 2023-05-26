@@ -46,6 +46,8 @@ class Server
 		int						_socket;
 		std::string				_port;
 
+		std::vector<Client*>	_connectedClients;
+
 		~Server(void);
 		Server(void);
 

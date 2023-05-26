@@ -29,7 +29,7 @@ class Request
 		typedef std::vector<FuncForParse>	listFuncForParse;
 		//typedef void (*FuncForParse)();
 		Request(void);
-		Request(/* args */);
+		Request(const std::string &request, int socket);
 		~Request();
 
 		StringMap	_header;
@@ -52,6 +52,8 @@ class Request
 		void	checkHeaders();
 		void	checkChunk();
 		void	parseBody();
+		
+		int		getStatusCode() const;
 
 		/*Util*/
 		bool	isHttpMethod(const std::string& str) const;
@@ -84,7 +86,7 @@ class Request
 	    };
 
 	private:
-		MethodType	_method;
+		MethodType			_method;
 		listFuncForParse	_funcforparse;
 		std::string			_statusCode;
 		int					_requestStatus;

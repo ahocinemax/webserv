@@ -33,7 +33,6 @@
 
 */
 Request::Request(): _request("")
-Request::Request(): _request("")
 {
 	initVariables();
 	initFuncForParse();
@@ -91,7 +90,7 @@ void	Request::parsePath()
 		_statusCode = BAD_REQUEST;
 		throw Error("400 Bad Request");
 	}
-	if (path.length() > 2000)// ou bien 3000? max longuer de URL
+	if (path.length() > 2000) // ou bien 3000? max longuer de URL
 	{
 		_statusCode = URI_TOO_LONG;
 		throw Error("414 URI Too Long");
@@ -109,7 +108,7 @@ void	Request::parseHttpProtocol()
 {
 	std::string protocolHTTP;
 	
-	getNextWord(protocolHTTP, "\r\n");
+	getNextWord(protocolHTTP, CRLF);
 	if (protocolHTTP.find("HTTP") == std::string::npos)
 	{
 		_statusCode = BAD_REQUEST;
@@ -130,13 +129,13 @@ void	Request::parseHeaders()
 		size_t pos;
 
 		pos = 0;
-		while (pos != std::string::npos && _request.find("\r\n"))
+		while (pos != std::string::npos && _request.find(CRLF))
 		{
 			pos = getNextWord(headerName, ":");
 			if (pos == std::string::npos)
 				break;
 			toLower(&headerName);
-			getNextWord(headerVal, "\r\n");	
+			getNextWord(headerVal, CRLF);	
 			trimSpacesStr(&headerVal);
 			if (isHeader(headerName))
 			{
@@ -145,7 +144,7 @@ void	Request::parseHeaders()
 			}
 			_header[headerName] = headerVal;		
 		}
-		getNextWord(headerName, "\r\n");// separete between header/body
+		getNextWord(headerName, CRLF);// separete between header/body
 }
 
 bool	Request::parseHeaderHost()
@@ -226,7 +225,7 @@ void	Request::checkChunk()
 	while (1)
 	{
 		size = 0;
-		if (getNextWord(chunk, "\r\n") == std::string::npos)
+		if (getNextWord(chunk, CRLF) == std::string::npos)
 		{
 			_statusCode = BAD_REQUEST;
 			throw Error("400 Bad Request");
@@ -342,6 +341,8 @@ void	Request::ContentLength()
 	}
 	_size = size;
 }
+
+int	Request::getStatusCode() const { return (_statusCode); }
 
 void	Request::FuncForParseHeader()
 {

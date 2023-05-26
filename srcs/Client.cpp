@@ -17,6 +17,7 @@ Client::Client(Server *server) : _addrLen(sizeof(_addr)), _server(server)
 	clearRequest();
 	gettimeofday(&_timer, NULL);
 	memset(_request, 0, MAX_REQUEST_SIZE + 1);
+	_server->_connectedClients.push_back(this);
 }
 
 Client::~Client(void) {}
@@ -170,12 +171,12 @@ int	Client::getFd() const
 	return (_socket);
 }
 
-int	Client::parse(const std::string str)
+int	Client::parse(const std::string &str)
 {
 	int status;
-	if (!_request)
-		_request = new Request(str, getfd());
-	status = _request->parse();
+	Request *rqst = new Request(str, getFd());
+
+	status = rqst->_statusCode;
 	return (status);
 
 }

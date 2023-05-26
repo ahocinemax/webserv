@@ -17,7 +17,7 @@
 
 # include "Response.hpp"
 # include "Server.hpp"
-#include "Request.hpp"
+# include "Request.hpp"
 # include "Utils.hpp"
 
 # include <sys/epoll.h>
@@ -28,10 +28,8 @@ class Client
 {
 	public:
 		socklen_t					_addrLen;
-		struct sockaddr_storage		_addr;
-		MethodType					_request[MAX_REQUEST_SIZE];
+		struct sockaddr				_addr;
 		Server						*_server;
-		int							_epollFd;
 
 		Client(Server *server);
 		~Client(void);
@@ -53,9 +51,10 @@ class Client
 
 		void		displayErrorPage(StatusMap::iterator statusCode);
 		int			getFd() const;
-		int	parse(const std::string& str);
+		int			parse(const std::string& str);
 
 	private:
+		Server						*_server;
 		int		_socket;
 		int		_recvSize;
 		timeval	_timer;

@@ -44,6 +44,7 @@ class Webserv
 		int					findClientIndex(int socket);
 
 		void				handleRequest(Client &client, struct epoll_event &event);
+		bool				clientNotConnected(int socket);
 
 	private:
 		std::vector<Client>	_clients;
