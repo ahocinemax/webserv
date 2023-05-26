@@ -48,11 +48,12 @@ void	Server::createSocket(void)
 			std::cerr << "setsockopt(SO_REUSEADDR) failed" << std::endl;
 		if (bind(newSocket, info->ai_addr, info->ai_addrlen) < 0)
 		{
+			std::cout << RED "Error: " << newSocket << RESET << std::endl;
 			perror("bind");
 			throw SocketConnectionException();
 		}
 		freeaddrinfo(info);
-		std::cout << "> Listening on socket...\n" << std::endl;
+		std::cout << "> Listening on socket..." << std::endl;
 		if (listen(newSocket, 100) < 0)
 			throw SocketListenException();
 		this->_socket = newSocket;

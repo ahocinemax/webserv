@@ -31,9 +31,9 @@ int	Client::setSocket(int socket)
 		std::cerr << RED "Error:" RESET " fcntl() failed" << std::endl;
 		return (FAILED);
 	}
-	if (setsockopt(_socket, SOL_SOCKET, SO_REUSEPORT, (const char *)&_server->recv_timeout, sizeof(struct timeval)) < 0)
+	if (setsockopt(_socket, SOL_SOCKET, SO_RCVTIMEO, (const char *)&_server->recv_timeout, sizeof(struct timeval)) < 0) // SO_REUSEPORT
 	{
-		std::cerr << RED "Error:" RESET " setsockopt(SO_REUSEPORT) failed" << std::endl;
+		std::cerr << RED "Error:" RESET " setsockopt(SO_RCVTIMEO) failed" << std::endl;
 		return (FAILED);
 	}
 	if (setsockopt(_socket, SOL_SOCKET, SO_SNDTIMEO, (const char *)&_server->send_timeout, sizeof(struct timeval)) < 0)
