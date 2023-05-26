@@ -52,7 +52,6 @@ class Request
 		int		checkChunk();
 		void	parseBody();
 		
-		int		getStatusCode() const;
 
 		/*Util*/
 		bool	isHttpMethod(const std::string& str) const;
@@ -60,11 +59,22 @@ class Request
 		void	ContentLength();
 
 		/* Getter */
-		std::string		GetHeader(const std::string& headerName);
+		std::string		getHeader(const std::string& headerName);
 		size_t			getNextWord(std::string& word, const std::string& delimiter);
 		std::string		getNextWord(size_t sizeWord);
+		int				getStatusCode() const;
+		MethodType		getMethod() const;
+
 		std::string		getPath() const;
 		std::string		getBody() const;
+		std::string		getQuery() const;
+		std::string		getProtocolHTTP() const;
+		size_t			getSize() const;
+		std::string		getHost() const;
+		int				getPort() const;
+
+		/*test*/
+		void			PrintHeader();
 
 		class InvalidMethodException : public std::exception
 		{

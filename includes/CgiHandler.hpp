@@ -13,6 +13,7 @@
 //#include "Response.hpp"
 //#include "Request.hpp"
 #include "../includes/Utils_Cgi.hpp"
+#include "../includes/Utils.hpp"
 
 #define TIMEOUT_LIMIT 5  // limit of timeout(sec)
 
