@@ -7,23 +7,21 @@ void	Webserv::initEvent(struct epoll_event &event, uint32_t flag, int fd)
 	event.data.fd = fd;
 }
 
-void	Webserv::initConnection(int index)
+int	Webserv::initConnection(int socket)
 {
 	struct epoll_event	event;
-	struct sockaddr		clientAddr;
-	socklen_t			clientAddrLen = sizeof(clientAddr);
-	int					clientSock;
+	Client				client(_serversMap[socket]);
 
-	if ((clientSock = accept(index, &clientAddr, &clientAddrLen)) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK))
+	if ((client.setSocket(accept(socket, &client._addr, &client._addrLen)) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK)))
 		throw AcceptException();
-	if (_clients[index].setSocket(clientSock) == FAILED)
-		;
 
-	initEvent(event, EPOLLIN | EPOLLET, clientSock);
-	std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(index) + " at " + _clients[index]._server->_ipAddress + ":" + _clients[index]._server->_port << std::endl;
-	std::cout << PURPLE << std::setw(52) << "socket " + to_string(clientSock) + " created to communicate" << RESET << std::endl;
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, clientSock, &event) < SUCCESS)
+	initEvent(event, EPOLLIN | EPOLLET, client.getSocket());
+	std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(client._server->_ipAddress) + " at " + client._server->_ipAddress + ":" + client._server->_port << std::endl;
+	std::cout << PURPLE << std::setw(52) << "socket " + to_string(client.getSocket()) + " created to communicate" << RESET << std::endl;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, client.getSocket(), &event) < SUCCESS)
 		throw EpollCtlException();
+	_clients.push_back(client);
+	return (_clients.size() - 1);
 }
 
 int	Webserv::findClientIndex(int socket)
@@ -49,17 +47,19 @@ int	Webserv::routine(void)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
-		else if ((index = findClientIndex(events[i].data.fd)) >= SUCCESS) // Le client n'existe pas encore
-			initConnection(index);
+
+		if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
+			index = initConnection(events[i].events);
 		else if (events[i].data.fd == STDIN_FILENO)
 		{
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			return (FAILED);
 		}
-		else
-		{
-			handleRequest(_clients[i], events[i]);
-		}
+
+		handleRequest(_clients[index], events[i]);
+
+		if (false) // si le client est déconnecté, il faut l'enlever de la liste
+			_clients.erase(_clients.begin() + index);
 	}
 	return (SUCCESS);
 }
@@ -98,13 +98,15 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 	// Créer la réponse
 	// Envoyer la réponse
 	// Fermer le client (keep-alive ?)
-	std::string	str;
-	str = readfd(client.getfd());
+	char	buf[BUFFER_SIZE + 1];
+
+	int lu = read(client.getFd(), buf, BUFFER_SIZE);
+	std::string	str(buf);
 	int a = client.parse(str);
 	if (a == INCOMPLETE)
 		return;
-	else if 
-		//gestion pour creation socket? je ne suis pas sure pour epoll()
+	else if (false)
+		; // gestion pour creation socket? je ne suis pas sure pour epoll()
 
 }
 

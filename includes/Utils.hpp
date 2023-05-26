@@ -98,7 +98,7 @@ typedef std::vector<MethodType>				MethodVector;
 typedef std::vector<std::string>			StrVector;
 typedef std::map<int, std::string>			StatusMap;
 typedef std::map<std::string, std::string>	StringMap;
-typedef std::map<int, Server*>		ServerMap;
+typedef std::map<int, Server*>				ServerMap;
 
 StrVector split(std::string input, char delimiter);
 MethodType	strToMethodType(std::string str);

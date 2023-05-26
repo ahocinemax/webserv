@@ -17,7 +17,6 @@ Client::Client(Server *server) : _addrLen(sizeof(_addr)), _server(server)
 	clearRequest();
 	gettimeofday(&_timer, NULL);
 	memset(_request, 0, MAX_REQUEST_SIZE + 1);
-	_server->_connectedClients.push_back(this);
 }
 
 Client::~Client(void) {}
@@ -82,14 +81,14 @@ std::string	Client::setRootPath(std::string path)
 	return (root);
 }
 
-const char	*Client::setClientAddr(void)
+const char	*Client::getClientAddr(void)
 {
 	static char buffer[100];
 	getnameinfo((struct sockaddr *)&_addr, _addrLen, buffer, sizeof(buffer), 0, 0, NI_NUMERICHOST);
 	return (buffer);
 }
 
-const char	*Client::setClientPort(void)
+const char	*Client::getClientPort(void)
 {
 	static char buffer[100];
 	getnameinfo((struct sockaddr *)&_addr, _addrLen, 0, 0, buffer, sizeof(buffer), NI_NUMERICHOST);
@@ -176,7 +175,7 @@ int	Client::parse(const std::string &str)
 	int status;
 	Request *rqst = new Request(str, getFd());
 
-	status = rqst->_statusCode;
+	status = rqst->getStatusCode();
 	return (status);
 
 }

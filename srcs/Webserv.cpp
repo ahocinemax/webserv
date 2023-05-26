@@ -30,10 +30,10 @@ Webserv::Webserv(ServerVector server) : _serversVec(server)
 				statusCode << "\" in server \"" << _serversVec[i].server_name << "\"" RESET << std::endl;
 			}
 		}
-		if (!_defaultServers[_serversVec[i]._port])
-			_defaultServers[_serversVec[i]._port] = &_serversVec[i];
+		if (_defaultServers.find(_serversVec[i]._socket) == _defaultServers.end())
+			_defaultServers[_serversVec[i]._socket] = &_serversVec[i];
 
-		if (!_serversMap[_serversVec[i]._socket])
+		if (_serversMap.find(_serversVec[i]._socket))
 			_serversMap[_serversVec[i]._socket] = &_serversVec[i];
 		else
 			std::cout << RED "Error: Server \"" << _serversVec[i].server_name << "\" already exists" RESET << std::endl;

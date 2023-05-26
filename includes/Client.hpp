@@ -33,14 +33,15 @@ class Client
 
 		Client(Server *server);
 		~Client(void);
+		Client(void) {}
 
 		void		setTimer(struct timeval &timer);
 		int			setSocket(int socket);
 		void		setRecvSize(int size);
 
 		std::string	setRootPath(std::string path);
-		const char	*setClientAddr(void);
-		const char	*setClientPort(void);
+		const char	*getClientAddr(void);
+		const char	*getClientPort(void);
 
 		int			getRecvSize(void) const;
 		int			getSocket(void) const;
@@ -54,7 +55,6 @@ class Client
 		int			parse(const std::string& str);
 
 	private:
-		Server						*_server;
 		int		_socket;
 		int		_recvSize;
 		timeval	_timer;

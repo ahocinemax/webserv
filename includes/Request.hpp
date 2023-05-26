@@ -73,22 +73,22 @@ class Request
 					return ("Invalid Method");
 				}
 		};
-	    class Error : public virtual std::exception {
-	    public:
-	        Error(const char* msg) : _msg(msg) {}
+		class Error : public virtual std::exception {
+		public:
+			Error(const char* msg) : _msg(msg) {}
 
-	        const char* what() const throw() {
-	            return _msg;
-	        }
+			const char* what() const throw() {
+				return _msg;
+			}
 
-	    private:
-	        const char* _msg;
-	    };
+		private:
+			const char* _msg;
+		};
 
 	private:
 		MethodType			_method;
 		listFuncForParse	_funcforparse;
-		std::string			_statusCode;
+		int					_statusCode;
 		int					_requestStatus;
 		std::string			_path;
 		std::string			_query;
@@ -100,6 +100,7 @@ class Request
 		std::string			_protocolHTTP;
 		std::string			_host;
 		int					_port;
+		int					_payloadSize;
 		std::map<MethodType, std::string> _methods;
 };
 

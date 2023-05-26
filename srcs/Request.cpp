@@ -52,6 +52,7 @@ void	Request::initVariables()
 	_port = 0;
 	_headerParsed = false;
 	_chunked = false;
+	_payloadSize = 0;
 	_methods.insert(std::make_pair(GET, "GET"));
 	_methods.insert(std::make_pair(POST, "POST"));
 	_methods.insert(std::make_pair(DELETE, "DELETE"));
