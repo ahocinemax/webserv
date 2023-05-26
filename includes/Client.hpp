@@ -51,14 +51,13 @@ class Client
 		void		clearRequest(void);
 
 		void		displayErrorPage(StatusMap::iterator statusCode);
-		int			getFd() const;
 		int			parse(const std::string& str);
 
 	private:
-		int		_socket;
-		int		_recvSize;
-		timeval	_timer;
-		Request* _request;
+		int			_socket;
+		int			_recvSize;
+		timeval		_timer;
+		Request		*_request;
 };
 
 #endif

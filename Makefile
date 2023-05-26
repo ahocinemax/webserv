@@ -13,6 +13,7 @@ CC			= c++
 SRCS_DIR	= ./srcs/
 SRCS_PATH	= $(addprefix $(SRCS_DIR), $(SRCS))
 SRCS		= Client.cpp \
+			  CgiHandler.cpp \
 			  Epoll.cpp \
 			  Location.cpp \
 			  main.cpp \
@@ -21,6 +22,7 @@ SRCS		= Client.cpp \
 			  Response.cpp \
 			  Server.cpp \
 			  Utils.cpp \
+			  Utils_Cgi.cpp \
 			  Webserv.cpp
 
 #-----------------------------------------------#

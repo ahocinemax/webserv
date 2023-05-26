@@ -19,7 +19,7 @@ Client::Client(Server *server) : _addrLen(sizeof(_addr)), _server(server)
 	memset(_request, 0, MAX_REQUEST_SIZE + 1);
 }
 
-Client::~Client(void) {}
+Client::~Client(void) { delete _request; }
 
 void	Client::setTimer(struct timeval &timer) { _timer = timer; }
 
@@ -164,18 +164,8 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	clearRequest();
 }
 
-
-int	Client::getFd() const
+int Client::parse(const std::string& str)
 {
-	return (_socket);
-}
-
-int	Client::parse(const std::string &str)
-{
-	int status;
-	Request *rqst = new Request(str, getFd());
-
-	status = rqst->getStatusCode();
-	return (status);
-
+	_request = new Request(str);
+	return (_request->parse() == INCOMPLETE ? FAILED : SUCCESS);
 }

@@ -100,7 +100,7 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 	// Fermer le client (keep-alive ?)
 	char	buf[BUFFER_SIZE + 1];
 
-	int lu = read(client.getFd(), buf, BUFFER_SIZE);
+	int lu = read(client.getSocket(), buf, BUFFER_SIZE);
 	std::string	str(buf);
 	int a = client.parse(str);
 	if (a == INCOMPLETE)

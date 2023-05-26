@@ -28,8 +28,7 @@ class Request
 		typedef void (Request::*FuncForParse)();
 		typedef std::vector<FuncForParse>	listFuncForParse;
 		//typedef void (*FuncForParse)();
-		Request(void);
-		Request(const std::string &request, int socket);
+		Request(const std::string &request);
 		~Request();
 
 		StringMap	_header;
@@ -50,7 +49,7 @@ class Request
 		bool	ConversionPort(const std::string & str, int *num);
 		bool	parseHeaderHost();
 		void	checkHeaders();
-		void	checkChunk();
+		int		checkChunk();
 		void	parseBody();
 		
 		int		getStatusCode() const;
@@ -64,6 +63,8 @@ class Request
 		std::string		GetHeader(const std::string& headerName);
 		size_t			getNextWord(std::string& word, const std::string& delimiter);
 		std::string		getNextWord(size_t sizeWord);
+		std::string		getPath() const;
+		std::string		getBody() const;
 
 		class InvalidMethodException : public std::exception
 		{

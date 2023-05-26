@@ -32,11 +32,14 @@
 	\r\n
 
 */
-Request::Request(): _request("")
+
+Request::Request(const std::string &request) : _request(request)
 {
 	initVariables();
 	initFuncForParse();
 }
+
+Request::~Request() {}
 
 void	Request::initVariables()
 {
@@ -209,7 +212,7 @@ void	Request::checkHeaders()
 	_headerParsed = true;
 }
 
-void	Request::checkChunk()
+int	Request::checkChunk()
 {
 	/*
 		chunked exemplle:
@@ -228,26 +231,29 @@ void	Request::checkChunk()
 		size = 0;
 		if (getNextWord(chunk, CRLF) == std::string::npos)
 		{
+			std::cerr << "chunked error" << std::endl;
 			_statusCode = BAD_REQUEST;
-			throw Error("400 Bad Request");
+			return (INCOMPLETE);
 		}
 		if (chunk.find_first_not_of("0123456789ABCDEF") != std::string::npos)
 		{
+			std::cerr << "Unexpected token" << std::endl;
 			_statusCode = BAD_REQUEST;
-			throw Error("400 Bad Request");
+			return (INCOMPLETE);
 		}
 		if (chunk == "0")
 			break;
 		size = std::strtoul(chunk.c_str(), NULL, 16);
 		if (!size || size == ULONG_MAX)
 		{
+			std::cerr << "BAD REQUEST" << std::endl;
 			_statusCode = BAD_REQUEST;
-			throw Error("400 Bad Request");		
+			return (INCOMPLETE);
 		}
 		_body += getNextWord(size);
 		_size += size;
 	}
-	_requestStatus = COMPLETE;
+	return ((_requestStatus = COMPLETE));
 }
 
 void	Request::parseBody()
@@ -260,7 +266,7 @@ void	Request::parseBody()
 	{
 		_body = _request;
 		if (_body.size() == _size)
-			_requestStatus == COMPLETE;
+			_requestStatus = COMPLETE;
 	}
 }
 
@@ -366,6 +372,7 @@ int	Request::parse()
 			/* Header is incomplete */
 			return (_requestStatus);
 		}
+
 		if (_chunked && _requestStatus != COMPLETE)
 			checkChunk();
 		else
@@ -382,3 +389,7 @@ int	Request::parse()
 	}
 	return (_requestStatus);
 }
+
+std::string	Request::getPath() const { return (_path); }
+
+std::string	Request::getBody() const { return (_body); }

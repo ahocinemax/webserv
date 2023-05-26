@@ -33,10 +33,8 @@ Webserv::Webserv(ServerVector server) : _serversVec(server)
 		if (_defaultServers.find(_serversVec[i]._socket) == _defaultServers.end())
 			_defaultServers[_serversVec[i]._socket] = &_serversVec[i];
 
-		if (_serversMap.find(_serversVec[i]._socket))
+		if (_serversMap.find(_serversVec[i]._socket) != _serversMap.end())
 			_serversMap[_serversVec[i]._socket] = &_serversVec[i];
-		else
-			std::cout << RED "Error: Server \"" << _serversVec[i].server_name << "\" already exists" RESET << std::endl;
 	}
 }
 
@@ -94,7 +92,7 @@ void	Webserv::postMethod(Client &client, Request &request)
 		return ;
 	}
 
-	std::string		filePath = getPath(client, request._path);
+	std::string		filePath = getPath(client, request.getPath());
 
 	struct stat		fileStat;
 	lstat(filePath.c_str(), &fileStat);
@@ -111,23 +109,23 @@ void	Webserv::postMethod(Client &client, Request &request)
 		std::string	fileName;
 		while (true)
 		{
-			begin = request._body.find("name=", begin) + 6;
-			end = request._body.find_first_of("\"", begin);
+			begin = request.getBody().find("name=", begin) + 6;
+			end = request.getBody().find_first_of("\"", begin);
 			if (begin == std::string::npos || end == std::string::npos)
 				break ;
-			fileName = request._body.substr(begin, end - begin);
-			begin = request._body.find("\r\n\r\n", begin) + 4;
-			end = request._body.find(boundary, begin);
+			fileName = request.getBody().substr(begin, end - begin);
+			begin = request.getBody().find("\r\n\r\n", begin) + 4;
+			end = request.getBody().find(boundary, begin);
 			if (begin == std::string::npos || end == std::string::npos)
 				break ;
-			if (writeResponse(client, request._body.substr(begin, end - begin - 4), filePath + "/" + fileName) == FAILED)
+			if (writeResponse(client, request.getBody().substr(begin, end - begin - 4), filePath + "/" + fileName) == FAILED)
 				break ;
-			if (request._body[end + boundary.length()] == '-')
+			if (request.getBody()[end + boundary.length()] == '-')
 				break ;
 		}		
 	}
 	else
-		writeResponse(client, request._body, filePath);
+		writeResponse(client, request.getBody(), filePath);
 	int	code = 201;
 	if (request._header["Content-Lenght"] == "0")
 		code = 204;

@@ -48,6 +48,7 @@ void	Server::createSocket(void)
 			std::cerr << "setsockopt(SO_REUSEADDR) failed" << std::endl;
 		if (bind(newSocket, info->ai_addr, info->ai_addrlen) < 0)
 		{
+			std::cout << "Error: " << newSocket << std::endl;
 			perror("bind");
 			throw SocketConnectionException();
 		}
