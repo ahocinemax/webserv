@@ -30,11 +30,11 @@ Webserv::Webserv(ServerVector server) : _serversVec(server)
 				statusCode << "\" in server \"" << _serversVec[i].server_name << "\"" RESET << std::endl;
 			}
 		}
-		if (_defaultServers.find(_serversVec[i]._socket) == _defaultServers.end())
-			_defaultServers[_serversVec[i]._socket] = &_serversVec[i];
+		// if (_defaultServers.find(_serversVec[i]._socket) == _defaultServers.end())
+		// 	_defaultServers.insert(std::make_pair(_serversVec[i]._socket, &_serversVec[i]));
 
-		if (_serversMap.find(_serversVec[i]._socket) != _serversMap.end())
-			_serversMap[_serversVec[i]._socket] = &_serversVec[i];
+		// if (_serversMap.find(_serversVec[i]._socket) != _serversMap.end())
+		// 	_serversMap.insert(std::make_pair(_serversVec[i]._socket, &_serversVec[i]));
 	}
 }
 
@@ -42,10 +42,12 @@ Webserv::~Webserv() {}
 
 void Webserv::createServers(void)
 {
-	for (ServerMap::iterator it = _defaultServers.begin() ; it != _defaultServers.end() ; it ++)
+	int i = 1;
+	for (ServerVector::iterator it = _serversVec.begin() ; it != _serversVec.end() ; it ++)
 	{
-		std::cout << "> Creating server: " BLUE << it->second->_ipAddress << RESET << std::endl;
-		it->second->createSocket();
+		std::cout << "> Creating server " << i++ << BLUE ": " << it->_ipAddress << RESET << std::endl;
+		it->createSocket();
+		_serversMap.insert(std::make_pair(it->_socket, &(*it)));
 	}
 	connectEpollToSockets();
 }

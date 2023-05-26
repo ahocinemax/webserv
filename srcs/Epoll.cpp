@@ -78,14 +78,19 @@ int	Webserv::connectEpollToSockets()
 		initEvent(event, EPOLLIN, _serversVec[i]._socket);
 		ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serversVec[i]._socket, &event);
 		if (ret < SUCCESS)
+		{
+			std::cout << YELLOW "Connect epoll " RESET << _epollFd << YELLOW " to sockets: " RESET << _serversVec[i]._socket << std::endl;
 			throw EpollCtlException();
+		}
+		std::cout << YELLOW "Connect epoll " RESET << _epollFd << YELLOW " to sockets: " RESET << _serversVec[i]._socket << std::endl;
 	}
 
 	initEvent(event, EPOLLIN, STDIN_FILENO);
 	ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
 	if (ret < SUCCESS)
+	{
 		throw EpollCtlException();
-
+	}
 	return (SUCCESS);
 }
 
