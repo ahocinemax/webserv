@@ -72,7 +72,6 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 		return ;
 	}
 	fclose(file);
-	
 	std::remove(filePath.c_str());
 
 	Response	response(_statutCode[200]);
@@ -245,8 +244,10 @@ int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 		// close fds
 		close(fd);
 		epoll_ctl(client.getSocket(), EPOLL_CTL_DEL, fd, &event);
+		std::cout << "epoll_ctl error(4) : " << errno << std::endl;
 		return (client.displayErrorPage(_statutCode.find(500)), FAILED);
 	}
+	std::cout << "close" << std::endl;
 	return (close(fd), SUCCESS);
 }
 

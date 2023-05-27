@@ -63,6 +63,7 @@
 #	define	SERVICE_UNAVAILABLE			503
 #	define	GATEWAY_TIMEOUT				504
 #	define	HTTP_VERSION_NOT_SUPPORTED	505
+#	define	BUFSIZE						5000	
 
 
 # define CRLF			"\r\n"
@@ -100,11 +101,12 @@ typedef std::map<int, std::string>			StatusMap;
 typedef std::map<std::string, std::string>	StringMap;
 typedef std::map<int, Server*>				ServerMap;
 
-StrVector split(std::string input, char delimiter);
+StrVector	split(std::string input, char delimiter);
 MethodType	strToMethodType(std::string str);
 std::string methodTypeToStr(MethodType method);
 std::string	trimSpacesStr(std::string *str);
-void	toLower(std::string *str);
+void		toLower(std::string *str);
+std::string readFd(int fd);
 
 template <typename T>
 std::string to_string(T input)

@@ -14,9 +14,9 @@
 
 Client::Client(Server *server) : _addrLen(sizeof(_addr)), _server(server)
 {
-	clearRequest();
+	//clearRequest();
 	gettimeofday(&_timer, NULL);
-	memset(_request, 0, MAX_REQUEST_SIZE + 1);
+	//memset(_request, 0, MAX_REQUEST_SIZE + 1);
 }
 
 Client::~Client(void) { delete _request; }
@@ -167,5 +167,8 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 int Client::parse(const std::string& str)
 {
 	_request = new Request(str);
-	return (_request->parse() == INCOMPLETE ? FAILED : SUCCESS);
+	//return (_request->parse() == INCOMPLETE ? FAILED : SUCCESS);
+	int i = _request->parse();
+	_request->PrintHeader();
+	return i;
 }

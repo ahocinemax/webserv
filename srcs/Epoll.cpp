@@ -47,9 +47,8 @@ int	Webserv::routine(void)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
-
 		if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
-			index = initConnection(events[i].events);
+			index = initConnection(events[i].data.fd);
 		else if (events[i].data.fd == STDIN_FILENO)
 		{
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -72,11 +71,27 @@ int	Webserv::connectEpollToSockets()
 	_epollFd = epoll_create(MAX_EPOLL_EVENTS);
 	if (_epollFd < SUCCESS)
 		throw EpollCreateException();
-
+		/*check sserverVec[num]._socket for debug*/
+		std::cout << "serversVec.size()" << _serversVec.size() << std::endl;
+		std::cout << "serversVec[0]._socket : " << _serversVec[0]._socket << std::endl;
+		std::cout << "serversVec[1]._socket : " << _serversVec[1]._socket << std::endl;
+		std::cout << "serversVec[2]._socket : " << _serversVec[2]._socket << std::endl;
+		std::cout << "serversVec[3]._socket : " << _serversVec[3]._socket << std::endl;
+		std::cout << "serversVec[4]._socket : " << _serversVec[4]._socket << std::endl;
 	for (size_t i = 0; i < _serversVec.size(); i++)
 	{
 		initEvent(event, EPOLLIN, _serversVec[i]._socket);
 		ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serversVec[i]._socket, &event);
+		char buffer;
+		ssize_t result = read(_serversVec[i]._socket, &buffer, 0);
+		if (result < 0)
+		{
+		    std::cout << "read error on socket " << _serversVec[i]._socket << " : " << errno << std::endl;
+		}
+		else
+		{
+		    std::cout << "socket " << _serversVec[i]._socket << " is open" << std::endl;
+		}	
 		if (ret < SUCCESS)
 		{
 			std::cout << YELLOW "Connect epoll " RESET << _epollFd << YELLOW " to sockets: " RESET << _serversVec[i]._socket << std::endl;
@@ -90,7 +105,6 @@ int	Webserv::connectEpollToSockets()
 	if (ret < SUCCESS)
 	{
 		throw EpollCtlException();
-	}
 	return (SUCCESS);
 }
 
@@ -103,10 +117,13 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 	// Créer la réponse
 	// Envoyer la réponse
 	// Fermer le client (keep-alive ?)
-	char	buf[BUFFER_SIZE + 1];
+	//char	buf[BUFFER_SIZE + 1];
 
-	int lu = read(client.getSocket(), buf, BUFFER_SIZE);
-	std::string	str(buf);
+	//int lu = read(client.getSocket(), buf, BUFFER_SIZE);
+	///std::string	str(buf);
+	//int a = client.parse(str);
+	std::string	str = readFd(client.getSocket());
+	std::cout << "readFd returned:\n" << BLUE << str << WHITE << std::endl;
 	int a = client.parse(str);
 	if (a == INCOMPLETE)
 		return;

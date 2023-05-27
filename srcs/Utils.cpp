@@ -60,7 +60,20 @@ void toLower(std::string *str)
 {
 	std::string::iterator ite;
 	for (ite = str->begin(); ite != str->end(); ite++)
-	{
 		*ite = std::tolower(*ite);
-	}
+}
+
+std::string readFd(int fd) {
+	//std::string     str;
+	char            buf[BUFSIZE + 1];
+	ssize_t         count;
+
+	count = read(fd, buf, BUFSIZE);
+	if (count < 0)
+		throw std::string("readFd: (read) error");
+	buf[count] = '\0';
+	//str.insert(str.size(), buf, count);
+	std::string str(buf);
+	std::cout << "Read " << RED <<count << WHITE << " bytes: \n" << YELLOW << buf << WHITE << std::endl;
+	return (str);
 }

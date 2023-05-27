@@ -33,7 +33,7 @@
 
 */
 
-Request::Request(const std::string &request) : _request(request)
+Request::Request(const std::string& request) : _request(request)
 {
 	initVariables();
 	initFuncForParse();
@@ -156,7 +156,7 @@ bool	Request::parseHeaderHost()
 	StringMap::const_iterator ite;
 	size_t pos;
 	
-	ite = _header.find("Host");
+	ite = _header.find("host");
 	if (ite == _header.end())
 		return (false);
 	_host = ite->second;
@@ -270,51 +270,6 @@ void	Request::parseBody()
 	}
 }
 
-size_t Request::getNextWord(std::string& word, const std::string& delimiter)
-{
-    size_t pos = _request.find(delimiter);
-    if (pos == std::string::npos)
-    {
-        // si'on trouve pas delimiteur
-        throw Error("No delimiter");
-    }
-    word = _request.substr(0, pos);
-    _request.erase(0, pos + delimiter.length());
-    return pos;
-}
-
-std::string Request::getNextWord(size_t sizeWord)
-{
-    if (_request.length() < sizeWord)
-    {
-        throw std::runtime_error("String length is shorter than the specified size");
-    }
-    std::string nextWord = _request.substr(0, sizeWord);
-    _request.erase(0, sizeWord);
-	//_payloadsize : taille totale de data recues
-    _payloadSize += sizeWord + 2;
-    std::cerr << "'" << GREEN << nextWord << "'" << RESET << std::endl;
-    return nextWord;
-}
-
-
-std::string		Request::GetHeader(const std::string& headerName)
-{
-	return (_header.find(headerName) != _header.end() ? _header[headerName] : "");
-}
-
-bool        Request::isHttpMethod(std::string const& str) const
-{
-	std::map<MethodType, std::string>::const_iterator ite;
-
-	for (ite = _methods.begin(); ite != _methods.end(); ite++)
-	{
-		if (ite->second == str)
-			return (true);
-	}
-	return (false);
-}
-
 bool	Request::isHeader(const std::string& headerName)
 {
 	StringMap::const_iterator	ite;
@@ -349,20 +304,6 @@ void	Request::ContentLength()
 	_size = size;
 }
 
-int	Request::getStatusCode() const { return (_statusCode); }
-
-void	Request::FuncForParseHeader()
-{
-	Request::listFuncForParse::const_iterator	func;
-
-	for (func = _funcforparse.begin();
-		_requestStatus != COMPLETE && func != _funcforparse.end();
-			func++)
-	{
-		(this->**func)();
-	}
-}
-
 int	Request::parse()
 {
 	try
@@ -390,6 +331,95 @@ int	Request::parse()
 	return (_requestStatus);
 }
 
+/*	GETTER	*/
+size_t Request::getNextWord(std::string& word, const std::string& delimiter)
+{
+    size_t pos = _request.find(delimiter);
+    if (pos == std::string::npos)
+    {
+        // si'on trouve pas delimiteur
+        throw Error("No delimiter");
+    }
+    word = _request.substr(0, pos);
+    _request.erase(0, pos + delimiter.length());
+    return pos;
+}
+
+std::string Request::getNextWord(size_t sizeWord)
+{
+    if (_request.length() < sizeWord)
+    {
+        throw std::runtime_error("String length is shorter than the specified size");
+    }
+    std::string nextWord = _request.substr(0, sizeWord);
+    _request.erase(0, sizeWord);
+	//_payloadsize : taille totale de data recues
+    _payloadSize += sizeWord + 2;
+    std::cerr << "'" << GREEN << nextWord << "'" << RESET << std::endl;
+    return nextWord;
+}
+
+
+std::string		Request::getHeader(const std::string& headerName)
+{
+	return (_header.find(headerName) != _header.end() ? _header[headerName] : "");
+}
+
+bool        Request::isHttpMethod(std::string const& str) const
+{
+	std::map<MethodType, std::string>::const_iterator ite;
+
+	for (ite = _methods.begin(); ite != _methods.end(); ite++)
+	{
+		if (ite->second == str)
+			return (true);
+	}
+	return (false);
+}
+
+int	Request::getStatusCode() const { return (_statusCode); }void	Request::FuncForParseHeader()
+{
+
+	Request::listFuncForParse::const_iterator	func;
+	for (func = _funcforparse.begin();
+		_requestStatus != COMPLETE && func != _funcforparse.end();
+
+			func++)
+	{
+		(this->**func)();
+	}
+}
+
+MethodType	Request::getMethod() const {return (_method);}
+
 std::string	Request::getPath() const { return (_path); }
 
 std::string	Request::getBody() const { return (_body); }
+
+std::string	Request::getQuery() const { return (_query); }
+
+std::string	Request::getProtocolHTTP() const { return (_protocolHTTP); }
+
+size_t		Request::getSize() const { return (_size); }
+
+std::string	Request::getHost() const { return (_host); }
+
+int			Request::getPort() const { return (_port); }
+
+void	Request::PrintHeader()
+{
+	StringMap::iterator ite;
+	
+	std::cout << PURPLE << "Request parsing check" <<  WHITE << std::endl;
+	std::cout << "status code	: " << getStatusCode() << std::endl;
+	std::cout << "Method type	: " << getMethod() << std::endl;
+	std::cout << "ProtocolHTTP	: " << getProtocolHTTP() << std::endl;
+	std::cout << "Path			: " << getPath() << std::endl;
+	std::cout << "host			: " << getHost() << std::endl;
+	for (ite = _header.begin(); ite != _header.end(); ite++)
+		std::cout << ite->first << "	: " << ite->second << std::endl;
+	std::cout << "port			: " << getPort() << std::endl;
+	std::cout << "Query			: " << getQuery() << std::endl;
+	std::cout << "Size			: " << getSize() << std::endl;
+	std::cout << "Body			: " << getBody() << std::endl;
+}
