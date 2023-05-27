@@ -16,7 +16,7 @@ int	Webserv::initConnection(int socket)
 		throw AcceptException();
 
 	initEvent(event, EPOLLIN | EPOLLET, client.getSocket());
-	std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(client._server->_ipAddress) + " at " + client._server->_ipAddress + ":" + client._server->_port << std::endl;
+	std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(client._server->_socket) + " at " + client._server->_ipAddress + ":" + client._server->_port << std::endl;
 	std::cout << PURPLE << std::setw(52) << "socket " + to_string(client.getSocket()) + " created to communicate" << RESET << std::endl;
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, client.getSocket(), &event) < SUCCESS)
 		throw EpollCtlException();
@@ -40,11 +40,13 @@ int	Webserv::routine(void)
 	int					nbEvents = 0;
 	int					index = 0;
 
+	std::cout << PURPLE << std::setw(52) << "waiting for events" << RESET << std::endl;
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, -1)) < SUCCESS)
 		throw EpollWaitException();
 
 	for (int i = 0; i < nbEvents; i++)
 	{
+		std::cout << PURPLE "handling event on socket " << events[i].data.fd << RESET << std::endl;
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
 		if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
@@ -72,12 +74,9 @@ int	Webserv::connectEpollToSockets()
 	if (_epollFd < SUCCESS)
 		throw EpollCreateException();
 		/*check sserverVec[num]._socket for debug*/
-		std::cout << "serversVec.size()" << _serversVec.size() << std::endl;
-		std::cout << "serversVec[0]._socket : " << _serversVec[0]._socket << std::endl;
-		std::cout << "serversVec[1]._socket : " << _serversVec[1]._socket << std::endl;
-		std::cout << "serversVec[2]._socket : " << _serversVec[2]._socket << std::endl;
-		std::cout << "serversVec[3]._socket : " << _serversVec[3]._socket << std::endl;
-		std::cout << "serversVec[4]._socket : " << _serversVec[4]._socket << std::endl;
+		std::cout << "serversVec.size(): " << _serversVec.size() << std::endl;
+		for (int i = 0; i < _serversVec.size() ; i++)
+			std::cout << "serversVec[" << i << "]._socket : " << _serversVec[i]._socket << std::endl;
 	for (size_t i = 0; i < _serversVec.size(); i++)
 	{
 		initEvent(event, EPOLLIN, _serversVec[i]._socket);
@@ -93,17 +92,12 @@ int	Webserv::connectEpollToSockets()
 		    std::cout << "socket " << _serversVec[i]._socket << " is open" << std::endl;
 		}	
 		if (ret < SUCCESS)
-		{
-			std::cout << YELLOW "Connect epoll " RESET << _epollFd << YELLOW " to sockets: " RESET << _serversVec[i]._socket << std::endl;
 			throw EpollCtlException();
-		}
-		std::cout << YELLOW "Connect epoll " RESET << _epollFd << YELLOW " to sockets: " RESET << _serversVec[i]._socket << std::endl;
 	}
 
 	initEvent(event, EPOLLIN, STDIN_FILENO);
 	ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, STDIN_FILENO, &event);
 	if (ret < SUCCESS)
-	{
 		throw EpollCtlException();
 	return (SUCCESS);
 }
@@ -111,7 +105,7 @@ int	Webserv::connectEpollToSockets()
 void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 {
 	(void)event;
-
+	std::cout << "parsing request" << std::endl;
 	// Lire la requête
 	// Parser la requête
 	// Créer la réponse
