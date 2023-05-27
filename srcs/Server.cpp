@@ -21,9 +21,12 @@ Server::Server(void) :	client_body_limit(1024),
 	struct timeval timer;
 	timer.tv_sec = 60;
 	timer.tv_usec = 0;
-
+/*
 	if (recv_timeout.tv_sec != 0)	recv_timeout = timer;
 	if (send_timeout.tv_sec != 0)	send_timeout = timer;
+*/
+	recv_timeout = timer;
+	send_timeout = timer;
 }
 
 Server::~Server(void) {}

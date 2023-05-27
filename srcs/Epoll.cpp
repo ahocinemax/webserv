@@ -106,24 +106,15 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 {
 	(void)event;
 	std::cout << "parsing request" << std::endl;
-	// Lire la requête
-	// Parser la requête
-	// Créer la réponse
-	// Envoyer la réponse
-	// Fermer le client (keep-alive ?)
-	//char	buf[BUFFER_SIZE + 1];
-
-	//int lu = read(client.getSocket(), buf, BUFFER_SIZE);
-	///std::string	str(buf);
-	//int a = client.parse(str);
 	std::string	str = readFd(client.getSocket());
 	std::cout << "readFd returned:\n" << BLUE << str << WHITE << std::endl;
 	int a = client.parse(str);
 	if (a == INCOMPLETE)
 		return;
-	else if (false)
-		; // gestion pour creation socket? je ne suis pas sure pour epoll()
-
+	/*
+		question: est-ce qu'on a pas besoin de mettre _client.rase
+		dans chaque handles(request handle / response handle)?
+	*/
 }
 
 const char*	Webserv::EpollCreateException::what() const throw()

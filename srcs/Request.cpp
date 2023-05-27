@@ -80,7 +80,8 @@ void Request::parseMethod()
 	{
 		throw InvalidMethodException();
 	}
-	_method = strToMethodType(method);
+	//_method = strToMethodType(method);
+	_method = method;
 }
 
 void	Request::parsePath()
@@ -196,7 +197,7 @@ void	Request::checkHeaders()
 		throw Error("400 Bad Request");
 	}
 	ContentLength();
-	if (_method != POST) //GET et DELETE n'ont pas besoin de body
+	if (_method != "POST") //GET et DELETE n'ont pas besoin de body
 	{
 		_headerParsed = true;
 		return ;
@@ -390,7 +391,7 @@ int	Request::getStatusCode() const { return (_statusCode); }void	Request::FuncFo
 	}
 }
 
-MethodType	Request::getMethod() const {return (_method);}
+std::string	Request::getMethod() const {return (_method);}
 
 std::string	Request::getPath() const { return (_path); }
 
@@ -409,9 +410,19 @@ int			Request::getPort() const { return (_port); }
 void	Request::PrintHeader()
 {
 	StringMap::iterator ite;
-	
+	std::string	mtd;
+
+//	if (getMethod() == 0)
+//		mtd = "GET";
+//	else if (getMethod() == 1)
+//		mtd = "POST";
+//	else if (getMethod() == 1)
+//		mtd = "DELETE";
+//	else
+//		mtd = "UNKNOWN";
 	std::cout << PURPLE << "Request parsing check" <<  WHITE << std::endl;
 	std::cout << "status code	: " << getStatusCode() << std::endl;
+//	std::cout << "Method type	: " << mtd << std::endl;
 	std::cout << "Method type	: " << getMethod() << std::endl;
 	std::cout << "ProtocolHTTP	: " << getProtocolHTTP() << std::endl;
 	std::cout << "Path			: " << getPath() << std::endl;

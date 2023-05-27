@@ -63,7 +63,7 @@ class Request
 		size_t			getNextWord(std::string& word, const std::string& delimiter);
 		std::string		getNextWord(size_t sizeWord);
 		int				getStatusCode() const;
-		MethodType		getMethod() const;
+		std::string		getMethod() const;
 
 		std::string		getPath() const;
 		std::string		getBody() const;
@@ -97,7 +97,7 @@ class Request
 		};
 
 	private:
-		MethodType			_method;
+		std::string			_method;
 		listFuncForParse	_funcforparse;
 		int					_statusCode;
 		int					_requestStatus;

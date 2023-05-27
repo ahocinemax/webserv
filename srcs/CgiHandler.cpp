@@ -34,7 +34,8 @@
 //    }
 
 CgiHandler::CgiHandler() : 
-    //response(response),
+    //_response(response),
+    _request(0),
     //_scriptPath(response.GetBuiltPath()),
     _request_body(""),
     _in(-1),
@@ -42,8 +43,8 @@ CgiHandler::CgiHandler() :
     //_program(reponse.GetCgiProgram()),
     /*for test*/
     _env(GetEnv()),
-    //_scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),//cluter
-    _scriptPath("/home/tj/Documents/42/webserv/ahocine/document/tohoho.cgi"),//home
+    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document/tohoho.cgi"),//cluter
+    //_scriptPath("/home/tj/Documents/42/webserv/ahocine/document/tohoho.cgi"),//home
     _program("/usr/bin/perl")
     {
         if (!AccessiblePath(_scriptPath)) {
@@ -88,11 +89,11 @@ bool CgiHandler::getCgiOutput(std::string& output)
     } else {
         /*parents*/
         if (WaitforChild(pid)) {
-            output = readFd(fd_out_[0]);
-            close(fd_out_[0]);
+            output = readFd(_fd_out[0]);
+            close(_fd_out[0]);
             return true;
         } else {
-            close(fd_out_[0]);
+            close(_fd_out[0]);
             return false;
         }
     }
@@ -131,10 +132,10 @@ void CgiHandler::Execute()
     char **env = GetEnvAsCstrArray();
     RedirectOutputToPipe();
     execve(av[0], av, env);
-    if (close(fd_in_[0])) {
+    if (close(_fd_in[0])) {
         throw CgiError("cgihandler: Execute (close) error");
     }
-    if (close(fd_out_[1])) {
+    if (close(_fd_out[1])) {
         throw CgiError("cgihandler: Execute (close) error");
     }
     for (size_t i = 0; env[i]; i++)
@@ -164,42 +165,42 @@ void CgiHandler::Restore()
 
 void CgiHandler::RedirectOutputToPipe()
 {
-    if (close(fd_in_[1]) < 0) {
+    if (close(_fd_in[1]) < 0) {
         throw CgiError("cgihandler: RedirectOutputToPipe (close) error");
     }
     if ((_in = dup(STDIN_FILENO)) < 0) {
         throw CgiError("cgihandler: RedirectOutputToPipe (dup) error");
     }
-    if (dup2(fd_in_[0], STDIN_FILENO) < 0) {
+    if (dup2(_fd_in[0], STDIN_FILENO) < 0) {
         throw CgiError("cgihandler: RedirectOutputToPipe (dup2) error");
     }
-    if (close(fd_out_[0]) < 0) {
+    if (close(_fd_out[0]) < 0) {
         throw CgiError("cgihandler: RedirectOutputToPipe (close) error");
     }
     if ((_out = dup(STDOUT_FILENO)) < 0) {
         throw CgiError("cgihandler: RedirectOutputToPipe (dup) error");
     }
-    if (dup2(fd_out_[1], STDOUT_FILENO) < 0) {
+    if (dup2(_fd_out[1], STDOUT_FILENO) < 0) {
         throw CgiError("cgihandler: RedirectOutputToPipe (dup2) error");
     }
 }
 
 void CgiHandler::PipeSet()
 {
-    if (pipe(fd_in_) < 0) {
+    if (pipe(_fd_in) < 0) {
         throw CgiError("cgihandler: getCgiOutput (pipe) error");
     }
-    if (pipe(fd_out_) < 0) {
+    if (pipe(_fd_out) < 0) {
         throw CgiError("cgihandler: getCgiOutput (pipe) error");
     }
 }
 
 void CgiHandler::SetupParentIO()
 {
-    if (close(fd_in_[0]) < 0) {
+    if (close(_fd_in[0]) < 0) {
         throw CgiError("500 Internal Server Error");
     }
-    if (close(fd_out_[1]) < 0) {
+    if (close(_fd_out[1]) < 0) {
         throw CgiError("500 Internal Server Error");
     }
 }
@@ -229,10 +230,10 @@ bool CgiHandler::WaitforChild(int pid)
 void CgiHandler::WriteToStdin()
 {
     SetupParentIO();
-    if (write(fd_in_[1], _request_body.c_str(), _request_body.size()) < 0) {
+    if (write(_fd_in[1], _request_body.c_str(), _request_body.size()) < 0) {
         throw CgiError("cgihandler: WriteToStdin (write) error");
     }
-    if (close(fd_in_[1]) < 0) {
+    if (close(_fd_in[1]) < 0) {
         throw CgiError("cgihandler: WriteToStdin (close) error");
     }
 }
@@ -277,14 +278,14 @@ void CgiHandler::setCgiEnvironment() {
     _env["AUTH_TYPE"] = "test";//check rules 
     _env["DOCUMENT_ROOT"] = "test";//check rules
 
-	_env["SERVER_PROTOCOL"] = "test";//request->getter for Protocol;
-	_env["REQUEST_METHOD"] = "test";//request->getter for getMethod;
-	_env["SCRIPT_NAME"] = "test";//request->getter for path;
+	_env["SERVER_PROTOCOL"] = _request->getProtocolHTTP();//request->getter for Protocol;
+	_env["REQUEST_METHOD"] = _request->getMethod();//request->getter for getMethod;
+	_env["SCRIPT_NAME"] = _request->getPath();//request->getter for path;
     _env["CONTENT_LENGTH"] = "test";//response->converter number to string;
 	_env["SERVER_PORT"] = "8080";//response->converter number to string;
     _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";//request->getter for path;
-    _env["REMOTE_IDENT"] = "Autorization";//request->GetHeader("Autorization");
-	_env["REMOTE_ADDR"] = "localhost";//localhost;
+    _env["REMOTE_IDENT"] = _request->getHeader("autorization");//request->GetHeader("Autorization");
+	_env["REMOTE_ADDR"] = _request->getHost();//localhost;
     _env["SCRIPT_FILENAME"] = "tohoho.pl";//response->cgi name;
 	_env["PATH_INFO"] = "argument";//response->getter for extra;
 	_env["QUERY_STRING"] = "test";//response->getter for querystring;
@@ -294,7 +295,7 @@ void CgiHandler::setCgiEnvironment() {
 	_env["SERVER_NAME"] = "webserv";//response-> getter for servername;
 	_env["SERVER_SOFTWARE"] = "webserv/1.0";
 
-    _env["CONTENT_TYPE"] = "Content-Type";//response->makeHeader("Content-Type");
+    _env["CONTENT_TYPE"] = "content-type";//response->makeHeader("Content-Type");
     _env["HTTP_ACCEPT"] = "accept";//response->GetHeader("accept");
     _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";//response->GetHeader("accept-langage");
     _env["HTTP_USER_AGENT"] = "user-agent";//response->makeHeader("user-agent");

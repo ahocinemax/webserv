@@ -12,14 +12,18 @@
 
 #include "Client.hpp"
 
-Client::Client(Server *server) : _addrLen(sizeof(_addr)), _server(server)
+Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(0), _server(server)
 {
 	//clearRequest();
 	gettimeofday(&_timer, NULL);
 	//memset(_request, 0, MAX_REQUEST_SIZE + 1);
 }
 
-Client::~Client(void) { delete _request; }
+Client::~Client(void)
+{ 
+	if (_request)
+		delete _request;
+}
 
 void	Client::setTimer(struct timeval &timer) { _timer = timer; }
 
