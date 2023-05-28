@@ -12,7 +12,7 @@
 
 #include "Response.hpp"
 
-Response::Response(void) : _statusCode(0) {}
+Response::Response(void) : _statusCode("") {}
 
 Response::Response(std::string status) : _statusCode(status.substr(0, 3)),
 										 _statusMessage(status.substr(4)) {}

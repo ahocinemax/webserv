@@ -35,9 +35,8 @@ int main(int argc, char **argv)
 		}
 		Webserv webserver(*serv);
 		webserver.createServers();
-		while (webserver.routine())
-			;
-		
+		while (true)
+			webserver.routine();
 		webserver.closeServers();
 		delete serv;
 	}

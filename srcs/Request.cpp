@@ -379,7 +379,7 @@ bool        Request::isHttpMethod(std::string const& str) const
 	return (false);
 }
 
-int	Request::getStatusCode() const { return (_statusCode); }void	Request::FuncForParseHeader()
+int	Request::FuncForParseHeader()
 {
 
 	Request::listFuncForParse::const_iterator	func;
@@ -391,6 +391,7 @@ int	Request::getStatusCode() const { return (_statusCode); }void	Request::FuncFo
 		if (_statusCode != OK)
 			return (FAILED);
 	}
+	return (SUCCESS);
 }
 
 std::string	Request::getMethod() const {return (_method);}
@@ -425,7 +426,7 @@ void	Request::PrintHeader()
 //	else
 //		mtd = "UNKNOWN";
 	std::cout << PURPLE << "Request parsing check" <<  WHITE << std::endl;
-	std::cout << "status code	: " << getStatusCode() << std::endl;
+	std::cout << "status code	: " << _statusCode << std::endl;
 //	std::cout << "Method type	: " << mtd << std::endl;
 	std::cout << "Method type	: " << getMethod() << std::endl;
 	std::cout << "ProtocolHTTP	: " << getProtocolHTTP() << std::endl;

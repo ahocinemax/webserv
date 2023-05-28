@@ -173,7 +173,6 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 int Client::parse(const std::string& str)
 {
 	_request = new Request(str);
-	//return (_request->parse() == INCOMPLETE ? FAILED : SUCCESS);
 	int i = _request->parse();
 	_request->PrintHeader();
 	return i;

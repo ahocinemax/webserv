@@ -108,8 +108,8 @@ void	Webserv::handleRequest(Client &client)
 	std::cout << "> Parsing request" << std::endl;
 	std::string	str = readFd(client.getSocket());
 	std::cout << "readFd returned:\n" << BLUE << str << WHITE << std::endl;
-	client._request._requestStatus = client.parse(str); 
-	if (_requestStatus == INCOMPLETE)
+	client.parse(str);
+	if (client.getRequest()->_statusCode != OK)
 		return;
 	/*
 		question: est-ce qu'on a pas besoin de mettre _client.rase
@@ -121,8 +121,9 @@ void	Webserv::handleResponse(Client &client)
 {
 	std::cout << "> Handling response" << std::endl;
 	if (client.getRequest()->_statusCode != OK)
-		client.displayErrorPage(_statusCodeList.find(client.getRequest()->_statusCode));
+		return (client.displayErrorPage(_statusCodeList.find(client.getRequest()->_statusCode)));
 	// GENERATE RESPONSE //
+	if () // Parsing ok mais une erreur est survenue (page non trouvable par exemple)
 }
 
 const char*	Webserv::EpollCreateException::what() const throw()

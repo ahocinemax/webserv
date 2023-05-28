@@ -42,7 +42,7 @@ class Request
 		/*Parse*/
 		void	parseMethod();
 		int		parse();
-		void	FuncForParseHeader();
+		int		FuncForParseHeader();
 		void	parsePath();
 		void	parseHttpProtocol();
 		void	parseHeaders();
@@ -62,7 +62,6 @@ class Request
 		std::string		getHeader(const std::string& headerName);
 		size_t			getNextWord(std::string& word, const std::string& delimiter);
 		std::string		getNextWord(size_t sizeWord);
-		int				getStatusCode() const;
 		std::string		getMethod() const;
 
 		std::string		getPath() const;
@@ -73,7 +72,6 @@ class Request
 		size_t			getSize() const;
 		std::string		getHost() const;
 		int				getPort() const;
-		int				getRequest() const;
 		/*test*/
 		void			PrintHeader();
 
@@ -96,12 +94,12 @@ class Request
 		private:
 			const char* _msg;
 		};
+		int					_requestStatus;
+		int					_statusCode;
 
 	private:
 		std::string			_method;
 		listFuncForParse	_funcforparse;
-		int					_statusCode;
-		int					_requestStatus;
 		std::string			_path;
 		std::string			_query;
 		std::string			_request;
