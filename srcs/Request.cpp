@@ -55,7 +55,7 @@ void	Request::initVariables()
 	_port = 0;
 	_headerParsed = false;
 	_chunked = false;
-	_payloadSize = 0;
+	_payloadsize = 0;
 	_methods.insert(std::make_pair(GET, "GET"));
 	_methods.insert(std::make_pair(POST, "POST"));
 	_methods.insert(std::make_pair(DELETE, "DELETE"));
@@ -147,7 +147,12 @@ void	Request::parseHeaders()
 				_statusCode = BAD_REQUEST;
 				throw Error("400 Bad Request");	//->this header is already existed
 			}
-			_header[headerName] = headerVal;		
+			_header[headerName] = headerVal;
+			if (_payloadsize > 10000)
+			{
+				_statusCode = PAYLOAD_TOO_LARGE;
+				throw Error("413 Payload Too Large");	//->this header is already existed
+			}
 		}
 		getNextWord(headerName, CRLF);// separete between header/body
 }
@@ -336,12 +341,15 @@ int	Request::parse()
 size_t Request::getNextWord(std::string& word, const std::string& delimiter)
 {
     size_t pos = _request.find(delimiter);
+	size_t total;
     if (pos == std::string::npos)
     {
         // si'on trouve pas delimiteur
         throw Error("No delimiter");
     }
     word = _request.substr(0, pos);
+	total = pos + delimiter.length();
+	_payloadsize += total;
     _request.erase(0, pos + delimiter.length());
     return pos;
 }
@@ -354,8 +362,7 @@ std::string Request::getNextWord(size_t sizeWord)
     }
     std::string nextWord = _request.substr(0, sizeWord);
     _request.erase(0, sizeWord);
-	//_payloadsize : taille totale de data recues
-    _payloadSize += sizeWord + 2;
+    _payloadsize += sizeWord + 2;
     std::cerr << "'" << GREEN << nextWord << "'" << RESET << std::endl;
     return nextWord;
 }
@@ -397,6 +404,8 @@ std::string	Request::getPath() const { return (_path); }
 
 std::string	Request::getBody() const { return (_body); }
 
+size_t		Request::getPayloadSize() const { return (_payloadsize); }
+
 std::string	Request::getQuery() const { return (_query); }
 
 std::string	Request::getProtocolHTTP() const { return (_protocolHTTP); }
@@ -432,5 +441,6 @@ void	Request::PrintHeader()
 	std::cout << "port			: " << getPort() << std::endl;
 	std::cout << "Query			: " << getQuery() << std::endl;
 	std::cout << "Size			: " << getSize() << std::endl;
+	std::cout << "PayloadSize	: " << getPayloadSize() << std::endl;
 	std::cout << "Body			: " << getBody() << std::endl;
 }

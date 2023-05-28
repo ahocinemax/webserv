@@ -67,6 +67,7 @@ class Request
 
 		std::string		getPath() const;
 		std::string		getBody() const;
+		size_t			getPayloadSize() const;
 		std::string		getQuery() const;
 		std::string		getProtocolHTTP() const;
 		size_t			getSize() const;
@@ -111,7 +112,7 @@ class Request
 		std::string			_protocolHTTP;
 		std::string			_host;
 		int					_port;
-		int					_payloadSize;
+		size_t				_payloadsize;
 		std::map<MethodType, std::string> _methods;
 };
 
