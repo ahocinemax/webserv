@@ -73,7 +73,7 @@ class Request
 		size_t			getSize() const;
 		std::string		getHost() const;
 		int				getPort() const;
-
+		int				getRequest() const;
 		/*test*/
 		void			PrintHeader();
 

@@ -43,7 +43,8 @@ class Webserv
 		void		        initEpoll(void);
 		int					findClientIndex(int socket);
 
-		void				handleRequest(Client &client, struct epoll_event &event);
+		void				handleRequest(Client &client);
+		void				handleResponse(Client &client);
 		bool				clientNotConnected(int socket);
 
 	private:
@@ -51,7 +52,7 @@ class Webserv
 		ServerVector		_serversVec;
 		ServerMap			_serversMap;
 		ServerMap			_defaultServers;
-		StatusMap			_statutCode;
+		StatusMap			_statusCodeList;
 		int					_epollFd;
 
 		void				deleteMethod(Client &client, std::string path);

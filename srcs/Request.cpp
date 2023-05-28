@@ -143,16 +143,10 @@ void	Request::parseHeaders()
 			getNextWord(headerVal, CRLF);	
 			trimSpacesStr(&headerVal);
 			if (isHeader(headerName))
-			{
 				_statusCode = BAD_REQUEST;
-				throw Error("400 Bad Request");	//->this header is already existed
-			}
 			_header[headerName] = headerVal;
-			if (_payloadsize > 10000)
-			{
+			if (_payloadsize > 10485759)
 				_statusCode = PAYLOAD_TOO_LARGE;
-				throw Error("413 Payload Too Large");	//->this header is already existed
-			}
 		}
 		getNextWord(headerName, CRLF);// separete between header/body
 }
@@ -391,10 +385,11 @@ int	Request::getStatusCode() const { return (_statusCode); }void	Request::FuncFo
 	Request::listFuncForParse::const_iterator	func;
 	for (func = _funcforparse.begin();
 		_requestStatus != COMPLETE && func != _funcforparse.end();
-
 			func++)
 	{
 		(this->**func)();
+		if (_statusCode != OK)
+			return (FAILED);
 	}
 }
 
@@ -414,7 +409,7 @@ size_t		Request::getSize() const { return (_size); }
 
 std::string	Request::getHost() const { return (_host); }
 
-int			Request::getPort() const { return (_port); }
+int	Request::getPort() const { return (_port); }
 
 void	Request::PrintHeader()
 {

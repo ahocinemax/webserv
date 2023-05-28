@@ -50,12 +50,6 @@ int	Client::setSocket(int socket)
 
 void	Client::setRecvSize(int size) { _recvSize = size; }
 
-int		Client::getSocket(void) const { return _socket; }
-
-int		Client::getRecvSize(void) const { return _recvSize; }
-
-struct timeval	Client::getTimer(void) const { return _timer; }
-
 std::string	Client::setRootPath(std::string path)
 {
 	std::size_t	len;
@@ -98,6 +92,14 @@ const char	*Client::getClientPort(void)
 	getnameinfo((struct sockaddr *)&_addr, _addrLen, 0, 0, buffer, sizeof(buffer), NI_NUMERICHOST);
 	return (buffer);
 }
+
+int		Client::getSocket(void) const { return _socket; }
+
+int		Client::getRecvSize(void) const { return _recvSize; }
+
+struct timeval	Client::getTimer(void) const { return _timer; }
+
+Request	*Client::getRequest() const { return (_request); }
 
 int		Client::charCounter(std::string str, char c)
 {

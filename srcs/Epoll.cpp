@@ -57,7 +57,8 @@ int	Webserv::routine(void)
 			return (FAILED);
 		}
 
-		handleRequest(_clients[index], events[i]);
+		handleRequest(_clients[index]);
+		handleResponse(_clients[index]);
 
 		if (false) // si le client est déconnecté, il faut l'enlever de la liste
 			_clients.erase(_clients.begin() + index);
@@ -102,19 +103,26 @@ int	Webserv::connectEpollToSockets()
 	return (SUCCESS);
 }
 
-void	Webserv::handleRequest(Client &client, struct epoll_event &event)
+void	Webserv::handleRequest(Client &client)
 {
-	(void)event;
-	std::cout << "parsing request" << std::endl;
+	std::cout << "> Parsing request" << std::endl;
 	std::string	str = readFd(client.getSocket());
 	std::cout << "readFd returned:\n" << BLUE << str << WHITE << std::endl;
-	int a = client.parse(str);
-	if (a == INCOMPLETE)
+	client._request._requestStatus = client.parse(str); 
+	if (_requestStatus == INCOMPLETE)
 		return;
 	/*
 		question: est-ce qu'on a pas besoin de mettre _client.rase
 		dans chaque handles(request handle / response handle)?
 	*/
+}
+
+void	Webserv::handleResponse(Client &client)
+{
+	std::cout << "> Handling response" << std::endl;
+	if (client.getRequest()->_statusCode != OK)
+		client.displayErrorPage(_statusCodeList.find(client.getRequest()->_statusCode));
+	// GENERATE RESPONSE //
 }
 
 const char*	Webserv::EpollCreateException::what() const throw()

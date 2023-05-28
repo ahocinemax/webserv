@@ -26,10 +26,10 @@
 # include <stdlib.h>
 # include <cstdlib>
 
-# define BUFFER_SIZE	30720
-# define SUCCESS		0
-# define FAILED			-1
-# define EMPTY			1
+# define BUFFER_SIZE					30720
+# define SUCCESS						0
+# define FAILED							-1
+# define EMPTY							1
 
 #	define	OK							200
 #	define	CREATED						201

@@ -38,14 +38,14 @@ class Client
 		void		setTimer(struct timeval &timer);
 		int			setSocket(int socket);
 		void		setRecvSize(int size);
-
 		std::string	setRootPath(std::string path);
+
 		const char	*getClientAddr(void);
 		const char	*getClientPort(void);
-
 		int			getRecvSize(void) const;
 		int			getSocket(void) const;
 		timeval		getTimer(void) const;
+		Request		*getRequest() const;
 
 		int			charCounter(std::string str, char c);
 		void		clearRequest(void);
@@ -58,6 +58,7 @@ class Client
 		int			_recvSize;
 		timeval		_timer;
 		Request		*_request;
+		Response	_response;
 };
 
 #endif
