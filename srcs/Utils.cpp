@@ -70,7 +70,7 @@ std::string readFd(int fd) {
 
 	count = read(fd, buf, BUFSIZE);
 	if (count < 0)
-		throw std::string("readFd: (read) error");
+		return ("");
 	buf[count] = '\0';
 	//str.insert(str.size(), buf, count);
 	std::string str(buf);

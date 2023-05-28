@@ -123,7 +123,8 @@ void	Webserv::handleResponse(Client &client)
 	if (client.getRequest()->_statusCode != OK)
 		return (client.displayErrorPage(_statusCodeList.find(client.getRequest()->_statusCode)));
 	// GENERATE RESPONSE //
-	if () // Parsing ok mais une erreur est survenue (page non trouvable par exemple)
+	
+	// Parsing ok mais une erreur est survenue (page non trouvable par exemple)
 }
 
 const char*	Webserv::EpollCreateException::what() const throw()

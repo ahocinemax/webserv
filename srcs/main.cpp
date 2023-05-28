@@ -18,11 +18,18 @@
 int main(int argc, char **argv)
 {
 	if (argc != 2)
-		throw std::invalid_argument("Usage: ./webserv <config_file>");
-
+	{
+		std::cout << "Usage: ./webserv <config_file>" << std::endl;
+		return (FAILED);
+	}
 	std::string config_file;
 
 	config_file = argv[1];
+	if (config_file.empty())
+	{
+		std::cout << "Error: Empty config file" << std::endl;
+		return (FAILED);
+	}
 	try
 	{
 		int i = 1;
