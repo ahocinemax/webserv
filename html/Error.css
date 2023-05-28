@@ -1,0 +1,37 @@
+h1 {
+    font-size: 5vw;
+    color: #ffff00;
+    font-weight: bold;
+    padding-bottom: 10px;
+    text-align: center;
+    position: relative;
+    margin: 0 0 30px 0;
+    letter-spacing: 5px;
+}
+
+body {
+    height: 80vh;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #FFFFFF;
+
+}
+
+.center {
+    text-align: center;
+}
+
+.center img {
+    width: 90vh;
+    height: auto;
+}
+
+.center h1 {
+    margin-bottom: 20px;
+}
+html {
+    background-image: url("img/background_error.jpg");
+    background-size: cover;
+}
