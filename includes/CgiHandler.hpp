@@ -10,17 +10,18 @@
 #include <ctime>
 #include <map>
 
-//#include "Response.hpp"
+#include "../includes/Response.hpp"
 #include "../includes/Request.hpp"
 #include "../includes/Utils_Cgi.hpp"
 #include "../includes/Utils.hpp"
 
 #define TIMEOUT_LIMIT 5  // limit of timeout(sec)
+class   Response;
 
 class CgiHandler
 {
     public:
-//      CgiHandler(Response& response);
+      CgiHandler(Response& response);
         CgiHandler();//now with test value (without other class)
         virtual ~CgiHandler();
 
@@ -55,7 +56,7 @@ class CgiHandler
         void    setCgiEnvironment();
         void    TestEnv();
     
-//        Response *_response;
+        Response                            *_response;
         Request                             *_request;
         int                                 _fd_in[2];
         int                                 _fd_out[2];

@@ -15,43 +15,45 @@
 */
 
 
-//CgiHandler::CgiHandler(Response& response) : 
-//    response(response),
-//    _request_body(response.GetRequest()->GetBody()),
-//    _in(-1),
-//    _out(-1),
-//    //_scriptPath(response.GetBuiltPath()),
-//    //_program(reponse.GetCgiProgram()),
-//    //for test
-//    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),
-//    _program("/usr/local/bin/perl"),
-//    _env(GetEnv())
-//    {
-//        if (!AccessiblePath(_scriptPath)) {
-//            throw (NOT FOUND);//error投げる
-//        }
-//        SigpipeSet(0);
-//    }
-
-CgiHandler::CgiHandler() : 
-    //_response(response),
-    _request(0),
-    //_scriptPath(response.GetBuiltPath()),
-    _request_body(""),
+CgiHandler::CgiHandler(Response& response) : 
+    //_request_body(response.GetRequest()->GetBody()),
     _in(-1),
     _out(-1),
+    //_scriptPath(response.GetBuiltPath()),
     //_program(reponse.GetCgiProgram()),
-    /*for test*/
-    _env(GetEnv()),
-    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document/tohoho.cgi"),//cluter
-    //_scriptPath("/home/tj/Documents/42/webserv/ahocine/document/tohoho.cgi"),//home
-    _program("/usr/bin/perl")
+    //for test
+    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),
+    _program("/usr/local/bin/perl"),
+    _env(GetEnv())
     {
         if (!AccessiblePath(_scriptPath)) {
-		    throw CgiError("400 Bad Request");
+		    response.getStatusCode() = "400";
+            return;
         }
         SigpipeSet(0);
     }
+
+//CgiHandler::CgiHandler() : 
+//    //_response(response),
+//    _request(0),
+//    //_scriptPath(response.GetBuiltPath()),
+//    _request_body(""),
+//    _in(-1),
+//    _out(-1),
+//    //_program(reponse.GetCgiProgram()),
+//    /*for test*/
+//    _env(GetEnv()),
+//    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document/tohoho.cgi"),//cluter
+//    //_scriptPath("/home/tj/Documents/42/webserv/ahocine/document/tohoho.cgi"),//home
+//    _program("/usr/bin/perl")
+//    {
+//        if (!AccessiblePath(_scriptPath))
+//        {
+//		    _response->getStatusCode() = "400";
+//            return;
+//        }
+//        SigpipeSet(0);
+//    }
 CgiHandler::~CgiHandler()
 {
     Restore();
@@ -79,8 +81,10 @@ bool CgiHandler::getCgiOutput(std::string& output)
 {
     PipeSet();
     int pid = fork();
-    if (pid < 0) {
-        throw CgiError("cgihandler:getCgiOutput (fork) error");
+    if (pid < 0)
+    {
+    	std::cerr << "cgihandler:getCgiOutput (fork) error" << std::endl;
+        return (false);
     } else if (pid == 0) {
         /*child*/
         usleep(900);
@@ -132,11 +136,15 @@ void CgiHandler::Execute()
     char **env = GetEnvAsCstrArray();
     RedirectOutputToPipe();
     execve(av[0], av, env);
-    if (close(_fd_in[0])) {
-        throw CgiError("cgihandler: Execute (close) error");
+    if (close(_fd_in[0]))
+    {
+    	std::cerr << "cgihandler: Execute (close) error" << std::endl;
+        return ;
     }
-    if (close(_fd_out[1])) {
-        throw CgiError("cgihandler: Execute (close) error");
+    if (close(_fd_out[1]))
+    {
+    	std::cerr << "cgihandler: Execute (close) error" << std::endl;
+        return ;
     }
     for (size_t i = 0; env[i]; i++)
         delete[] env[i];
@@ -145,63 +153,86 @@ void CgiHandler::Execute()
 
 void CgiHandler::Restore()
 {
-    if (_in == -1 && _out == -1) {
+    if (_in == -1 && _out == -1)
         return;
-    }
 
-    if (dup2(_in, STDIN_FILENO) < 0) {
-        throw CgiError("cgihandler: Restore (dup2) error");
+    if (dup2(_in, STDIN_FILENO) < 0)
+    {
+    	std::cerr << "cgihandler: Restore (dup2) error" << std::endl;
+        return ;
     }
-    if (close(_in)) {
-        throw CgiError("cgihandler: Restore (close) error");
+    if (close(_in))
+    {
+    	std::cerr << "cgihandler: Restore (close) error" << std::endl;
+        return ;
     }
-    if (dup2(_out, STDOUT_FILENO) < 0) {
-        throw CgiError("cgihandler: Restore (dup2) error");
+    if (dup2(_out, STDOUT_FILENO) < 0)
+    {
+    	std::cerr << "cgihandler: Restore (dup2) error" << std::endl;
+        return ;
     }
-    if (close(_out)) {
-        throw CgiError("cgihandler: Restore (close) error");
+    if (close(_out))
+    {
+    	std::cerr << "cgihandler: Restore (close) error" << std::endl;
+        return ;
     }
 }
 
 void CgiHandler::RedirectOutputToPipe()
 {
-    if (close(_fd_in[1]) < 0) {
-        throw CgiError("cgihandler: RedirectOutputToPipe (close) error");
+    if (close(_fd_in[1]) < 0)
+    {
+    	std::cerr << "cgihandler: RedirectOutputToPipe (close) error" << std::endl;
+        return ;
     }
-    if ((_in = dup(STDIN_FILENO)) < 0) {
-        throw CgiError("cgihandler: RedirectOutputToPipe (dup) error");
+    if ((_in = dup(STDIN_FILENO)) < 0)
+    {
+    	std::cerr << "cgihandler: RedirectOutputToPipe (dup) error" << std::endl;
+        return ;
     }
     if (dup2(_fd_in[0], STDIN_FILENO) < 0) {
-        throw CgiError("cgihandler: RedirectOutputToPipe (dup2) error");
+    	std::cerr << "cgihandler: RedirectOutputToPipe (dup2) error" << std::endl;
+        return ;
     }
     if (close(_fd_out[0]) < 0) {
-        throw CgiError("cgihandler: RedirectOutputToPipe (close) error");
+    	std::cerr << "cgihandler: RedirectOutputToPipe (close) error" << std::endl;
+        return ;
     }
     if ((_out = dup(STDOUT_FILENO)) < 0) {
-        throw CgiError("cgihandler: RedirectOutputToPipe (dup) error");
+    	std::cerr << "cgihandler: RedirectOutputToPipe (dup) error" << std::endl;
+        return ;
     }
     if (dup2(_fd_out[1], STDOUT_FILENO) < 0) {
-        throw CgiError("cgihandler: RedirectOutputToPipe (dup2) error");
+    	std::cerr << "cgihandler: RedirectOutputToPipe (dup2) error" << std::endl;
+        return ;
     }
 }
 
 void CgiHandler::PipeSet()
 {
-    if (pipe(_fd_in) < 0) {
-        throw CgiError("cgihandler: getCgiOutput (pipe) error");
+    if (pipe(_fd_in) < 0)
+    {
+    	std::cerr << "cgihandler: getCgiOutput (pipe) error" << std::endl;
+        return ;
     }
-    if (pipe(_fd_out) < 0) {
-        throw CgiError("cgihandler: getCgiOutput (pipe) error");
+    if (pipe(_fd_out) < 0)
+    {
+    	std::cerr << "cgihandler: getCgiOutput (pipe) error" << std::endl;
+        return ;
     }
 }
 
 void CgiHandler::SetupParentIO()
 {
-    if (close(_fd_in[0]) < 0) {
-        throw CgiError("500 Internal Server Error");
+    if (close(_fd_in[0]) < 0)
+    {
+    	std::cerr << "cgihandler: ParentIO (close) error" << std::endl;
+        return ;
     }
-    if (close(_fd_out[1]) < 0) {
-        throw CgiError("500 Internal Server Error");
+    if (close(_fd_out[1]) < 0)
+    {
+    	std::cerr << "cgihandler: ParentIO (close) error" << std::endl;
+        return ;
     }
 }
 
@@ -231,10 +262,12 @@ void CgiHandler::WriteToStdin()
 {
     SetupParentIO();
     if (write(_fd_in[1], _request_body.c_str(), _request_body.size()) < 0) {
-        throw CgiError("cgihandler: WriteToStdin (write) error");
+    	std::cerr << "cgihandler: WriteToStdin (write) error" << std::endl;
+        return ;
     }
     if (close(_fd_in[1]) < 0) {
-        throw CgiError("cgihandler: WriteToStdin (close) error");
+    	std::cerr << "cgihandler: WriteToStdin (close) error" << std::endl;
+        return ;
     }
 }
 
