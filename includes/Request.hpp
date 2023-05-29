@@ -41,7 +41,7 @@ class Request
 		
 		/*Parse*/
 		void	parseMethod();
-		int		parse();
+		void	parse();
 		int		FuncForParseHeader();
 		void	parsePath();
 		void	parseHttpProtocol();

@@ -51,7 +51,7 @@ class Client
 		void		clearRequest(void);
 
 		void		displayErrorPage(StatusMap::iterator statusCode);
-		int			parse(const std::string& str);
+		void		parse(const std::string& str);
 
 	private:
 		int			_socket;

@@ -78,9 +78,9 @@ void Request::parseMethod()
 	getNextWord(method, " ");
 	if (isHttpMethod(method) == false)
 	{
-		throw InvalidMethodException();
+		std::cerr << RED "Error:" RESET " Invalid Method" << std::endl;
+		return ;
 	}
-	//_method = strToMethodType(method);
 	_method = method;
 }
 
@@ -93,12 +93,12 @@ void	Request::parsePath()
 	if (path == "" || path[0] != '/')
 	{
 		_statusCode = BAD_REQUEST;
-		throw Error("400 Bad Request");
+		return ;
 	}
 	if (path.length() > 2000) // ou bien 3000? max longuer de URL
 	{
 		_statusCode = URI_TOO_LONG;
-		throw Error("414 URI Too Long");
+		return ;
 	}
 	pos = path.find("?");
 	if (pos != std::string::npos)
@@ -117,12 +117,12 @@ void	Request::parseHttpProtocol()
 	if (protocolHTTP.find("HTTP") == std::string::npos)
 	{
 		_statusCode = BAD_REQUEST;
-		throw Error("400 Bad Request");
+		return ;
 	}
 	if (protocolHTTP != "HTTP/1.1")
 	{
 		_statusCode = HTTP_VERSION_NOT_SUPPORTED;
-		throw Error("505 HTTP Version Not Supported");
+		return ;
 	}
 	_protocolHTTP = protocolHTTP;
 }
@@ -193,7 +193,7 @@ void	Request::checkHeaders()
 	if (!parseHeaderHost())
 	{
 		_statusCode = BAD_REQUEST;
-		throw Error("400 Bad Request");
+		return ;
 	}
 	ContentLength();
 	if (_method != "POST") //GET et DELETE n'ont pas besoin de body
@@ -207,7 +207,7 @@ void	Request::checkHeaders()
 	if (_header.find("Content-Length") == _header.end())
 	{
 		_statusCode = BAD_REQUEST;
-		throw Error("400 Bad Request");
+		return ;
 	}
 	_headerParsed = true;
 }
@@ -237,7 +237,7 @@ int	Request::checkChunk()
 		}
 		if (chunk.find_first_not_of("0123456789ABCDEF") != std::string::npos)
 		{
-			std::cerr << "Unexpected token" << std::endl;
+			std::cerr << RED "Error:" RESET " Unexpected token" << std::endl;
 			_statusCode = BAD_REQUEST;
 			return (INCOMPLETE);
 		}
@@ -288,7 +288,7 @@ void	Request::ContentLength()
 	if (ContentLength.find_first_not_of("0123456789") != std::string::npos)
 	{
 		_statusCode = BAD_REQUEST;
-		throw Error("400 Bad Request");
+		return ;
 	}
 	if (ContentLength == "0")
 	{
@@ -299,36 +299,28 @@ void	Request::ContentLength()
 	if (!size || size == ULONG_MAX)
 	{
 		_statusCode = BAD_REQUEST;
-		throw Error("400 Bad Request");
+		return ;
 	}
 	_size = size;
 }
 
-int	Request::parse()
+void	Request::parse()
 {
-	try
+	if (_request.find("\r\n\r\n") == std::string::npos)
 	{
-		if (_request.find("\r\n\r\n") == std::string::npos)
-		{
-			/* Header is incomplete */
-			return (_requestStatus);
-		}
-
-		if (_chunked && _requestStatus != COMPLETE)
-			checkChunk();
-		else
-		{
-			if (!_headerParsed)
-				FuncForParseHeader(); 
+		/* Header is incomplete */
+		std::cerr << RED "Error:" RESET " Request Header is imcoplete" << std::endl;
+		return ;
+	}
+	if (_chunked && _requestStatus != COMPLETE)
+		checkChunk();
+	else
+	{
+		if (!_headerParsed)
+			FuncForParseHeader(); 
+		if (_statusCode == OK)
 			parseBody();
-		}
 	}
-	catch (std::exception &e)
-	{
-		_requestStatus = COMPLETE;
-		std::cerr << e.what() << std::endl;
-	}
-	return (_requestStatus);
 }
 
 /*	GETTER	*/
@@ -339,7 +331,8 @@ size_t Request::getNextWord(std::string& word, const std::string& delimiter)
     if (pos == std::string::npos)
     {
         // si'on trouve pas delimiteur
-        throw Error("No delimiter");
+		std::cerr << RED "Error:" RESET "No delimiter" << std::endl;
+		return 0;
     }
     word = _request.substr(0, pos);
 	total = pos + delimiter.length();
@@ -352,8 +345,9 @@ std::string Request::getNextWord(size_t sizeWord)
 {
     if (_request.length() < sizeWord)
     {
-        throw std::runtime_error("String length is shorter than the specified size");
-    }
+		std::cerr << RED "Error:" RESET "String length is shorter than the specified size" << std::endl;
+		return NULL;
+	}
     std::string nextWord = _request.substr(0, sizeWord);
     _request.erase(0, sizeWord);
     _payloadsize += sizeWord + 2;
@@ -425,7 +419,7 @@ void	Request::PrintHeader()
 //		mtd = "DELETE";
 //	else
 //		mtd = "UNKNOWN";
-	std::cout << PURPLE << "Request parsing check" <<  WHITE << std::endl;
+	std::cout << PURPLE << "Request parsing check" <<  BLUE << std::endl;
 	std::cout << "status code	: " << _statusCode << std::endl;
 //	std::cout << "Method type	: " << mtd << std::endl;
 	std::cout << "Method type	: " << getMethod() << std::endl;
@@ -438,5 +432,5 @@ void	Request::PrintHeader()
 	std::cout << "Query			: " << getQuery() << std::endl;
 	std::cout << "Size			: " << getSize() << std::endl;
 	std::cout << "PayloadSize	: " << getPayloadSize() << std::endl;
-	std::cout << "Body			: " << getBody() << std::endl;
+	std::cout << "Body			: " << getBody() << RESET << std::endl;
 }

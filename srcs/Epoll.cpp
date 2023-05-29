@@ -122,6 +122,8 @@ void	Webserv::handleResponse(Client &client)
 	std::cout << "> Handling response" << std::endl;
 	if (client.getRequest()->_statusCode != OK)
 		return (client.displayErrorPage(_statusCodeList.find(client.getRequest()->_statusCode)));
+	else if (client.getRequest()->_statusCode == OK && client.getRequest()->getPath() != "/index.html")
+		return (client.displayErrorPage(_statusCodeList.find(client.getRequest()->_statusCode)));
 	// GENERATE RESPONSE //
 	
 	// Parsing ok mais une erreur est survenue (page non trouvable par exemple)

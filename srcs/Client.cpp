@@ -170,10 +170,10 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	clearRequest();
 }
 
-int Client::parse(const std::string& str)
+void Client::parse(const std::string& str)
 {
 	_request = new Request(str);
-	int i = _request->parse();
+	_request->parse();
 	_request->PrintHeader();
-	return i;
+	return ;
 }
