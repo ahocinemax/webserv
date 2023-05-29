@@ -42,9 +42,11 @@ class Webserv
 		int					connectEpollToSockets(void);
 		void		        initEpoll(void);
 		int					findClientIndex(int socket);
-
-		void				handleRequest(Client &client);
-		void				handleResponse(Client &client);
+		void				editSocket(int socket, uint32_t flag, struct epoll_event event);
+		void				removeSocket(int socket);
+		void				eraseClient(int index);
+		void				handleRequest(Client &client, struct epoll_event &event);
+		void				handleResponse(Client &client, struct epoll_event &event);
 		bool				clientNotConnected(int socket);
 
 	private:

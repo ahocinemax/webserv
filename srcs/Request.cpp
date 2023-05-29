@@ -1,38 +1,5 @@
 #include "Request.hpp"
 
-
-/*
-	sample:
-	Host: localhost:8080
-	Connection: keep-alive
-	sec-ch-ua: "Google Chrome";v="113", "Chromium";v="113", "Not-A.Brand";v="24"
-	sec-ch-ua-mobile: ?0
-	sec-ch-ua-platform: "Linux"
-	Upgrade-Insecure-Requests: 1
-	User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36
-	Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,**;q=0.8,application/signed-exchange;v=b3;q=0.7
-	Sec-Fetch-Site: none
-	Sec-Fetch-Mode: navigate
-	Sec-Fetch-User: ?1
-	Sec-Fetch-Dest: document
-	Accept-Encoding: gzip, deflate, br
-	Accept-Language: en-US,en;q=0.9,ja;q=0.8,fr;q=0.7
-	Cookie: sessionId=yekwp6nv9y1po66y
-	-----
-	sample : body with chunked
-	HTTP/1.1 200 OK
-	Content-Type: text/plain
-	Transfer-Encoding: chunked
-
-	7\r\n
-	Hello, \r\n
-	9\r\n
-	world!\r\n
-	0\r\n
-	\r\n
-
-*/
-
 Request::Request(const std::string& request) : _request(request)
 {
 	initVariables();
@@ -148,7 +115,7 @@ void	Request::parseHeaders()
 			if (_payloadsize > 10485759)
 				_statusCode = PAYLOAD_TOO_LARGE;
 		}
-		getNextWord(headerName, CRLF);// separete between header/body
+		getNextWord(headerName, CRLF);
 }
 
 bool	Request::parseHeaderHost()
@@ -181,14 +148,6 @@ bool	Request::parseHeaderHost()
 
 void	Request::checkHeaders()
 {
-	/*
-		memo:
-		il faut faire:
-		-> parse entre host / port (localhost:8080)
-		-> check content-length
-		-> check transfer-encoding (chunked)
-		-> bool _headerParsed = true
-	*/
 	StringMap::const_iterator ite;
 	if (!parseHeaderHost())
 	{
@@ -308,7 +267,6 @@ void	Request::parse()
 {
 	if (_request.find("\r\n\r\n") == std::string::npos)
 	{
-		/* Header is incomplete */
 		std::cerr << RED "Error:" RESET " Request Header is imcoplete" << std::endl;
 		return ;
 	}
@@ -330,7 +288,6 @@ size_t Request::getNextWord(std::string& word, const std::string& delimiter)
 	size_t total;
     if (pos == std::string::npos)
     {
-        // si'on trouve pas delimiteur
 		std::cerr << RED "Error:" RESET "No delimiter" << std::endl;
 		return 0;
     }
@@ -411,17 +368,8 @@ void	Request::PrintHeader()
 	StringMap::iterator ite;
 	std::string	mtd;
 
-//	if (getMethod() == 0)
-//		mtd = "GET";
-//	else if (getMethod() == 1)
-//		mtd = "POST";
-//	else if (getMethod() == 1)
-//		mtd = "DELETE";
-//	else
-//		mtd = "UNKNOWN";
 	std::cout << PURPLE << "Request parsing check" <<  BLUE << std::endl;
 	std::cout << "status code	: " << _statusCode << std::endl;
-//	std::cout << "Method type	: " << mtd << std::endl;
 	std::cout << "Method type	: " << getMethod() << std::endl;
 	std::cout << "ProtocolHTTP	: " << getProtocolHTTP() << std::endl;
 	std::cout << "Path			: " << getPath() << std::endl;
