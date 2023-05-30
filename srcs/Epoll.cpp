@@ -93,7 +93,7 @@ int	Webserv::routine(void)
 		}
 
 		handleRequest(_clients[index], events[i]);
-		handleResponse(_clients[index], events[i]);
+		handleResponse(_clients[index], _clients[index].getRequest(), events[i]);
 
 		if (false) // si le client est déconnecté, il faut l'enlever de la liste
 			//_clients.erase(_clients.begin() + index);
@@ -156,16 +156,18 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 	*/
 }
 
-void	Webserv::handleResponse(Client &client, struct epoll_event &event)
+void	Webserv::handleResponse(Client &client, Request &req, struct epoll_event &event)
 {
 	(void)event;
 	std::cout << "> Handling response" << std::endl;
-	if (client.getRequest()->_statusCode != OK)
-		return (client.displayErrorPage(_statusCodeList.find(client.getRequest()->_statusCode)));
+	if (req._statusCode != OK)
+		return (client.displayErrorPage(_statusCodeList.find(req._statusCode)));
 	// Parsing ok mais une erreur est survenue (page non trouvable par exemple)
-	else if (client.getRequest()->_statusCode == OK && client.getRequest()->getPath() != "/index.html")
-		return (client.displayErrorPage(_statusCodeList.find(client.getRequest()->_statusCode)));
+	else if (req._statusCode != OK || req.getPath() != "/index.html")
+		return (client.displayErrorPage(_statusCodeList.find(req._statusCode)));
 	// GENERATE RESPONSE //
+	if (req.getMethod() == "GET")
+		
 	
 	//->if la classe response est bien "generee"
 	//editSocket(client.getSocket(), EPOLLOUT, event);

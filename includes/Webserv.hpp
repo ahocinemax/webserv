@@ -46,7 +46,7 @@ class Webserv
 		void				removeSocket(int socket);
 		void				eraseClient(int index);
 		void				handleRequest(Client &client, struct epoll_event &event);
-		void				handleResponse(Client &client, struct epoll_event &event);
+		void				handleResponse(Client &client, Request &req, struct epoll_event &event);
 		bool				clientNotConnected(int socket);
 
 	private:
