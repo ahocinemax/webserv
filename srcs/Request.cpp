@@ -357,7 +357,7 @@ std::string	Request::getQuery() const { return (_query); }
 
 std::string	Request::getProtocolHTTP() const { return (_protocolHTTP); }
 
-size_t		Request::getSize() const { return (_size); }
+size_t	Request::getSize() const { return (_size); }
 
 std::string	Request::getHost() const { return (_host); }
 
@@ -368,7 +368,7 @@ void	Request::PrintHeader()
 	StringMap::iterator ite;
 	std::string	mtd;
 
-	std::cout << PURPLE << "Request parsing check" <<  BLUE << std::endl;
+	std::cout << PURPLE << "> Request parsing check" <<  BLUE << std::endl;
 	std::cout << "status code	: " << _statusCode << std::endl;
 	std::cout << "Method type	: " << getMethod() << std::endl;
 	std::cout << "ProtocolHTTP	: " << getProtocolHTTP() << std::endl;
