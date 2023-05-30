@@ -63,11 +63,14 @@ void toLower(std::string *str)
 		*ite = std::tolower(*ite);
 }
 
-std::string readFd(int fd) {
+std::string readFd(int fd)
+{
 	//std::string     str;
 	char            buf[BUFSIZE + 1];
 	ssize_t         count;
 
+	if (fd < 0)
+		return ("");
 	count = read(fd, buf, BUFSIZE);
 	if (count < 0)
 		return ("");
