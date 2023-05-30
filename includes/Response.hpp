@@ -12,7 +12,7 @@
 
 #ifndef RESPONSE_HPP
 # define RESPONSE_HPP
-
+# include "Request.hpp"
 # include "Utils.hpp"
 
 class Response
@@ -30,12 +30,14 @@ class Response
 		void		setCustomizeErrorMessage(std::string &message);
 		void		addHeader(std::string key, std::string value);
 		std::string	getBody(void) const { return (_message); }
+		Request*	getRequest();
 
 	private:
 		std::string	_statusCode;
 		std::string	_statusMessage;
 		std::string	_message;
 		StringMap	_head;
+		Request		*_request;
 
 		std::string	getDate(void);
 };

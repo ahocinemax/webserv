@@ -80,6 +80,7 @@ int	Webserv::routine(void)
 
 	for (int i = 0; i < nbEvents; i++)
 	{
+		std::cout << RED "events to handle: " << nbEvents << RESET << std::endl;
 		std::cout << PURPLE "handling event on socket " << events[i].data.fd << RESET << std::endl;
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);

@@ -15,45 +15,46 @@
 */
 
 
-CgiHandler::CgiHandler(Response& response) : 
-    //_request_body(response.GetRequest()->GetBody()),
-    _in(-1),
-    _out(-1),
-    //_scriptPath(response.GetBuiltPath()),
-    //_program(reponse.GetCgiProgram()),
-    //for test
-    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document"),
-    _program("/usr/local/bin/perl"),
-    _env(GetEnv())
-    {
-        if (!AccessiblePath(_scriptPath)) {
-		    response.getStatusCode() = "400";
-            return;
-        }
-        SigpipeSet(0);
-    }
-
-//CgiHandler::CgiHandler() : 
-//    //_response(response),
-//    _request(0),
-//    //_scriptPath(response.GetBuiltPath()),
-//    _request_body(""),
+//CgiHandler::CgiHandler(Response& response) : 
+//    _request_body(response.getRequest()->getBody()),
 //    _in(-1),
 //    _out(-1),
+//    //_scriptPath(response.GetBuiltPath()),
 //    //_program(reponse.GetCgiProgram()),
-//    /*for test*/
-//    _env(GetEnv()),
-//    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document/tohoho.cgi"),//cluter
-//    //_scriptPath("/home/tj/Documents/42/webserv/ahocine/document/tohoho.cgi"),//home
-//    _program("/usr/bin/perl")
+//    //for test
+//    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester"),
+//    _program("/usr/bin/php"),
+//    _env(GetEnv())
 //    {
-//        if (!AccessiblePath(_scriptPath))
-//        {
-//		    _response->getStatusCode() = "400";
+//        if (!AccessiblePath(_scriptPath)) {
+//		    response.getStatusCode() = "400";
 //            return;
 //        }
 //        SigpipeSet(0);
 //    }
+/*for test*/
+CgiHandler::CgiHandler() : 
+    //_response(response),
+    _request(0),
+    //_scriptPath(response.GetBuiltPath()),
+    _request_body(""),
+    _in(-1),
+    _out(-1),
+    //_program(reponse.GetCgiProgram()),
+    /*for test*/
+    _env(GetEnv()),
+    _scriptPath("/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document/test.php"),//cluter
+    //_scriptPath("/home/tj/Documents/42/webserv/ahocine/document/tohoho.cgi"),//home
+    _program("/usr/bin/php")
+    {
+        if (!AccessiblePath(_scriptPath))
+        {
+		    //_response->getStatusCode() = "400";
+            std::cerr<< "error path" << std::endl;
+            return;
+        }
+        SigpipeSet(0);
+    }
 CgiHandler::~CgiHandler()
 {
     Restore();
@@ -131,8 +132,8 @@ void CgiHandler::Execute()
         const_cast<char*>(getProgram().c_str()),
         const_cast<char*>(getScriptPath().c_str()),
         0 };
-    setCgiEnvironment();
-    //TestEnv();
+    //setCgiEnvironment();
+    TestEnv();
     char **env = GetEnvAsCstrArray();
     RedirectOutputToPipe();
     execve(av[0], av, env);
@@ -275,63 +276,63 @@ void CgiHandler::WriteToStdin()
     Testenv()
     test function for setCgiEnvironement();
     to put test value in environement variable for CGI
-
+*/
 void CgiHandler::TestEnv()
 {
-    _env["AUTH_TYPE"] = "basic"; 
-    _env["DOCUMENT_ROOT"] = "test value";
+    _env["AUTH_TYPE"] = "Basic"; 
+    _env["DOCUMENT_ROOT"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine";
 	_env["SERVER_PROTOCOL"] = "HTTP/1.0";
-    _env["CONTENT_TYPE"] = "test value";
-	_env["REQUEST_METHOD"] = "GET";
-	_env["SCRIPT_NAME"] = "test value";
-    _env["CONTENT_LENGTH"] = "100";
-	_env["SERVER_PORT"] = "8080";
-    _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";
-	_env["PATH_INFO"] = "test value";
-    _env["REMOTE_IDENT"] = "test value";
-	_env["REMOTE_ADDR"] = "localhost";
-    _env["SCRIPT_FILENAME"] = "tohoho.pl";
-	_env["QUERY_STRING"] = "test value";
-    _env["REDIRECT_STATUS"] = "test status_code";
-
+    _env["CONTENT_TYPE"] = "application/x-www-form-urlencoded";
+	_env["REQUEST_METHOD"] = "POST";
+	_env["SCRIPT_NAME"] = "/cgi-bin/tohoho.pl";
+    _env["CONTENT_LENGTH"] = "36";
+	_env["SERVER_PORT"] = "80";
+    _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/document/tohoho.pl";
+	_env["PATH_INFO"] = "/";
+    _env["REMOTE_IDENT"] = "test_user";
+	_env["REMOTE_ADDR"] = "127.0.0.1";
+    _env["SCRIPT_FILENAME"] = "test.php";
+	_env["QUERY_STRING"] = "variable1=value1&variable2=value2&variable3=123&variable4=hello%20world";
+    _env["REDIRECT_STATUS"] = "200";
 	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env["SERVER_NAME"] = "webserv";
+	_env["SERVER_NAME"] = "localhost";
 	_env["SERVER_SOFTWARE"] = "webserv/1.0";
 
-    _env["HTTP_ACCEPT"] = "accept";
-    _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";
-    _env["HTTP_USER_AGENT"] = "user-agent";
-    _env["HTTP_COOKIE"] = "cookie";
-    _env["HTTP_REFERER"] = "referer";
+    _env["HTTP_ACCEPT"] = "*/*";
+    _env["HTTP_ACCEPT_LANGAGE"] = "en-US";
+    _env["HTTP_USER_AGENT"] = "Mozilla/5.0";
+    _env["HTTP_COOKIE"] = "sessionid=12345678";
+    _env["HTTP_REFERER"] = "http://localhost";
 }
-*/
 
-void CgiHandler::setCgiEnvironment() {
-	// Set up the environment variables
-    _env["AUTH_TYPE"] = "test";//check rules 
-    _env["DOCUMENT_ROOT"] = "test";//check rules
 
-	_env["SERVER_PROTOCOL"] = _request->getProtocolHTTP();//request->getter for Protocol;
-	_env["REQUEST_METHOD"] = _request->getMethod();//request->getter for getMethod;
-	_env["SCRIPT_NAME"] = _request->getPath();//request->getter for path;
-    _env["CONTENT_LENGTH"] = "test";//response->converter number to string;
-	_env["SERVER_PORT"] = "8080";//response->converter number to string;
-    _env["PATH_TRANSLATED"] = "/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/ubuntu_cgi_tester";//request->getter for path;
-    _env["REMOTE_IDENT"] = _request->getHeader("autorization");//request->GetHeader("Autorization");
-	_env["REMOTE_ADDR"] = _request->getHost();//localhost;
-    _env["SCRIPT_FILENAME"] = "tohoho.pl";//response->cgi name;
-	_env["PATH_INFO"] = "argument";//response->getter for extra;
-	_env["QUERY_STRING"] = "test";//response->getter for querystring;
-    _env["REDIRECT_STATUS"] =  "";//response->getter for status code;
-
-	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
-	_env["SERVER_NAME"] = "webserv";//response-> getter for servername;
-	_env["SERVER_SOFTWARE"] = "webserv/1.0";
-
-    _env["CONTENT_TYPE"] = "content-type";//response->makeHeader("Content-Type");
-    _env["HTTP_ACCEPT"] = "accept";//response->GetHeader("accept");
-    _env["HTTP_ACCEPT_LANGAGE"] = "accept-langage";//response->GetHeader("accept-langage");
-    _env["HTTP_USER_AGENT"] = "user-agent";//response->makeHeader("user-agent");
-    _env["HTTP_COOKIE"] = "cookie";//response->makeHeader("cookie");
-    _env["HTTP_REFERER"] = "referer";//response->makeHeader("referer");
-}
+//void CgiHandler::setCgiEnvironment() {
+//	// Set up the environment variables
+//    _env["AUTH_TYPE"] = "test";//check rules 
+//    _env["DOCUMENT_ROOT"] = "test";//check rules
+//
+//	_env["SERVER_PROTOCOL"] = _request->getProtocolHTTP();
+//	_env["REQUEST_METHOD"] = _request->getMethod();
+//	_env["SCRIPT_NAME"] = _request->getPath();
+//    _env["CONTENT_LENGTH"] = "test";//response->converter number to string;
+//	_env["SERVER_PORT"] = "8080";//response->converter number to string;
+//    _env["PATH_TRANSLATED"] = "";
+//    _env["REMOTE_IDENT"] = _request->getHeader("autorization");//request->GetHeader("Autorization");
+//	_env["REMOTE_ADDR"] = _request->getHost();//localhost;
+//    _env["SCRIPT_FILENAME"] = "tohoho.pl";//response->cgi name;
+//	_env["PATH_INFO"] = "argument";//response->getter for extra;
+//	_env["QUERY_STRING"] = "test";//response->getter for querystring;
+//    _env["REDIRECT_STATUS"] =  "";//response->getter for status code;
+//
+//	_env["GATEWAY_INTERFACE"] = "CGI/1.1";
+//	_env["SERVER_NAME"] = "webserv";//response-> getter for servername;
+//	_env["SERVER_SOFTWARE"] = "webserv/1.0";// response-> getter for servesoftware;
+//
+//    _env["CONTENT_TYPE"] = _request->getHeader("content-type");
+//    _env["HTTP_ACCEPT"] = _request->getHeader("accept");
+//    _env["HTTP_ACCEPT_LANGAGE"] = _request->getHeader("accept-langage");
+//    _env["HTTP_USER_AGENT"] = _request->getHeader("user-agent");
+//    _env["HTTP_COOKIE"] = _request->getHeader("cookie");
+//    _env["HTTP_REFERER"] = _request->getHeader("referer");
+//}
+//

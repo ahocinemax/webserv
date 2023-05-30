@@ -49,6 +49,7 @@ print "\n";
 print "=================================\n";
 print "environement\n";
 print "=================================\n";
+print "REQUEST_METHOD = [ " . html($ENV{'REQUEST_METHOD'}) . " ]\n";
 print "AUTH_TYPE = [ " . html($ENV{'AUTH_TYPE'}) . " ]\n";
 print "CONTENT_LENGTH = [ " . html($ENV{'CONTENT_LENGTH'}) . " ]\n";
 print "CONTENT_TYPE = [ " . html($ENV{'CONTENT_TYPE'}) . " ]\n";
@@ -65,7 +66,6 @@ print "REMOTE_ADDR = [ " . html($ENV{'REMOTE_ADDR'}) . " ]\n";
 #print "REMOTE_HOST = [ " . html($ENV{'REMOTE_HOST'}) . " ]\n";
 print "REMOTE_IDENT = [ " . html($ENV{'REMOTE_IDENT'}) . " ]\n";
 #print "REMOTE_USER = [ " . html($ENV{'REMOTE_USER'}) . " ]\n";
-print "REQUEST_METHOD = [ " . html($ENV{'REQUEST_METHOD'}) . " ]\n";
 print "SCRIPT_NAME = [ " . html($ENV{'SCRIPT_NAME'}) . " ]\n";
 print "SERVER_NAME = [ " . html($ENV{'SERVER_NAME'}) . " ]\n";
 print "SERVER_PORT = [ " . html($ENV{'SERVER_PORT'}) . " ]\n";
@@ -82,11 +82,13 @@ print "=================================\n";
 if ($ENV{'REQUEST_METHOD'} eq "POST") {
 	# If it's POST read by STDIN
 	read(STDIN, $query_string, $ENV{'CONTENT_LENGTH'});
+	my $test_input = <STDIN>;
+	print "Test input: " . html($test_input) . "\n";
 } else {
 	# If it's GET read by enironement variable 
 	$query_string = $ENV{'QUERY_STRING'};
 }
-# "ariable1=value1&variable2=value2" split by &
+# "variable1=value1&variable2=value2" split by &
 @a = split(/&/, $query_string);
 foreach $a (@a) {
 	# split by =
