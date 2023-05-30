@@ -267,7 +267,7 @@ void	Request::parse()
 {
 	if (_request.find("\r\n\r\n") == std::string::npos)
 	{
-		std::cerr << RED "Error:" RESET " Request Header is imcoplete" << std::endl;
+		std::cerr << RED "Error:" RESET " Request Header is incomplete" << std::endl;
 		return ;
 	}
 	if (_chunked && _requestStatus != COMPLETE)
