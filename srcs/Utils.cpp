@@ -72,8 +72,7 @@ std::string readFd(int fd) {
 	if (count < 0)
 		return ("");
 	buf[count] = '\0';
-	//str.insert(str.size(), buf, count);
 	std::string str(buf);
-	std::cout << "Read " << RED <<count << WHITE << " bytes: \n" << YELLOW << buf << WHITE << std::endl;
+	std::cout << "Read " << RED <<count << RESET << " bytes: \n" << YELLOW << buf << RESET << std::endl;
 	return (str);
 }

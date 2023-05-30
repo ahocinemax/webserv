@@ -113,7 +113,7 @@ int		Client::charCounter(std::string str, char c)
 
 void	Client::clearRequest(void)
 {
-	memset(_request, 0, (MAX_REQUEST_SIZE + 1) * sizeof(Request));
+	memset(&_request, 0, (MAX_REQUEST_SIZE + 1) * sizeof(Request));
 	_recvSize = 0;
 }
 
