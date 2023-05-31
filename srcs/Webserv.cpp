@@ -89,7 +89,7 @@ void	Webserv::postMethod(Client &client, Request &request)
 {
 	if (request._header["Transfer-Encoding"] != "chunked" && request._header.find("Content_Lenght") == request._header.end())
 	{
-		client.displayErrorPage(_statusCodeList.find(411));
+		client.displayErrorPage(_statusCodeList.find(LENGTH_REQUIRED));
 		return ;
 	}
 
@@ -100,10 +100,10 @@ void	Webserv::postMethod(Client &client, Request &request)
 	if (S_ISDIR(fileStat.st_mode))
 	{
 		if (request._header.find("Content-Type") == request._header.end())
-			return (client.displayErrorPage(_statusCodeList.find(400)));
+			return (client.displayErrorPage(_statusCodeList.find(BAD_REQUEST)));
 		std::size_t	begin = request._header["Content-Type"].find("boundary=");
 		if (begin == std::string::npos)
-			return (client.displayErrorPage(_statusCodeList.find(400)));
+			return (client.displayErrorPage(_statusCodeList.find(BAD_REQUEST)));
 		std::string	boundary = request._header["Content-Type"].substr(begin + 9);
 		begin = 0;
 		std::size_t	end = 0;
@@ -145,21 +145,73 @@ void	Webserv::postMethod(Client &client, Request &request)
 void	Webserv::getMethod(Client &client, std::string path)
 {
 	std::string		filePath = getPath(client, path);
-	FILE			*file = fopen(filePath.c_str(), "r");
+	if (filePath.length() > MAX_URI_LENGTH)
+		return (client.displayErrorPage(_statusCodeList.find(URI_TOO_LONG)));
 
+	struct stat fileStat;
+	lstat(filePath.c_str(), &fileStat);
+	FILE			*file = fopen(filePath.c_str(), "rb");
 	if (file == NULL)
-		return (client.displayErrorPage(_statusCodeList.find(404)));
+		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
 	fclose(file);
 
-	Response	response(_statusCodeList[200]);
-	std::string	header = response.makeHeader(true);
-	int			ret = send(client.getSocket(), header.c_str(), header.length(), 0);
+	if (S_ISDIR(fileStat.st_mode))
+	{
+		std::cout << "> Path requested is directory" << std::endl;
+		Location *location = client._server->getLocation(path);
+		StrVector indexVec;
+		bool notFound = true;
+		if (location)
+			indexVec = location->_index;
+		else
+			indexVec = client._server->index;
 
+		if (*filePath.end() != '/')
+			filePath += "/";
+		for (StrVector::iterator it = indexVec.begin(); it != indexVec.end(); it++)
+		{
+			std::string	tmp = filePath + *it;
+			file = fopen(tmp.c_str(), "rb");
+			if (file != NULL)
+			{
+				notFound = false;
+				fclose(file);
+				filePath += *it;
+				break ;
+			}
+		}
+
+		if (notFound)
+		{
+			// if (client._server->autoindex)
+			// 	return (sendAutoindex(client, filePath));
+			return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
+		}
+	}
+
+	file = fopen(filePath.c_str(), "rb");
+	const char *mime = getMimeType(filePath.c_str()); // Protected inside getMimeType function
+	Response	response(_statusCodeList[OK]);
+	response.addHeader("Content-Length", to_string(fileStat.st_size));
+	response.addHeader("Content-Type", mime);
+	std::string	header = response.makeHeader(false);
+	int			ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 	if (ret < 0)
-		client.displayErrorPage(_statusCodeList.find(500));
+		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
 	else if (ret == 0)
-		client.displayErrorPage(_statusCodeList.find(400));
-	std::cout << GREEN << filePath << " sent (" << 200 << ")" RESET << std::endl;
+		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
+	char		buffer[BUFFER_SIZE + 1];
+	ssize_t		readSize = 0;
+	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0) // freed allowed ?
+	{
+		ret = send(client.getSocket(), buffer, readSize, 0);
+		if (ret < 0)
+			client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+		else if (ret == 0)
+			client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
+	}
+	fclose(file);
+	std::cout << GREEN << filePath << " sent (" << OK << ")" RESET << std::endl;
 }
 
 void Webserv::setStatusCodes(void)
@@ -259,4 +311,24 @@ bool	Webserv::clientNotConnected(int socket)
 			return (false);
 	}
 	return (true);
+}
+
+const char *Webserv::getMimeType(const char *path)
+{
+	const char *extentionDot = strrchr(path, '.');
+	if (extentionDot)
+	{
+		if (strcmp(extentionDot, ".css") == 0) return "text/css";
+		if (strcmp(extentionDot, ".csv") == 0) return "text/csv";
+		if (strcmp(extentionDot, ".html") == 0) return "text/html";
+		if (strcmp(extentionDot, ".js") == 0) return "application/javascript";
+		if (strcmp(extentionDot, ".json") == 0) return "application/json";
+		if (strcmp(extentionDot, ".pdf") == 0) return "application/pdf";
+		if (strcmp(extentionDot, ".gif") == 0) return "image/gif";
+		if (strcmp(extentionDot, ".jpeg") == 0) return "image/jpeg";
+		if (strcmp(extentionDot, ".jpg") == 0) return "image/jpeg";
+		if (strcmp(extentionDot, ".png") == 0) return "image/png";
+		if (strcmp(extentionDot, ".svg") == 0) return "image/svg+xml";
+	}
+	return "text/plain";
 }

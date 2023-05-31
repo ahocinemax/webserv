@@ -14,9 +14,7 @@
 
 Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(0), _server(server)
 {
-	//clearRequest();
 	gettimeofday(&_timer, NULL);
-	//memset(_request, 0, MAX_REQUEST_SIZE + 1);
 }
 
 Client::~Client(void)
@@ -113,7 +111,8 @@ int		Client::charCounter(std::string str, char c)
 
 void	Client::clearRequest(void)
 {
-	memset(&_request, 0, (MAX_REQUEST_SIZE + 1) * sizeof(Request));
+// 	for (int i = 0 ; i < MAX_REQUEST_SIZE + 1 ; i++)
+// 		_request[i] = 0;
 	_recvSize = 0;
 }
 
@@ -167,7 +166,6 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 		std::cerr << RED "Error:" RESET " send() failed: connection closed" << std::endl;
 	else
 		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes" << std::endl;
-	clearRequest();
 }
 
 void Client::parse(const std::string& str)

@@ -26,6 +26,7 @@
 # include <stdlib.h>
 # include <cstdlib>
 
+# define MAX_URI_LENGTH					64
 # define BUFFER_SIZE					30720
 # define SUCCESS						0
 # define FAILED							-1

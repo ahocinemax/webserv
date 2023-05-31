@@ -147,7 +147,7 @@ Location	*Server::getLocation(std::string uriRequest) const
 
 bool	Server::validLocation(std::string pathLocation, std::string uriRequest) const
 {
-	if (pathLocation.compare(0, uriRequest.length(), uriRequest) != 0)
+	if (uriRequest.compare(0, pathLocation.length(), pathLocation) != 0)
 		return (false);
 	else if (uriRequest[pathLocation.length()])
 	{

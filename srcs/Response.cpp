@@ -57,8 +57,10 @@ std::string	Response::getStatusCode(void) const { return (_statusCode); }
 
 std::string	Response::getStatusMessage(void) const { return (_statusMessage); }
 
-void	Response::setCustomizeErrorMessage(std::string &message) { _message = message; }
+void	Response::setCustomizeErrorMessage(std::string &message)
+{ _message = message; }
 
-void	Response::addHeader(std::string key, std::string value) { _head[key] = value; } // Utiliser insert(make_pair(key, value)) ?
+void	Response::addHeader(std::string key, std::string value)	
+{ _head.insert(std::make_pair(key, value)); }
 
 Request*	Response::getRequest(){return (_request);}

@@ -15,7 +15,7 @@ int	Webserv::initConnection(int socket)
 	if ((client.setSocket(accept(socket, &client._addr, &client._addrLen)) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK)))
 		throw AcceptException();
 
-	initEvent(event, EPOLLIN | EPOLLET, client.getSocket());
+	initEvent(event, EPOLLIN, client.getSocket());
 	std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(client._server->_socket) + " at " + client._server->_ipAddress + ":" + client._server->_port << std::endl;
 	std::cout << PURPLE << std::setw(52) << "socket " + to_string(client.getSocket()) + " created to communicate" << RESET << std::endl;
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, client.getSocket(), &event) < SUCCESS)
@@ -78,9 +78,9 @@ int	Webserv::routine(void)
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, -1)) < SUCCESS)
 		throw EpollWaitException();
 
-	for (int i = 0; i < nbEvents; i++)
+	for (int i = 0 ; i < nbEvents ; i++)
 	{
-		std::cout << RED "events to handle: " << nbEvents << RESET << std::endl;
+		std::cout << RED "events still to handle: " << nbEvents - i << RESET << std::endl;
 		std::cout << PURPLE "handling event on socket " << events[i].data.fd << RESET << std::endl;
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
@@ -91,11 +91,12 @@ int	Webserv::routine(void)
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			return (FAILED);
 		}
-
 		handleRequest(_clients[index], events[i]);
-		handleResponse(_clients[index], _clients[index].getRequest(), events[i]);
-
-		eraseClient(index);
+		Request *request = _clients[index].getRequest();
+		handleResponse(_clients[index], request, events[i]);
+		StringMap::iterator it = request->_header.find("connection");
+		if (it == request->_header.end() || it->second != "keep-alive")
+			eraseClient(index);
 	}
 	return (SUCCESS);
 }
@@ -158,10 +159,9 @@ void	Webserv::handleResponse(Client &client, Request *req, struct epoll_event &e
 {
 	(void)event;
 	std::cout << "> Handling response" << std::endl;
+	if (req == NULL)
+		return ;
 	if (req->_statusCode != OK)
-		return (client.displayErrorPage(_statusCodeList.find(req->_statusCode)));
-	// Parsing ok mais une erreur est survenue (page non trouvable par exemple)
-	else if (req->_statusCode == OK && req->getPath() != "/index.html")
 		return (client.displayErrorPage(_statusCodeList.find(req->_statusCode)));
 	// GENERATE RESPONSE //
 	if (req->getMethod() == "GET")
@@ -170,9 +170,11 @@ void	Webserv::handleResponse(Client &client, Request *req, struct epoll_event &e
 		postMethod(client, *req);
 	else if (req->getMethod() == "DELETE")
 		deleteMethod(client, req->getPath());
+	else
+		return (client.displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 	
 	//->if la classe response est bien "generee"
-	//editSocket(client.getSocket(), EPOLLOUT, event);
+	editSocket(client.getSocket(), EPOLLOUT, event);
 }
 
 const char*	Webserv::EpollCreateException::what() const throw()

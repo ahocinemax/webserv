@@ -27,11 +27,11 @@ class Location
 
 	public:
 		int						_client_body_limit;
-		MethodVector	_allowMethods;
+		MethodVector			_allowMethods;
 		StrVector				_index;
 		std::string				_path;
 		std::string				_root;
-		StringMap					_cgi;
+		StringMap				_cgi;
 };
 
 #endif

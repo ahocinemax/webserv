@@ -48,6 +48,7 @@ class Webserv
 		void				handleRequest(Client &client, struct epoll_event &event);
 		void				handleResponse(Client &client, Request *req, struct epoll_event &event);
 		bool				clientNotConnected(int socket);
+		const char			*getMimeType(const char *path);
 
 	private:
 		std::vector<Client>	_clients;
