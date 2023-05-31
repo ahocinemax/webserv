@@ -190,10 +190,11 @@ void	Webserv::getMethod(Client &client, std::string path)
 	}
 
 	file = fopen(filePath.c_str(), "rb");
+	std::cout << BLUE "> File requested is " << filePath << RESET << std::endl;
 	const char *mime = getMimeType(filePath.c_str()); // Protected inside getMimeType function
 	Response	response(_statusCodeList[OK]);
-	response.addHeader("Content-Length", to_string(fileStat.st_size));
-	response.addHeader("Content-Type", mime);
+	response.addHeader("content-length", to_string(fileStat.st_size));
+	response.addHeader("content-type", mime);
 	std::string	header = response.makeHeader(false);
 	int			ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 	if (ret < 0)
@@ -202,7 +203,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 	char		buffer[BUFFER_SIZE + 1];
 	ssize_t		readSize = 0;
-	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0) // freed allowed ?
+	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0) // fread allowed ?
 	{
 		ret = send(client.getSocket(), buffer, readSize, 0);
 		if (ret < 0)
@@ -318,17 +319,17 @@ const char *Webserv::getMimeType(const char *path)
 	const char *extentionDot = strrchr(path, '.');
 	if (extentionDot)
 	{
-		if (strcmp(extentionDot, ".css") == 0) return "text/css";
-		if (strcmp(extentionDot, ".csv") == 0) return "text/csv";
+		if (strcmp(extentionDot, ".css") == 0)	return "text/css";
+		if (strcmp(extentionDot, ".csv") == 0)	return "text/csv";
 		if (strcmp(extentionDot, ".html") == 0) return "text/html";
-		if (strcmp(extentionDot, ".js") == 0) return "application/javascript";
+		if (strcmp(extentionDot, ".js") == 0)	return "application/javascript";
 		if (strcmp(extentionDot, ".json") == 0) return "application/json";
-		if (strcmp(extentionDot, ".pdf") == 0) return "application/pdf";
-		if (strcmp(extentionDot, ".gif") == 0) return "image/gif";
+		if (strcmp(extentionDot, ".pdf") == 0)	return "application/pdf";
+		if (strcmp(extentionDot, ".gif") == 0)	return "image/gif";
 		if (strcmp(extentionDot, ".jpeg") == 0) return "image/jpeg";
-		if (strcmp(extentionDot, ".jpg") == 0) return "image/jpeg";
-		if (strcmp(extentionDot, ".png") == 0) return "image/png";
-		if (strcmp(extentionDot, ".svg") == 0) return "image/svg+xml";
+		if (strcmp(extentionDot, ".jpg") == 0)	return "image/jpeg";
+		if (strcmp(extentionDot, ".png") == 0)	return "image/png";
+		if (strcmp(extentionDot, ".svg") == 0)	return "image/svg+xml";
 	}
 	return "text/plain";
 }

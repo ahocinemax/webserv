@@ -66,6 +66,7 @@ void Webserv::eraseClient(int index)
 	if (close(clientfd) < 0)
 		std::cerr << "eraseClient(close) error" << std::endl;
 	_clients.erase(_clients.begin() + index);
+	std::cout << YELLOW << "[Close]" << RESET << " connection on socket " + to_string(clientfd) << std::endl;
 }
 
 int	Webserv::routine(void)
@@ -80,13 +81,12 @@ int	Webserv::routine(void)
 
 	for (int i = 0 ; i < nbEvents ; i++)
 	{
-		std::cout << RED "events still to handle: " << nbEvents - i << RESET << std::endl;
 		std::cout << PURPLE "handling event on socket " << events[i].data.fd << RESET << std::endl;
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
 		if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
 			index = initConnection(events[i].data.fd);
-		else if (events[i].data.fd == STDIN_FILENO)
+		else if (events[i].data.fd == STDIN_FILENO) // NOT WORKING !
 		{
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			return (FAILED);
@@ -143,7 +143,6 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 	(void)event;
 	std::cout << "> Parsing request" << std::endl;
 	std::string	str = readFd(client.getSocket());
-	std::cout << "readFd returned:\n" << BLUE << str << WHITE << std::endl;
 	client.parse(str);
 	if (client.getRequest()->_statusCode != OK)
 		return;
@@ -158,23 +157,38 @@ void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 void	Webserv::handleResponse(Client &client, Request *req, struct epoll_event &event)
 {
 	(void)event;
+	
 	std::cout << "> Handling response" << std::endl;
 	if (req == NULL)
 		return ;
 	if (req->_statusCode != OK)
 		return (client.displayErrorPage(_statusCodeList.find(req->_statusCode)));
 	// GENERATE RESPONSE //
-	if (req->getMethod() == "GET")
-		getMethod(client, req->getPath());
-	else if (req->getMethod() == "POST")
-		postMethod(client, *req);
-	else if (req->getMethod() == "DELETE")
-		deleteMethod(client, req->getPath());
+	if (CGI)
+	{
+		if (req->getMethod() == "GET")
+			getMethodCGI(client, req->getPath());
+		else if (req->getMethod() == "POST")
+			postMethodCGI(client, *req);
+		else if (req->getMethod() == "DELETE")
+			deleteMethodCGI(client, req->getPath());
+		else
+			return (client.displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+	}
 	else
-		return (client.displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+	{
+		if (req->getMethod() == "GET")
+			getMethod(client, req->getPath());
+		else if (req->getMethod() == "POST")
+			postMethod(client, *req);
+		else if (req->getMethod() == "DELETE")
+			deleteMethod(client, req->getPath());
+		else
+			return (client.displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+	}
 	
 	//->if la classe response est bien "generee"
-	editSocket(client.getSocket(), EPOLLOUT, event);
+	// editSocket(client.getSocket(), EPOLLOUT, event);
 }
 
 const char*	Webserv::EpollCreateException::what() const throw()

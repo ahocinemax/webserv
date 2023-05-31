@@ -16,6 +16,7 @@
 # include "Response.hpp"
 # include "Request.hpp"
 # include "Client.hpp"
+# include "CgiHandler.hpp"
 
 # include <sys/epoll.h>
 # include <sys/stat.h>

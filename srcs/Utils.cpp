@@ -76,6 +76,5 @@ std::string readFd(int fd)
 		return ("");
 	buf[count] = '\0';
 	std::string str(buf);
-	std::cout << "Read " << RED <<count << RESET << " bytes: \n" << YELLOW << buf << RESET << std::endl;
 	return (str);
 }

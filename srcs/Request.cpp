@@ -10,7 +10,7 @@ Request::~Request() {}
 
 void	Request::initVariables()
 {
-	_statusCode = OK;
+	_statusCode = BAD_REQUEST;
 	_requestStatus = INCOMPLETE;
 	_method = UNKNOWN;
 	_path = "";
@@ -275,7 +275,7 @@ void	Request::parse()
 	else
 	{
 		if (!_headerParsed)
-			FuncForParseHeader(); 
+			FuncForParseHeader();
 		if (_statusCode == OK)
 			parseBody();
 	}

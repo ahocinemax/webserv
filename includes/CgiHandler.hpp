@@ -21,7 +21,7 @@ class   Response;
 class CgiHandler
 {
     public:
-      CgiHandler(Response& response);
+        CgiHandler(Response& response);
         CgiHandler();//now with test value (without other class)
         virtual ~CgiHandler();
 
