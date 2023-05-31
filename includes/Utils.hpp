@@ -14,6 +14,7 @@
 # define UTILS_HPP
 
 # include <sstream>
+# include <fstream>
 # include <iostream>
 # include <string>
 # include <string.h>

@@ -16,8 +16,6 @@ int	Webserv::initConnection(int socket)
 		throw AcceptException();
 
 	initEvent(event, EPOLLIN, client.getSocket());
-	std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(client._server->_socket) + " at " + client._server->_ipAddress + ":" + client._server->_port << std::endl;
-	std::cout << PURPLE << std::setw(52) << "socket " + to_string(client.getSocket()) + " created to communicate" << RESET << std::endl;
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, client.getSocket(), &event) < SUCCESS)
 		throw EpollCtlException();
 	_clients.push_back(client);
@@ -81,7 +79,6 @@ int	Webserv::routine(void)
 
 	for (int i = 0 ; i < nbEvents ; i++)
 	{
-		std::cout << PURPLE "handling event on socket " << events[i].data.fd << RESET << std::endl;
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
 		if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
@@ -92,6 +89,15 @@ int	Webserv::routine(void)
 			return (FAILED);
 		}
 		handleRequest(_clients[index], events[i]);
+		if (_clients[index].getRequest() == NULL)
+		{
+			eraseClient(index);
+			continue ;
+		}
+		std::cout << PURPLE "handling event on socket " << events[i].data.fd << RESET << std::endl;
+		std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(_clients[index]._server->_socket) + " at " + _clients[index]._server->_ipAddress + ":" + _clients[index]._server->_port << std::endl;
+		std::cout << PURPLE << std::setw(52) << "socket " + to_string(_clients[index].getSocket()) + " created to communicate" << RESET << std::endl;
+
 		Request *request = _clients[index].getRequest();
 		handleResponse(_clients[index], request, events[i]);
 		StringMap::iterator it = request->_header.find("connection");
@@ -141,8 +147,9 @@ int	Webserv::connectEpollToSockets()
 void	Webserv::handleRequest(Client &client, struct epoll_event &event)
 {
 	(void)event;
-	std::cout << "> Parsing request" << std::endl;
 	std::string	str = readFd(client.getSocket());
+	if (str.empty())
+		return;
 	client.parse(str);
 	if (client.getRequest()->_statusCode != OK)
 		return;
@@ -161,19 +168,20 @@ void	Webserv::handleResponse(Client &client, Request *req, struct epoll_event &e
 	std::cout << "> Handling response" << std::endl;
 	if (req == NULL)
 		return ;
-	if (req->_statusCode != OK)
+	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client.displayErrorPage(_statusCodeList.find(req->_statusCode)));
 	// GENERATE RESPONSE //
-	if (CGI)
+	if (isValidCGI(req->getPath()))
 	{
-		if (req->getMethod() == "GET")
-			getMethodCGI(client, req->getPath());
-		else if (req->getMethod() == "POST")
-			postMethodCGI(client, *req);
-		else if (req->getMethod() == "DELETE")
-			deleteMethodCGI(client, req->getPath());
-		else
-			return (client.displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+		// if (req->getMethod() == "GET")
+		// 	getMethodCGI(client, req->getPath());
+		// else if (req->getMethod() == "POST")
+		// 	postMethodCGI(client, *req);
+		// else if (req->getMethod() == "DELETE")
+		// 	deleteMethodCGI(client, req->getPath());
+		// else
+		// 	return (client.displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+		std::cout << RED "CGI BOOL IS TRUE" RESET << std::endl;
 	}
 	else
 	{

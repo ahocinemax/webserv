@@ -10,7 +10,7 @@ Request::~Request() {}
 
 void	Request::initVariables()
 {
-	_statusCode = BAD_REQUEST;
+	_statusCode = OK; // mettre une erreur par defaut, puis la changer si besoin
 	_requestStatus = INCOMPLETE;
 	_method = UNKNOWN;
 	_path = "";
@@ -98,9 +98,7 @@ void	Request::parseHeaders()
 {
 		std::string	headerName;
 		std::string headerVal;
-		size_t pos;
-
-		pos = 0;
+		size_t pos = 0;
 		while (pos != std::string::npos && _request.find(CRLF))
 		{
 			pos = getNextWord(headerName, ":");
@@ -111,7 +109,7 @@ void	Request::parseHeaders()
 			trimSpacesStr(&headerVal);
 			if (isHeader(headerName))
 				_statusCode = BAD_REQUEST;
-			_header[headerName] = headerVal;
+			_header.insert(std::make_pair(headerName, headerVal));
 			if (_payloadsize > 10485759)
 				_statusCode = PAYLOAD_TOO_LARGE;
 		}

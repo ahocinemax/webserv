@@ -11,7 +11,6 @@
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
-#include "Epoll.hpp"
 
 Webserv::Webserv(ServerVector server) : _serversVec(server)
 {
@@ -87,7 +86,7 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 
 void	Webserv::postMethod(Client &client, Request &request)
 {
-	if (request._header["Transfer-Encoding"] != "chunked" && request._header.find("Content_Lenght") == request._header.end())
+	if (request._header["transfer-encoding"] != "chunked" && request._header.find("content_lenght") == request._header.end())
 	{
 		client.displayErrorPage(_statusCodeList.find(LENGTH_REQUIRED));
 		return ;
@@ -99,12 +98,12 @@ void	Webserv::postMethod(Client &client, Request &request)
 	lstat(filePath.c_str(), &fileStat);
 	if (S_ISDIR(fileStat.st_mode))
 	{
-		if (request._header.find("Content-Type") == request._header.end())
+		if (request._header.find("content-type") == request._header.end())
 			return (client.displayErrorPage(_statusCodeList.find(BAD_REQUEST)));
-		std::size_t	begin = request._header["Content-Type"].find("boundary=");
+		std::size_t	begin = request._header["content-type"].find("boundary=");
 		if (begin == std::string::npos)
 			return (client.displayErrorPage(_statusCodeList.find(BAD_REQUEST)));
-		std::string	boundary = request._header["Content-Type"].substr(begin + 9);
+		std::string	boundary = request._header["content-type"].substr(begin + 9);
 		begin = 0;
 		std::size_t	end = 0;
 		std::string	fileName;
@@ -128,7 +127,7 @@ void	Webserv::postMethod(Client &client, Request &request)
 	else
 		writeResponse(client, request.getBody(), filePath);
 	int	code = 201;
-	if (request._header["Content-Lenght"] == "0")
+	if (request._header["content-lenght"] == "0")
 		code = 204;
 	
 	Response	response(_statusCodeList[code]);
@@ -332,4 +331,34 @@ const char *Webserv::getMimeType(const char *path)
 		if (strcmp(extentionDot, ".svg") == 0)	return "image/svg+xml";
 	}
 	return "text/plain";
+}
+
+bool Webserv::isValidCGI(std::string path) const
+{
+	// Vérifiez l'extension du fichier
+	if (path.length() >= 4)
+	{
+		std::string extension = path.substr(path.length() - 4, 4);
+		if (extension == ".cgi" || extension == ".pl" || extension == ".py" || extension == ".php")
+			return (true);
+	}
+
+	// Si le fichier est .html, vérifiez la présence de balises PHP
+	if (path.length() >= 5)
+	{
+		std::string extension = path.substr(path.length() - 5, 5);
+		if (extension == ".html")
+		{
+			std::ifstream file(path.c_str());
+			std::ostringstream ss;
+			ss << file.rdbuf();
+			std::string content = ss.str();
+			
+			// Recherchez les balises PHP ouvrantes et fermantes
+			if (content.find("<?php") != std::string::npos && content.find("?>") != std::string::npos)
+				return (true);
+		}
+	}
+
+	return (false);
 }

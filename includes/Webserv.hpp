@@ -17,6 +17,7 @@
 # include "Request.hpp"
 # include "Client.hpp"
 # include "CgiHandler.hpp"
+# include "Utils.hpp"
 
 # include <sys/epoll.h>
 # include <sys/stat.h>
@@ -24,6 +25,7 @@
 # include <cstdio>
 # include <limits>
 # include <iomanip>
+
 
 # define MAX_EPOLL_EVENTS 1000
 
@@ -63,6 +65,7 @@ class Webserv
 		void				postMethod(Client &client, Request &request);
 		void				getMethod(Client &client, std::string path);
 
+		bool				isValidCGI(std::string path) const;
 		void				setStatusCodes(void);
 
 		std::string			getPath(Client &client, std::string path);

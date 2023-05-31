@@ -1,16 +1,135 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <meta charset="utf-8">
-        <link href="index.css" rel="stylesheet">
-        <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>🌍<WEBSERV🌍</title>
-    </head>
-    <body>
-        <h1> Welcome to our Webserv </h1>
-        <p>(((Test page ( ^_^)/~~★☆)))</p>
-        <img src = "./img/nyan-cat.gif" alt="">
-        <a href="https://www.youtube.com/watch?v=jIQ6UV2onyI">to watch video</a>
 
-    </body>
+<head>
+	<!-- Basic -->
+	<meta charset="utf-8" />
+	<link rel="icon" href="images/logo_p.png">
+	<!-- Mobile Metas -->
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+	<title>My Curriculum</title>
+
+	<!-- slider stylesheet -->
+	
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+	<!-- style -->
+	<link href="https://fonts.googleapis.com/css?family=Dosis:400,500|Poppins:400,700&display=swap" rel="stylesheet">
+	<link href="css/style.css" rel="stylesheet" />
+</head>
+
+<body>
+	<!-- header section -->
+	<header class="header-section">
+		<div class="container-fluid">
+			<nav class="navbar sticky-top">
+				<ul class="navbar-nav">
+					<li class="navbar-logo">
+						<a href="index.html">
+							<img src="images/logo_p.png" id="logo">
+						</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="projects.html">Projects </a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="formation.html">Formation </a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="aboutme.html">A propos</a>
+					</li>
+					<li class="nav-item">
+						<a class="nav-link" href="contact.html">Contact</a>
+					</li>
+				</ul>
+			</nav>
+		</div>
+	</header>
+	<!-- end header section -->
+
+	<!-- carousel section -->
+	<section class="carousel">
+		<div id="carousel" class="slide" data-ride="carousel">
+			<button class="carousel-control--prev is-hidden">
+				<img id="carousel-control" src="images/left.png" alt="">
+			</button>
+
+			<div class="track-container">
+				<ul class="carousel-track">
+					<li class="carousel-item active">
+						<a href="aboutme.html">
+							<img class="carousel_image" src="images/code-overlay.png" alt="First slide">
+							
+						</a>
+					</li>
+					<li class="carousel-item">
+						<a href="formation.html">
+							<img class="carousel_image" src="images/carousel2.jpg" alt="Second slide">
+						</a>
+					</li>
+					<li class="carousel-item">
+						<a href="projects.html">
+							<img class="carousel_image" src="images/42.jpg" alt="Third slide">
+						</a>
+					</li>
+				</ul>
+			</div>			
+			<button class="carousel-control--next">
+				<img id="carousel-control" src="images/right.png" alt="">
+			</button>
+			<div class="carousel-navDots">
+				<button class="carousel-indicator active"></button>
+				<button class="carousel-indicator"></button>
+				<button class="carousel-indicator"></button>
+			</div>
+		  </div>
+	</section>
+	<!-- end carousel section -->
+
+	<!-- about section -->
+	<section class="about_section chart">
+		<div class="main-container">
+			<div class="detail-box">
+				<h2 class="custom_heading">Available now, for <span>partial time</span></h2>
+				<p>
+					Currently 23 years old and student, I'm at 42 School since 2021, April. I just graduate 
+					from L3 MIASHS (Maths, Informatic, Economy bachelor) on early June 2021.
+				</p>
+				<br>
+				<p>
+					My experiences hepled me to develop my <b>relationship skills</b>, with customers as
+					with children. Indeed, I had the oportunity to work as private teacher in sciences, 
+					at home and at school (elementary to high school). <b>Autodidact</b> and <b>Digital
+					Native</b>, I also improved my seller's skills trough various experiences.
+				</p>
+				<br>
+				<p>
+					I'm looking for my first experience as <b>Web Developer Junior</b> and this is my hand-made website, 
+					to introduce myself. I really enjoyed coding this so please, <i>Just take a look !</i>
+				</p>
+			<div>
+		</div>
+	</section>
+	<!-- end about section -->
+
+	<!-- service section -->
+	<section class="service_section about">
+		<?php 
+            echo "This is PHP code inside html"
+		?>
+	</section>
+	<!-- end service section -->
+
+	<!-- footer section -->
+	<section class="container-fluid footer_section">
+		<p>&copy; 2022 All Rights Reserved By ahocine. 
+			<a style="font-size: 19px;" href="aboutme.html">En découvrir plus</a>
+		</p>
+	</section>
+	<!-- end footer section -->
+
+	<script type="text/javascript" src="js/carousel.js"></script>
+</body>
 </html>

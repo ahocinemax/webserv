@@ -65,16 +65,28 @@ void toLower(std::string *str)
 
 std::string readFd(int fd)
 {
-	//std::string     str;
-	char            buf[BUFSIZE + 1];
-	ssize_t         count;
+	char buffer[BUFFER_SIZE];
+	int totalBytes = 0;
+	int bytesRead = 0;
 
 	if (fd < 0)
 		return ("");
-	count = read(fd, buf, BUFSIZE);
-	if (count < 0)
+	while (true)
+	{
+		bytesRead = read(fd, buffer+totalBytes, sizeof(buffer)-totalBytes);
+		if (bytesRead <= 0)
+			break; // Connexion fermée ou erreur de lecture
+		totalBytes += bytesRead;
+		if (totalBytes >= sizeof(buffer))
+			break; // Buffer plein, arrêtez de lire pour éviter un débordement du buffer
+	}
+	if (totalBytes <= 0)
+	{
 		return ("");
-	buf[count] = '\0';
-	std::string str(buf);
+	}
+	buffer[totalBytes] = '\0';
+	std::string str(buffer);
+	std::string tmp = str.empty() ? "RQST EMPTY" : str;
+	std::cout << RED "readFd: \n" RESET << tmp << std::endl;
 	return (str);
 }

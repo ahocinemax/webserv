@@ -1,0 +1,489 @@
+/* header section */
+
+a:link, a:visited, a:hover, a:active
+{
+	text-decoration: none;
+}
+
+a.nav-link
+{
+	font-family			:	'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
+	color				:	azure;
+	display				:	block;
+	font-size			:	26px;
+	padding				:	8px;
+}
+
+a.nav-link:hover
+{
+	background-color	:	#e7e7e7;
+	border-radius		:	15px;
+}
+
+/* ul & li section */
+
+ul.navbar-nav
+{
+	list-style-type	:	none;
+	margin			:	0;
+	padding			:	0;
+	width			:	100%;
+	height			:	100%;
+}
+
+li.nav-item, li.navbar-logo, li.linkedin
+{
+	text-align		:	center;
+	display			:	inline-block;
+	overflow		:	hidden;
+}
+
+li.nav-item:last-child
+{
+	padding-left	:	99px;
+	width			:	auto;
+}
+
+li.nav-item
+{
+	width			:	13%;
+	border-radius	:	5px;
+	padding-top		:	12.5px;
+}
+
+li.navbar-logo
+{
+	width			:	25%;
+}
+
+header
+{
+	background		:	#f1f1f1;
+	background		:	linear-gradient(120deg, rgb(0, 0, 0) 6%, rgba(49, 49, 49, 0.827) 40%, rgb(123, 123, 123) 100%);
+}
+
+.navbar, #navbar
+{
+	width			:	100%;
+	height			:	75px;
+	padding			:	0;
+	margin			:	0;
+}
+
+div.container-fluid
+{
+	vertical-align	:	middle;
+	width			:	100%;
+	padding			:	0;
+	margin			:	0;
+}
+
+/* img section */
+
+img.img-project
+{
+	object-fit: cover;
+	width: 100%;
+	height: auto;
+	top: 10%;
+}
+
+img#logo
+{
+	padding-top	:	10px;
+	height		:	70px;
+}
+
+img#linkedin
+{
+	width		:	60px;
+}
+
+img#carousel-control
+{
+	width		:	39px;
+}
+
+img#mosaic
+{
+	display			:	flex;
+	width			:	100%;
+	border-radius	:	5px;
+}
+
+.img-project:hover
+{
+	border-radius	:	0px;
+}
+
+/* header section */
+
+h1
+{
+	font-size		:	33px;
+	text-align		:	center;
+	color			:	rgb(79, 125, 179);
+}
+
+h2
+{
+	font-size		:	45px;
+	color			:	gray;
+}
+/* carousel section */
+
+div.carousel
+{
+	position			:	relative;
+	width				:	100%;
+	margin				:	0 auto;
+}
+
+.track-container
+{
+	position			:	relative;
+	overflow			:	hidden;
+	height				:	100%;
+}
+
+p
+{
+	font-size			:	22px;
+	text-align			:	justify;
+	color				:	gray;
+	text-indent			:	50px;
+}
+
+/* div
+{
+	border: solid 1px;
+} */
+
+.carousel-track
+{
+	transition			:	transform 250ms ease-in;
+	list-style			:	none;
+	position			:	relative;
+	padding				:	0;
+	height				:	100%;
+	margin				:	0;
+}
+
+.carousel_image
+{
+	object-fit			:	cover;
+	height				:	100%;
+	width				:	100%;
+}
+
+.carousel-item
+{
+	position			:	absolute;
+	bottom				:	0;
+	width				:	100%;
+	top					:	0;
+}
+
+.carousel-control--prev, .carousel-control--next
+{
+	position			:	absolute;
+	cursor				:	pointer;
+	border				:	0;
+	transform			:	translateY(-50%);
+	background			:	transparent;
+	height				:	100%;
+	width				:	20%;
+	top					:	50%;
+}
+
+.carousel-control--prev
+{
+	text-align			:	left;
+	left				:	30px;
+	z-index				:	1;
+}
+
+.carousel-control--next
+{
+	text-align			:	right;
+	right				:	30px;
+}
+
+.carousel-navDots
+{
+	justify-content		:	center;
+	display				:	flex;
+	padding				:	10px 0;
+}
+
+.carousel-indicator
+{
+	background			:	rgba(176, 176, 176, 0.45);
+	border-radius		:	3px;
+	cursor				:	pointer;
+	border				:	0;
+	height				:	6px;
+	margin				:	0 22px;
+	width				:	75px;
+}
+
+.carousel-indicator.active
+{
+	background			:	rgba(118, 117, 117, 0.75);
+}
+
+.is-hidden
+{
+	display				:	none;
+}
+
+.hide
+{
+	display				:	none;
+	height				:	0;
+}
+
+.mymove-animation {
+    -webkit-animation: mymove 2s;  /* Chrome, Safari, Opera */
+    -webkit-animation-iteration-count: 1;  /* Chrome, Safari, Opera */
+    -webkit-animation-fill-mode: forwards;  /* Chrome, Safari, Opera */
+	animation: mymove 2s;
+    animation-iteration-count: 1;
+    animation-fill-mode: forwards;
+}
+
+@-webkit-keyframes mymove
+{
+    from { right: -200px; }
+    to { right: -5%; }
+}
+
+/* Other browsers */
+@keyframes mymove
+{
+    from { right: -200px; }
+    to { right: -5%; }
+}
+
+.about_section
+{
+	color			:	gray;
+	padding-top		:	26px;
+	position		:	relative;
+	width			:	90%;
+	height			:	100%;
+	opacity			:	0;
+	visibility		:	hidden;
+	transition		:	opacity 1s ease-out, transform 1.2s ease-out;
+	will-change		:	opacity, visibility;
+}
+
+.about_section.is-visible
+{
+	opacity			:	1;
+	transform		:	none;
+	visibility		:	visible;
+	margin-right	:	10%;
+}
+
+.main-container
+{
+	position			:	relative;
+	width				:	100%;
+	height				:	100%;
+}
+
+.project-container
+{
+	min-height		:	1px;
+	width			:	100%;
+}
+
+.main-project
+{
+	height			:	100%;
+	width			:	100%;
+	padding-left	:	10%;
+}
+
+section.project-mosaic
+{
+	height				:	800px;
+	width				:	100%;
+}
+
+.sub-container
+{
+	position			:	relative;
+	padding				:	6px 6px 6px 6px;
+	display				:	flex;
+	color				:	rgb(175, 175, 175);
+	width				:	50%;
+	height				:	50%;
+}
+
+.sub-container:hover img
+{
+	opacity				:	59%;
+	padding				:	0;
+	filter				:	blur(2px);
+}
+
+.sub-container .title
+{
+	visibility			:	hidden;
+	display				:	none;
+}
+
+.sub-container:hover .title
+{
+	width				:	100%;
+	flex-direction		:	column;
+	visibility			:	visible;
+	position			:	absolute;
+	display				:	flex;
+	justify-content		:	center;
+}
+
+p.project-description
+{
+	text-indent			:	0;
+	text-align			:	center;
+}
+
+.title
+{
+	height: 100%;
+}
+
+.first-project, .third-project
+{
+	float				:	left;
+	/* background-color	: bisque; */
+}
+
+.second-project, .fourth-project
+{
+	float				:	right;
+	/* background-color: blanchedalmond; */
+}
+
+.sub-project
+{
+	height			:	33%;
+	width			:	80%;
+}
+
+/* Formation section */
+
+ul.content
+{
+	font-size		:	22px;
+	padding-left	:	55px;
+}
+
+.formation-container
+{
+	position			:	relative;
+	display				:	flex;
+	width				:	100%;
+	height				:	100%;
+	justify-content		:	center;
+}
+
+.main-formation
+{
+	display				:	inline-block;
+	width				:	90%;
+	height				:	auto;
+}
+
+.image-main, .image-sub
+{
+	margin-top			:	22px;
+	width				:	100%;
+	height				:	auto;
+	display				:	flex;
+	justify-content		:	center;
+}
+
+img.web-page
+{
+	width				:	90%;
+	display: flex;
+	height				:	auto;
+}
+
+.footer-section
+{
+	display: static;
+	/* position: absolute; */
+	bottom: 0;
+}
+
+.formation-content
+{
+	display				:	none;
+}
+
+.formation-content.sub-part
+{
+	vertical-align: middle;
+}
+
+.formation-content h1
+{
+	text-align			:	left;
+	margin-left			:	20%;
+	margin-top			:	1.4%;
+	font-size			:	150%;
+	color				:	black;
+}
+
+.formation-content ul
+{
+	margin-top: 11px;
+	margin-left			:	10%;
+	font-size			:	5vh;
+	/* line-height			:	55px; */
+}
+
+.formation-content.active
+{
+	width				:	100%;
+	flex-direction		:	column;
+	position			:	absolute;
+	display				:	flex;
+	overflow			:	auto;
+}
+
+.next-formation, .prev-formation
+{
+	border				:	solid 1px;
+	position			:	absolute;
+	display				:	flex;
+	width				:	90px;
+	height				:	90px;
+	opacity				:	0;
+}
+
+.prev-formation .hidden
+{
+	display: none;
+}
+
+.prev-formation
+{
+	left				:	11%;
+}
+
+.next-formation
+{
+	right				:	11%;
+}
+
+.sub-part h1
+{
+	display:flex;
+	position: relative;
+}
