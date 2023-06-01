@@ -159,7 +159,9 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	}
 
 	std::string	result = response.makeHeader(true);
-	int			sendSize = send(_socket, result.c_str(), result.length(), 0);
+	int sendSize = 0;
+	if (_socket > 0)
+		sendSize = send(_socket, result.c_str(), result.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
 	if (sendSize < 0)
 		std::cerr << RED "Error:" RESET " send() failed" << std::endl;
 	else if (sendSize == 0)

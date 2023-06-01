@@ -53,7 +53,7 @@ void Webserv::createServers(void)
 
 void	Webserv::closeServers(void)
 {
-	for (ServerMap::iterator it = _defaultServers.begin(); it != _defaultServers.end(); it++)
+	for (ServerMap::iterator it = _serversMap.begin(); it != _serversMap.end(); it++)
 	{
 		std::cout << "> Closing server: " << it->first << std::endl;
 		close(it->second->_socket);
@@ -165,8 +165,11 @@ void	Webserv::getMethod(Client &client, std::string path)
 		else
 			indexVec = client._server->index;
 
-		if (*filePath.end() != '/')
+		if (*(filePath.end()) != '/')
 			filePath += "/";
+		// FIXING filePath = "./html//index.html" :
+		if (filePath.find("//") != std::string::npos)
+			filePath.erase(filePath.find("//"), 1);
 		for (StrVector::iterator it = indexVec.begin(); it != indexVec.end(); it++)
 		{
 			std::string	tmp = filePath + *it;
@@ -202,11 +205,17 @@ void	Webserv::getMethod(Client &client, std::string path)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 	char		buffer[BUFFER_SIZE + 1];
 	ssize_t		readSize = 0;
+	// send() fail pour la requete 'localhost:<PORT>/' -> il envoie deux fois le fichier
+	// std::cout << 'sending file: \n';
 	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0) // fread allowed ?
 	{
-		ret = send(client.getSocket(), buffer, readSize, 0);
+		// std::cout << buffer << std::endl;
+		ret = send(client.getSocket(), buffer, readSize, MSG_NOSIGNAL);
 		if (ret < 0)
+		{
+			std::cout << RED << "Error while sending file " << filePath << RESET << std::endl;
 			client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+		}
 		else if (ret == 0)
 			client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 	}
