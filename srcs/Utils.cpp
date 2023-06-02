@@ -86,7 +86,7 @@ std::string readFd(int fd)
 	}
 	buffer[totalBytes] = '\0';
 	std::string str(buffer);
-	std::string tmp = str.empty() ? "RQST EMPTY" : str;
-	std::cout << RED "readFd: \n" RESET << tmp << std::endl;
+	// std::string tmp = str.empty() ? "EMPTY REQUEST" : str;
+	// std::cout << RED "readFd: \n" RESET << tmp << std::endl;
 	return (str);
 }

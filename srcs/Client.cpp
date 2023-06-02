@@ -118,7 +118,7 @@ void	Client::clearRequest(void)
 
 void	Client::displayErrorPage(StatusMap::iterator statusCode)
 {
-	std::cout << RED "> Sending error page: " RESET << statusCode->first << " " << statusCode->second << std::endl;
+	// std::cout << RED "> Sending error page: " RESET << statusCode->first << " " << statusCode->second << std::endl;
 	std::ifstream file;
 	if (statusCode != _server->error_pages.end())
 	{
@@ -139,7 +139,7 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 			body += line;
 			body += "\n";
 		}
-		response.setCustomizeErrorMessage(body);
+		response.setCustomizeErrorMessage(statusCode->second);
 		file.close();
 	}
 	else // Pas de page d'erreur trouvée, page par défaut
@@ -159,7 +159,9 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	}
 
 	std::string	result = response.makeHeader(true);
-	int			sendSize = send(_socket, result.c_str(), result.length(), 0);
+	int sendSize = 0;
+	if (_socket > 0)
+		sendSize = send(_socket, result.c_str(), result.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
 	if (sendSize < 0)
 		std::cerr << RED "Error:" RESET " send() failed" << std::endl;
 	else if (sendSize == 0)
@@ -172,6 +174,6 @@ void Client::parse(const std::string& str)
 {
 	_request = new Request(str);
 	_request->parse();
-	_request->PrintHeader();
+	// _request->PrintHeader();
 	return ;
 }

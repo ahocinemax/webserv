@@ -162,10 +162,10 @@ void	Request::checkHeaders()
 		_headerParsed = true;
 		return ;
 	}
-	ite = _header.find("Transfer-Encoding");
+	ite = _header.find("transfer-encoding");
 	if (ite != _header.end() && ite->second.find("chunked"))
 		_chunked = true;
-	if (_header.find("Content-Length") == _header.end())
+	if (_header.find("content-length") == _header.end())
 	{
 		_statusCode = BAD_REQUEST;
 		return ;
@@ -243,9 +243,9 @@ void	Request::ContentLength()
 {
 	std::string	ContentLength;
 	size_t	size;
-	if (_header.find("Content-Length") == _header.end())
+	if (_header.find("content-length") == _header.end())
 		return ;
-	ContentLength = _header["Content-Length"];
+	ContentLength = _header["content-length"];
 	if (ContentLength.find_first_not_of("0123456789") != std::string::npos)
 	{
 		_statusCode = BAD_REQUEST;
