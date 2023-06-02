@@ -48,13 +48,13 @@ class Webserv
 		void				editSocket(int socket, uint32_t flag, struct epoll_event event);
 		void				removeSocket(int socket);
 		void				eraseClient(int index);
-		void				handleRequest(Client &client, struct epoll_event &event);
-		void				handleResponse(Client &client, Request *req, struct epoll_event &event);
+		void				handleRequest(Client *client, struct epoll_event &event);
+		void				handleResponse(Client *client, Request *req, struct epoll_event &event);
 		bool				clientNotConnected(int socket);
 		const char			*getMimeType(const char *path);
 
 	private:
-		std::vector<Client>	_clients;
+		std::vector<Client*>	_clients;
 		ServerVector		_serversVec;
 		ServerMap			_serversMap;
 		ServerMap			_defaultServers;

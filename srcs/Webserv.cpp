@@ -86,7 +86,7 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 
 void	Webserv::postMethod(Client &client, Request &request)
 {
-	if (request._header["transfer-encoding"] != "chunked" && request._header.find("content_lenght") == request._header.end())
+	if (request._header["transfer-encoding"] != "chunked" && request._header.find("content_length") == request._header.end())
 	{
 		client.displayErrorPage(_statusCodeList.find(LENGTH_REQUIRED));
 		return ;
@@ -127,7 +127,7 @@ void	Webserv::postMethod(Client &client, Request &request)
 	else
 		writeResponse(client, request.getBody(), filePath);
 	int	code = 201;
-	if (request._header["content-lenght"] == "0")
+	if (request._header["content-length"] == "0")
 		code = 204;
 	
 	Response	response(_statusCodeList[code]);
@@ -220,7 +220,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 			client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 	}
 	fclose(file);
-	std::cout << GREEN << filePath << " sent (" << OK << ")" RESET << std::endl;
+	std::cout << GREEN << filePath << " sent (" << client.getRequest()->_statusCode << ")" RESET << std::endl;
 }
 
 void Webserv::setStatusCodes(void)
