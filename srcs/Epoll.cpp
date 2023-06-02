@@ -32,12 +32,6 @@ int	Webserv::findClientIndex(int socket)
 	return (FAILED);
 }
 
-/*
-	editSocket:
-	Modification de flag epoll
-	-> request	=	mode "read"
-	-> response	=	mode "write"
-*/
 void Webserv::editSocket(int socket, uint32_t flag, struct epoll_event event)
 {
 	//struct epoll_event event;
@@ -75,33 +69,29 @@ int	Webserv::routine(void)
 
 	// std::cout << PURPLE << std::setw(52) << "waiting for events" << RESET << std::endl;
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, -1)) < SUCCESS)
-		throw EpollWaitException();
+		return (FAILED);
 
 	for (int i = 0 ; i < nbEvents ; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
-		if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
-			index = initConnection(events[i].data.fd);
-		else if (events[i].data.fd == STDIN_FILENO) // NOT WORKING !
+		if (events[i].data.fd == STDIN_FILENO) // NOT WORKING !
 		{
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			return (FAILED);
 		}
+		else if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
+			index = initConnection(events[i].data.fd);
 		handleRequest(_clients[index], events[i]);
 		if (_clients[index]->getRequest() == NULL)
 		{
 			eraseClient(index);
 			continue ;
 		}
-		// std::cout << PURPLE "handling event on socket " << events[i].data.fd << RESET << std::endl;
-		// std::cout << YELLOW << "[Accept]" << RESET << " connection on socket " + to_string(_clients[index]._server->_socket) + " at " + _clients[index]._server->_ipAddress + ":" + _clients[index]._server->_port << std::endl;
-		// std::cout << PURPLE << std::setw(52) << "socket " + to_string(_clients[index].getSocket()) + " created to communicate" << RESET << std::endl;
 
 		Request *request = _clients[index]->getRequest();
 		handleResponse(_clients[index], request, events[i]);
 		StringMap::iterator it = request->_header.find("connection");
-		// close(events[i].data.fd);
 		if (it == request->_header.end() || it->second != "keep-alive")
 			eraseClient(index);
 	}

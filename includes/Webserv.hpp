@@ -55,11 +55,11 @@ class Webserv
 
 	private:
 		std::vector<Client*>	_clients;
-		ServerVector		_serversVec;
-		ServerMap			_serversMap;
-		ServerMap			_defaultServers;
-		StatusMap			_statusCodeList;
-		int					_epollFd;
+		ServerVector			_serversVec;
+		ServerMap				_serversMap;
+		ServerMap				_defaultServers;
+		StatusMap				_statusCodeList;
+		int						_epollFd;
 
 		void				deleteMethod(Client &client, std::string path);
 		void				postMethod(Client &client, Request &request);
