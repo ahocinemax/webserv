@@ -166,7 +166,7 @@ void	Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 {
 	(void)event;
 	
-	std::cout << "> Handling response" << std::endl;
+		std::cout << "> Handling response" << std::endl;
 	if (req == NULL)
 		return ;
 	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur

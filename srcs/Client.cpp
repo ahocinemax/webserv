@@ -122,12 +122,13 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	std::ifstream file;
 	if (statusCode != _server->error_pages.end())
 	{
-		file.open(_server->error_pages[statusCode->first].c_str());
+		const char *path = _server->error_pages[statusCode->first].c_str();
+		file.open(path);
 		if (!file.is_open())
 			statusCode = _server->error_pages.find(NOT_FOUND);
 	}
 
-	Response response(statusCode->second);
+	Response response(statusCode->second); // Cause de l'erreur de substr
 
 	if (file.is_open()) // Une page d'erreur a été trouvée
 	{

@@ -97,7 +97,4 @@ class Webserv
 		};
 };
 
-
-
-
 #endif

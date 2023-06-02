@@ -26,6 +26,7 @@
 # include <fcntl.h>
 # include <stdlib.h>
 # include <cstdlib>
+# include <signal.h>
 
 # define MAX_URI_LENGTH					64
 # define BUFFER_SIZE					30720
@@ -33,40 +34,39 @@
 # define FAILED							-1
 # define EMPTY							1
 
-#	define	OK							200
-#	define	CREATED						201
-#	define	ACCEPTED					202
-#	define	NO_CONTENT					204
-#	define	MOVED_PERMANENTLY			301
-#	define	FOUND						302
-#	define	SEE_OTHER					303
-#	define	NOT_MODIFIED				304
-#	define	TEMPORARY_REDIRECT			307
-#	define	PERMANENT_REDIRECT			308
-#	define	BAD_REQUEST					400
-#	define	UNAUTHORIZED				401
-#	define	FORBIDDEN					403
-#	define	NOT_FOUND					404
-#	define	METHOD_NOT_ALLOWED			405
-#	define	NOT_ACCEPTABLE				406
-#	define	REQUEST_TIMEOUT				408
-#	define	CONFLICT					409
-#	define	GONE						410
-#	define	LENGTH_REQUIRED				411
-#	define	PAYLOAD_TOO_LARGE			413
-#	define	URI_TOO_LONG				414
-#	define	UNSUPPORTED_MEDIA_TYPE		415
-#	define	RANGE_NOT_SATISFIABLE		416
-#	define	EXPECTATION_FAILED			417
-#	define	TOO_MANY_REQUESTS			429
-#	define	INTERNAL_SERVER_ERROR		500
-#	define	NOT_IMPLEMENTED				501	
-#	define	BAD_GATEWAY					502
-#	define	SERVICE_UNAVAILABLE			503
-#	define	GATEWAY_TIMEOUT				504
-#	define	HTTP_VERSION_NOT_SUPPORTED	505
-#	define	BUFSIZE						5000	
-
+# define OK							200
+# define CREATED						201
+# define ACCEPTED					202
+# define NO_CONTENT					204
+# define MOVED_PERMANENTLY			301
+# define FOUND						302
+# define SEE_OTHER					303
+# define NOT_MODIFIED				304
+# define TEMPORARY_REDIRECT			307
+# define PERMANENT_REDIRECT			308
+# define BAD_REQUEST					400
+# define UNAUTHORIZED				401
+# define FORBIDDEN					403
+# define NOT_FOUND					404
+# define METHOD_NOT_ALLOWED			405
+# define NOT_ACCEPTABLE				406
+# define REQUEST_TIMEOUT				408
+# define CONFLICT					409
+# define GONE						410
+# define LENGTH_REQUIRED				411
+# define PAYLOAD_TOO_LARGE			413
+# define URI_TOO_LONG				414
+# define UNSUPPORTED_MEDIA_TYPE		415
+# define RANGE_NOT_SATISFIABLE		416
+# define EXPECTATION_FAILED			417
+# define TOO_MANY_REQUESTS			429
+# define INTERNAL_SERVER_ERROR		500
+# define NOT_IMPLEMENTED				501	
+# define BAD_GATEWAY					502
+# define SERVICE_UNAVAILABLE			503
+# define GATEWAY_TIMEOUT				504
+# define HTTP_VERSION_NOT_SUPPORTED	505
+# define BUFSIZE						5000
 
 # define CRLF			"\r\n"
 # define SEP			" \t\n"
