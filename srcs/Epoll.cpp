@@ -174,6 +174,7 @@ void	Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	// GENERATE RESPONSE //
 	if (isValidCGI(req->getPath()))
 	{
+		HandleCgi(*req);
 		// if (req->getMethod() == "GET")
 		// 	getMethodCGI(client, req->getPath());
 		// else if (req->getMethod() == "POST")
@@ -219,3 +220,16 @@ const char*	Webserv::AcceptException::what() const throw()
 {
 	return ("Error: Accept() failed");
 }
+
+void	Webserv::HandleCgi(Request& request)
+{
+	CgiHandler Cgi(request);
+	std::string	body = "";//test
+	if (!Cgi.getCgiOutput(body))
+		return ;
+	/*
+	else
+		(エラー処理で必要になるボディの生成)
+	*/
+}
+

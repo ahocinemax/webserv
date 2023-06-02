@@ -65,7 +65,8 @@
 #	define	SERVICE_UNAVAILABLE			503
 #	define	GATEWAY_TIMEOUT				504
 #	define	HTTP_VERSION_NOT_SUPPORTED	505
-#	define	BUFSIZE						5000	
+#	define	BUFSIZE						5000
+#	define	PHP_EXEC					"/usr/bin/php"	
 
 
 # define CRLF			"\r\n"
