@@ -26,6 +26,7 @@
 # include <fcntl.h>
 # include <stdlib.h>
 # include <cstdlib>
+# include <signal.h>
 
 # define MAX_URI_LENGTH					64
 # define BUFFER_SIZE					30720

@@ -14,8 +14,20 @@
 
 Response::Response(void) : _statusCode("") {}
 
-Response::Response(std::string status) : _statusCode(status.substr(0, 3)),
-										 _statusMessage(status.substr(4)) {}
+Response::Response(std::string status)
+{
+	if (status.length() < 3)
+	{
+		_statusCode = "404";
+		_statusMessage = "Not Found";
+		std::cerr << RED "Error:" RESET " failed to send file" << std::endl;
+	}
+	else
+	{
+		_statusCode		= status.substr(0, 3);
+		_statusMessage	= status.substr(4);
+	}
+}
 
 Response::~Response() {}
 

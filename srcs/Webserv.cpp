@@ -44,7 +44,7 @@ void Webserv::createServers(void)
 	int i = 1;
 	for (ServerVector::iterator it = _serversVec.begin() ; it != _serversVec.end() ; it ++)
 	{
-		std::cout << "> Creating server " << i++ << BLUE ": " << it->_ipAddress << RESET << std::endl;
+		std::cout << "> Creating server " << i++ << BLUE ": " << it->_ipAddress << ":" << it->_port << RESET << std::endl;
 		it->createSocket();
 		_serversMap.insert(std::make_pair(it->_socket, &(*it)));
 	}
