@@ -68,6 +68,7 @@ class Webserv
 		bool				isValidCGI(std::string path) const;
 		void				setStatusCodes(void);
 
+		void				sendAutoindex(Client &client, std::string filePath);
 		std::string			getPath(Client &client, std::string path);
 
 		int					writeResponse(Client &client, std::string response, std::string path);

@@ -11,6 +11,8 @@
 /* ************************************************************************** */
 
 #include "Webserv.hpp"
+#include <sys/types.h>
+#include <dirent.h>
 
 Webserv::Webserv(ServerVector server) : _serversVec(server)
 {
@@ -185,8 +187,8 @@ void	Webserv::getMethod(Client &client, std::string path)
 
 		if (notFound)
 		{
-			// if (client._server->autoindex)
-			// 	return (sendAutoindex(client, filePath));
+			if (client._server->autoindex)
+				return (sendAutoindex(client, filePath));
 			return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
 		}
 	}
@@ -270,6 +272,56 @@ std::string	Webserv::getPath(Client &client, std::string path)
 		res = location->getPath();
 	filePath.append(path.substr(res.length()));
 	return (filePath);	
+}
+
+void	Webserv::sendAutoindex(Client &client, std::string filePath)
+{
+	std::string		path = getPath(client, filePath);
+	std::string		output = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
+	DIR				*dir = NULL;
+	if (filePath[filePath.length() - 1] != '/')
+		filePath += "/";
+	if ((dir = opendir(filePath.c_str())) == NULL)
+	{
+		client.displayErrorPage(_statusCodeList.find(NOT_FOUND));
+		return ;
+	}
+	struct dirent	*ent;
+	while ((ent = readdir(dir)) != NULL)
+	{
+		if (ent->d_name[0] != '.' || strcmp(ent->d_name, ".."))
+			output += "<a href='" + filePath + "'>" + ent->d_name + "</a><br>";
+		else if (filePath[filePath.length() - 1] != '/')
+			output += "<a href='" + filePath + "'>" + ent->d_name + "</a><br>";
+		else
+			output += "<a href='" + filePath + ent->d_name + "'>" + ent->d_name + "</a><br>";
+		output += ((ent->d_type == DT_DIR) ? "/" : "") + (std::string)"'";
+		output += (std::string)(ent->d_name) + (ent->d_type == DT_DIR ? "/" : "") + "</a><br>";
+	}
+	closedir(dir);
+	output += "</pre><hr></body></html>";
+
+	Response	response(_statusCodeList[OK]);
+	response.addHeader("Content-Type", "text/html");
+	response.addHeader("Content-Length", to_string(output.length()));
+	std::string	header = response.makeHeader();
+
+	int ret = send(client.getSocket(), header.c_str(), header.length(), MSG_NOSIGNAL);
+	if (ret < 0)
+	{
+		std::cout << RED << "Error while sending header " << header << RESET << std::endl;
+		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+	}
+	else if (ret == 0)
+		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
+	ret = send(client.getSocket(), output.c_str(), output.length(), MSG_NOSIGNAL);
+	if (ret < 0)
+	{
+		std::cout << RED << "Error while sending body " << output << RESET << std::endl;
+		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+	}
+	else if (ret == 0)
+		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 }
 
 int	Webserv::writeResponse(Client &client, std::string body, std::string path)
