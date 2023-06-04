@@ -194,7 +194,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 	file = fopen(filePath.c_str(), "rb");
 	std::cout << BLUE "> File requested is " << filePath << RESET << std::endl;
 	const char *mime = getMimeType(filePath.c_str()); // Protected inside getMimeType function
-	Response	response(_statusCodeList[OK]);
+	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	response.addHeader("content-length", to_string(fileStat.st_size));
 	response.addHeader("content-type", mime);
 	std::string	header = response.makeHeader(false);

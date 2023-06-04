@@ -1,7 +1,8 @@
 #include "includes/CgiHandler.hpp"
 #include <iostream>
 
-int main() {
+int main()
+{
     CgiHandler cgiHandler;
 
     std::string output;
