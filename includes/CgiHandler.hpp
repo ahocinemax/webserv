@@ -16,11 +16,12 @@
 #include "../includes/Utils.hpp"
 
 #define TIMEOUT_LIMIT 5  // limit of timeout(sec)
-class   Response;
+class   Request;
 
 class CgiHandler
 {
     public:
+        CgiHandler(Request& request);
         CgiHandler(Response& response);
         CgiHandler();//now with test value (without other class)
         virtual ~CgiHandler();

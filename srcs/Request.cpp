@@ -10,7 +10,7 @@ Request::~Request() {}
 
 void	Request::initVariables()
 {
-	_statusCode = OK; // mettre une erreur par defaut, puis la changer si besoin
+	_statusCode = NOT_FOUND; // mettre une erreur par defaut, puis la changer si besoin
 	_requestStatus = INCOMPLETE;
 	_method = UNKNOWN;
 	_path = "";
@@ -49,6 +49,7 @@ void Request::parseMethod()
 		return ;
 	}
 	_method = method;
+	_statusCode = OK;
 }
 
 void	Request::parsePath()
@@ -74,6 +75,7 @@ void	Request::parsePath()
 		path.erase(pos);
 	}
 	_path = path;
+	_statusCode = OK;
 }
 
 void	Request::parseHttpProtocol()
@@ -92,6 +94,7 @@ void	Request::parseHttpProtocol()
 		return ;
 	}
 	_protocolHTTP = protocolHTTP;
+	_statusCode = OK;
 }
 
 void	Request::parseHeaders()
@@ -114,6 +117,7 @@ void	Request::parseHeaders()
 				_statusCode = PAYLOAD_TOO_LARGE;
 		}
 		getNextWord(headerName, CRLF);
+		_statusCode = OK;
 }
 
 bool	Request::parseHeaderHost()
@@ -340,6 +344,7 @@ int	Request::FuncForParseHeader()
 		if (_statusCode != OK)
 			return (FAILED);
 	}
+	_statusCode = OK;
 	return (SUCCESS);
 }
 
