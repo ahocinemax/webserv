@@ -186,9 +186,8 @@ void	Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		else
 			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 	}
-	
-	//->if la classe response est bien "generee"
-	// editSocket(client.getSocket(), EPOLLOUT, event);
+
+	// editSocket(client->getSocket(), EPOLLIN, event);
 }
 
 const char*	Webserv::EpollCreateException::what() const throw()

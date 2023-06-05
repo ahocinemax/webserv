@@ -118,12 +118,13 @@ void	Client::clearRequest(void)
 
 void	Client::displayErrorPage(StatusMap::iterator statusCode)
 {
-	// std::cout << RED "> Sending error page: " RESET << statusCode->first << " " << statusCode->second << std::endl;
+	std::cout << RED "> Sending error page: " RESET << statusCode->first << " " << statusCode->second << std::endl;
 	std::ifstream file;
 	if (statusCode != _server->error_pages.end())
 	{
-		const char *path = _server->error_pages[statusCode->first].c_str();
-		file.open(path);
+		std::string path = _server->error_pages[statusCode->first];
+		std::cout << BLUE "tmp: " << path << RESET << std::endl;
+		file.open(path.c_str());
 		if (!file.is_open())
 			statusCode = _server->error_pages.find(NOT_FOUND);
 	}
@@ -143,7 +144,7 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 		response.setCustomizeErrorMessage(statusCode->second);
 		file.close();
 	}
-	else // Pas de page d'erreur trouvée, page par défaut
+	else // page d'erreur pas trouvée, envoie de la page par défaut
 		response.setDefaultErrorMessage();
 	response.addHeader("Content-Type", "text/html");
 	response.addHeader("Content-Length", to_string(response.getBody().length()));
