@@ -46,7 +46,8 @@ void Webserv::createServers(void)
 	int i = 1;
 	for (ServerVector::iterator it = _serversVec.begin() ; it != _serversVec.end() ; it ++)
 	{
-		std::cout << "> Creating server " << i++ << BLUE ": " << it->_ipAddress << ":" << it->_port << RESET << std::endl;
+		std::cout << "> Creating server " << i++ << "(" << it->server_name << 
+		"): " CYAN << it->_ipAddress << RESET ":" YELLOW << it->_port << RESET << std::endl;
 		it->createSocket();
 		_serversMap.insert(std::make_pair(it->_socket, &(*it)));
 	}
@@ -357,10 +358,8 @@ int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 		// close fds
 		close(fd);
 		epoll_ctl(client.getSocket(), EPOLL_CTL_DEL, fd, &event);
-		std::cout << "epoll_ctl error(4) : " << errno << std::endl;
 		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
 	}
-	std::cout << "close" << std::endl;
 	return (close(fd), SUCCESS);
 }
 
@@ -394,7 +393,7 @@ const char *Webserv::getMimeType(const char *path)
 	return "text/plain";
 }
 
-bool Webserv::isValidCGI(std::string path) const
+bool Webserv::isValidCGI(std::string path, Client &client) const
 {
 	// Vérifiez l'extension du fichier
 	if (path.length() >= 4)
@@ -418,6 +417,21 @@ bool Webserv::isValidCGI(std::string path) const
 			// Recherchez les balises PHP ouvrantes et fermantes
 			if (content.find("<?php") != std::string::npos && content.find("?>") != std::string::npos)
 				return (true);
+		}
+	}
+
+	// Vérifiez si le fichier est dans un emplacement CGI
+	std::vector<Location>::iterator it = client._server->locations.begin();
+	StringMap::iterator it2;
+	for (; it != client._server->locations.end(); it++)
+	{
+		for (it2 = it->_cgi.begin() ; it2 != it->_cgi.end(); it2++)
+		{
+			if (path.find(it2->first) != std::string::npos)
+			{
+				if (it2->second != "")
+					return (true);
+			}
 		}
 	}
 

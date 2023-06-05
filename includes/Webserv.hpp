@@ -66,7 +66,7 @@ class Webserv
 		void				postMethod(Client &client, Request &request);
 		void				getMethod(Client &client, std::string path);
 
-		bool				isValidCGI(std::string path) const;
+		bool				isValidCGI(std::string path, Client &client) const;
 		void				setStatusCodes(void);
 
 		void				sendAutoindex(Client &client, std::string filePath);

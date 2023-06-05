@@ -14,11 +14,14 @@
 
 Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(0), _server(server)
 {
+	if (server)
+		std::cout << YELLOW "Client created on server " CYAN "'" << server->server_name << "'" RESET << std::endl;
 	gettimeofday(&_timer, NULL);
 }
 
 Client::~Client(void)
-{ 
+{
+	std::cout << RED "Client (" << _socket << ") deleted on server " CYAN "'" << _server->server_name << ":" << _server->_socket << "'" RESET << std::endl;
 	if (_request)
 		delete _request;
 }
@@ -28,6 +31,8 @@ void	Client::setTimer(struct timeval &timer) { _timer = timer; }
 int	Client::setSocket(int socket)
 {
 	_socket = socket;
+	_ipAdress = getClientAddr();
+	_port = getClientPort();
 	if (fcntl(_socket, F_SETFL, O_NONBLOCK) < SUCCESS)
 	{
 		std::cerr << RED "Error:" RESET " fcntl() failed" << std::endl;

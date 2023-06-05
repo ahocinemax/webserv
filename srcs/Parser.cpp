@@ -209,6 +209,7 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 			std::size_t split = val.find_first_of(':');
 			if (split == std::string::npos)
 				return (FAILED);
+			std::cout << val.substr(0, split) << std::endl;
 			serv->_ipAddress = val.substr(0, split);
 			serv->_port = val.substr(split + 1, val.length() - 1);
 		}

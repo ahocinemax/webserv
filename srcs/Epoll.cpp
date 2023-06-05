@@ -12,9 +12,11 @@ int	Webserv::initConnection(int socket)
 	struct epoll_event	event;
 	Client				*client = new Client(_serversMap[socket]);
 
-	if ((client->setSocket(accept(socket, &client->_addr, &client->_addrLen)) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK)))
+	int newSocket = accept(socket, &client->_addr, &client->_addrLen);
+	if (client->setSocket(newSocket) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK))
 		throw AcceptException();
-
+	std::cout << YELLOW << "[New]" << RESET << " connection on socket " + to_string(client->getSocket()) << std::endl;
+	std::cout << "Client info: " RED << client->_ipAdress << ":" << client->_port << RESET << std::endl;
 	initEvent(event, EPOLLIN, client->getSocket());
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, client->getSocket(), &event) < SUCCESS)
 		throw EpollCtlException();
@@ -26,16 +28,16 @@ int	Webserv::findClientIndex(int socket)
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		if (_clients[i]->getSocket() == socket)
+		// std::cout << _clients[i]->_server->_socket << std::endl;
+		if (_clients[i]->getSocket() == socket) // trouver UN client connecté au bon serveur
 			return (i);
+		// if (_serversMap[socket]->_connectedClients (_clients[i]->_ipAdress)) // trouver LE client connecté au bon serveur
 	}
 	return (FAILED);
 }
 
 void Webserv::editSocket(int socket, uint32_t flag, struct epoll_event event)
 {
-	//struct epoll_event event;
-
 	memset(&event, 0, sizeof(epoll_event));
 	event.data.fd = socket;
 	event.events = flag;
@@ -58,6 +60,7 @@ void Webserv::eraseClient(int index)
 	if (close(clientfd) < 0)
 		std::cerr << "eraseClient(close) error" << std::endl;
 	_clients.erase(_clients.begin() + index);
+	delete _clients[index];
 	// std::cout << YELLOW << "[Close]" << RESET << " connection on socket " + to_string(clientfd) << std::endl;
 }
 
@@ -82,6 +85,7 @@ int	Webserv::routine(void)
 		}
 		else if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
 			index = initConnection(events[i].data.fd);
+
 		handleRequest(_clients[index], events[i]);
 		if (_clients[index]->getRequest() == NULL)
 		{
@@ -106,24 +110,14 @@ int	Webserv::connectEpollToSockets()
 	_epollFd = epoll_create(MAX_EPOLL_EVENTS);
 	if (_epollFd < SUCCESS)
 		throw EpollCreateException();
-		/*check sserverVec[num]._socket for debug*/
-		std::cout << "serversVec.size(): " << _serversVec.size() << std::endl;
-		for (int i = 0; i < _serversVec.size() ; i++)
-			std::cout << "serversVec[" << i << "]._socket : " << _serversVec[i]._socket << std::endl;
 	for (size_t i = 0; i < _serversVec.size(); i++)
 	{
-		initEvent(event, EPOLLIN, _serversVec[i]._socket);
+		initEvent(event, EPOLLIN | EPOLLET, _serversVec[i]._socket);
 		ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serversVec[i]._socket, &event);
 		char buffer;
 		ssize_t result = read(_serversVec[i]._socket, &buffer, 0);
 		if (result < 0)
-		{
-		    std::cout << "read error on socket " << _serversVec[i]._socket << " : " << errno << std::endl;
-		}
-		else
-		{
-		    std::cout << "socket " << _serversVec[i]._socket << " is open" << std::endl;
-		}	
+		    std::cout << "read error on socket " << _serversVec[i]._socket << std::endl;
 		if (ret < SUCCESS)
 			throw EpollCtlException();
 	}
@@ -162,7 +156,7 @@ void	Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
 	// GENERATE RESPONSE //
-	if (isValidCGI(req->getPath()))
+	if (isValidCGI(req->getPath(), *client))
 	{
 		HandleCgi(*req);
 		// if (req->getMethod() == "GET")
