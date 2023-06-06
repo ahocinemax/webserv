@@ -25,6 +25,7 @@ class Response
 		std::string	makeHeader(bool appendBody = false);
 		void		setDefaultErrorMessage(void);
 
+		std::string	getDate(void) const;
 		std::string	getStatusCode(void) const;
 		std::string	getStatusMessage(void) const;
 		void		setCustomizeErrorMessage(std::string &message);
@@ -38,8 +39,6 @@ class Response
 		std::string	_message;
 		StringMap	_head;
 		Request		*_request;
-
-		std::string	getDate(void);
 };
 
 #endif

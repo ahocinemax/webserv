@@ -77,3 +77,15 @@ void	Response::addHeader(std::string key, std::string value)
 { _head.insert(std::make_pair(key, value)); }
 
 Request*	Response::getRequest(){return (_request);}
+
+std::string	Response::getDate(void) const
+{
+	time_t		now = time(0);
+	struct tm	tstruct;
+	char		buf[80];
+
+	tstruct = *gmtime(&now);
+	strftime(buf, sizeof(buf), "%a, %d %b %G %X GMT", &tstruct);
+	std::string date(buf);
+	return (date);
+}

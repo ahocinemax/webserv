@@ -62,6 +62,7 @@ class Webserv
 		StatusMap				_statusCodeList;
 		int						_epollFd;
 
+		void				redirectMethod(Client &client, Request &request);
 		void				deleteMethod(Client &client, std::string path);
 		void				postMethod(Client &client, Request &request);
 		void				getMethod(Client &client, std::string path);

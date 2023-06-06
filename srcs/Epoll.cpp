@@ -15,8 +15,6 @@ int	Webserv::initConnection(int socket)
 	int newSocket = accept(socket, &client->_addr, &client->_addrLen);
 	if (client->setSocket(newSocket) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK))
 		throw AcceptException();
-	std::cout << YELLOW << "[New]" << RESET << " connection on socket " + to_string(client->getSocket()) << std::endl;
-	std::cout << "Client info: " RED << client->_ipAdress << ":" << client->_port << RESET << std::endl;
 	initEvent(event, EPOLLIN, client->getSocket());
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, client->getSocket(), &event) < SUCCESS)
 		throw EpollCtlException();
@@ -171,6 +169,8 @@ void	Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	}
 	else
 	{
+		if (client->_server->redirect_status != -1)
+			redirectMethod(*client, *req);
 		if (req->getMethod() == "GET")
 			getMethod(*client, req->getPath());
 		else if (req->getMethod() == "POST")

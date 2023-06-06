@@ -226,6 +226,25 @@ void	Webserv::getMethod(Client &client, std::string path)
 	std::cout << GREEN << filePath << " sent (" << client.getRequest()->_statusCode << ")" RESET << std::endl;
 }
 
+void	Webserv::redirectMethod(Client &client, Request &request)
+{
+	std::cout << BLUE "> Redirecting to " << client._server->redirect_url << RESET << std::endl;
+	Response	response(_statusCodeList[client._server->redirect_status]);
+	response.setDefaultErrorMessage();
+	response.addHeader("location", client._server->redirect_url);
+	if (!client._server->server_name.empty())
+		response.addHeader("server", client._server->server_name);
+	response.addHeader("content-type", "text/html");
+	response.addHeader("content-length", to_string(response.getBody().length()));
+	response.addHeader("date", response.getDate());
+	std::string	header = response.makeHeader();
+	int ret = send(client.getSocket(), header.c_str(), header.length(), 0);
+	if (ret < 0)
+		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+	else if (ret == 0)
+		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
+}
+
 void Webserv::setStatusCodes(void)
 {
 	_statusCodeList[OK] = "200 OK";
@@ -277,9 +296,10 @@ std::string	Webserv::getPath(Client &client, std::string path)
 
 void	Webserv::sendAutoindex(Client &client, std::string filePath)
 {
-	std::string		path = getPath(client, filePath);
+	std::string		path = filePath;
 	std::string		output = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
 	DIR				*dir = NULL;
+	std::cout << "Autoindexing " << filePath << std::endl;
 	if (filePath[filePath.length() - 1] != '/')
 		filePath += "/";
 	if ((dir = opendir(filePath.c_str())) == NULL)
@@ -288,15 +308,16 @@ void	Webserv::sendAutoindex(Client &client, std::string filePath)
 		return ;
 	}
 	struct dirent	*ent;
+	filePath.erase(filePath.begin(), filePath.begin() + client._server->root.length());
 	while ((ent = readdir(dir)) != NULL)
 	{
 		if (ent->d_name[0] != '.' || strcmp(ent->d_name, ".."))
-			output += "<a href='" + filePath + "'>" + ent->d_name + "</a><br>";
+			output += "<a href='" + filePath + ent->d_name + "'>";
 		else if (filePath[filePath.length() - 1] != '/')
-			output += "<a href='" + filePath + "'>" + ent->d_name + "</a><br>";
+			output += "<a href='" + filePath + ent->d_name + "'>";
 		else
-			output += "<a href='" + filePath + ent->d_name + "'>" + ent->d_name + "</a><br>";
-		output += ((ent->d_type == DT_DIR) ? "/" : "") + (std::string)"'";
+			output += "<a href='" + filePath + ent->d_name + "'>";
+		output += ((ent->d_type == DT_DIR) ? "" : "./");
 		output += (std::string)(ent->d_name) + (ent->d_type == DT_DIR ? "/" : "") + "</a><br>";
 	}
 	closedir(dir);
@@ -310,7 +331,7 @@ void	Webserv::sendAutoindex(Client &client, std::string filePath)
 	int ret = send(client.getSocket(), header.c_str(), header.length(), MSG_NOSIGNAL);
 	if (ret < 0)
 	{
-		std::cout << RED << "Error while sending header " << header << RESET << std::endl;
+		std::cout << RED << "Error while sending header :\n" << header << RESET << std::endl;
 		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
 	}
 	else if (ret == 0)
@@ -318,7 +339,7 @@ void	Webserv::sendAutoindex(Client &client, std::string filePath)
 	ret = send(client.getSocket(), output.c_str(), output.length(), MSG_NOSIGNAL);
 	if (ret < 0)
 	{
-		std::cout << RED << "Error while sending body " << output << RESET << std::endl;
+		std::cout << RED << "Error while sending body :\n" << output << RESET << std::endl;
 		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
 	}
 	else if (ret == 0)

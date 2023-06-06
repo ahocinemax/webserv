@@ -14,14 +14,11 @@
 
 Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(0), _server(server)
 {
-	if (server)
-		std::cout << YELLOW "Client created on server " CYAN "'" << server->server_name << "'" RESET << std::endl;
 	gettimeofday(&_timer, NULL);
 }
 
 Client::~Client(void)
 {
-	std::cout << RED "Client (" << _socket << ") deleted on server " CYAN "'" << _server->server_name << ":" << _server->_socket << "'" RESET << std::endl;
 	if (_request)
 		delete _request;
 }
@@ -146,13 +143,13 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 			body += line;
 			body += "\n";
 		}
-		response.setCustomizeErrorMessage(statusCode->second);
+		response.setCustomizeErrorMessage(body);
 		file.close();
 	}
 	else // page d'erreur pas trouvée, envoie de la page par défaut
 		response.setDefaultErrorMessage();
-	response.addHeader("Content-Type", "text/html");
-	response.addHeader("Content-Length", to_string(response.getBody().length()));
+	response.addHeader("content-type", "text/html");
+	response.addHeader("content-length", to_string(response.getBody().length()));
 	if (statusCode->first == METHOD_NOT_ALLOWED)
 	{
 		std::string allowedMethods;
@@ -162,7 +159,7 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 				allowedMethods += ", ";
 			allowedMethods += methodTypeToStr(*it);
 		}
-		response.addHeader("Allow", allowedMethods);
+		response.addHeader("allow", allowedMethods);
 	}
 
 	std::string	result = response.makeHeader(true);
@@ -172,9 +169,12 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	if (sendSize < 0)
 		std::cerr << RED "Error:" RESET " send() failed" << std::endl;
 	else if (sendSize == 0)
+	{
 		std::cerr << RED "Error:" RESET " send() failed: connection closed" << std::endl;
+		close(_socket);
+	}
 	else
-		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes" << std::endl;
+		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes." << std::endl;
 }
 
 void Client::parse(const std::string& str)
