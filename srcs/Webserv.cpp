@@ -446,16 +446,20 @@ std::pair<bool, std::vector<std::string>> Webserv::isValidCGI(std::string path, 
             ss << file.rdbuf();
             std::string content = ss.str();
 			size_t start = 0;
-			size_t tmp = start;
+			size_t end = 0;
+			size_t tmp;
 			while (start != std::string::npos)
 			{
-				tmp = end + 1;
-				size_t start = content.find_first_of("<?php", tmp);
-				size_t end = content.find_first_of("?>", tmp);
+				tmp = end;
+				start = content.find("<?php", tmp);
+				end = content.find("?>", tmp + 1);
 				if (start != std::string::npos && end != std::string::npos)
 				{
-					std::string phpSection = content.substr(start + 5, end - start - 5);
-
+					std::string phpSection = content.substr(start + 5, end - start - 5); // On ajoute chaque section PHP dans un nouveau fichier
+					std::string filePath = path + ".php"; // Trouver un bon nom de fichier (ave un itérateur ?)
+					int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+					write(fd, phpSection.c_str(), phpSection.length()); // On garde le fichier pour l'exécuter dans le CGI Handler
+					close(fd);
 					size_t requirePos = phpSection.find("require '");
 					if (requirePos != std::string::npos)
 					{
@@ -465,7 +469,6 @@ std::pair<bool, std::vector<std::string>> Webserv::isValidCGI(std::string path, 
 						{
 							result.first = true;
 							result.second.push_back(phpSection.substr(startFilename, endFilename - startFilename));
-							return result;
 						}
 					}
 				}
