@@ -120,12 +120,12 @@ void	Client::clearRequest(void)
 
 void	Client::displayErrorPage(StatusMap::iterator statusCode)
 {
-	std::cout << RED "> Sending error page: " RESET << statusCode->first << " " << statusCode->second << std::endl;
+	std::cout << RED "> Sending page: " RESET << statusCode->second << std::endl;
 	std::ifstream file;
 	if (statusCode != _server->error_pages.end())
 	{
 		std::string path = _server->error_pages[statusCode->first];
-		std::cout << BLUE "tmp: " << path << RESET << std::endl;
+		// std::cout << BLUE "tmp: " << path << RESET << std::endl;
 		file.open(path.c_str());
 		if (!file.is_open())
 			statusCode = _server->error_pages.find(NOT_FOUND);
@@ -143,11 +143,11 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 			body += line;
 			body += "\n";
 		}
-		response.setCustomizeErrorMessage(body);
+		response.setCustomizeStatusPage(body);
 		file.close();
 	}
 	else // page d'erreur pas trouvée, envoie de la page par défaut
-		response.setDefaultErrorMessage();
+		response.setDefaultStatusPage();
 	response.addHeader("content-type", "text/html");
 	response.addHeader("content-length", to_string(response.getBody().length()));
 	if (statusCode->first == METHOD_NOT_ALLOWED)
@@ -166,8 +166,8 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	int sendSize = 0;
 	if (_socket > 0)
 		sendSize = send(_socket, result.c_str(), result.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
-	if (sendSize < 0)
-		std::cerr << RED "Error:" RESET " send() failed" << std::endl;
+	if (sendSize < 0) ;
+		// std::cerr << RED "Error:" RESET " send() failed to send error page" << std::endl;
 	else if (sendSize == 0)
 	{
 		std::cerr << RED "Error:" RESET " send() failed: connection closed" << std::endl;

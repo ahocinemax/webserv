@@ -90,8 +90,8 @@ int	Webserv::routine(void)
 			eraseClient(index);
 			continue ;
 		}
-
 		Request *request = _clients[index]->getRequest();
+		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
 		StringMap::iterator it = request->_header.find("connection");
 		if (it == request->_header.end() || it->second != "keep-alive")
@@ -180,6 +180,7 @@ void	Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		else
 			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 	}
+	std::cout << std::endl;
 
 	// editSocket(client->getSocket(), EPOLLIN, event);
 }

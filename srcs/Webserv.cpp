@@ -89,11 +89,11 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 
 void	Webserv::postMethod(Client &client, Request &request)
 {
-	if (request._header["transfer-encoding"] != "chunked" && request._header.find("content_length") == request._header.end())
-	{
-		client.displayErrorPage(_statusCodeList.find(LENGTH_REQUIRED));
-		return ;
-	}
+	// if (request._header["transfer-encoding"] != "chunked" && request._header.find("content_length") == request._header.end())
+	// {
+	// 	client.displayErrorPage(_statusCodeList.find(LENGTH_REQUIRED));
+	// 	return ;
+	// }
 
 	std::string		filePath = getPath(client, request.getPath());
 
@@ -121,6 +121,7 @@ void	Webserv::postMethod(Client &client, Request &request)
 			end = request.getBody().find(boundary, begin);
 			if (begin == std::string::npos || end == std::string::npos)
 				break ;
+				std::cout << request.getBody() << std::endl;
 			if (writeResponse(client, request.getBody().substr(begin, end - begin - 4), filePath + "/" + fileName) == FAILED)
 				break ;
 			if (request.getBody()[end + boundary.length()] == '-')
@@ -132,11 +133,11 @@ void	Webserv::postMethod(Client &client, Request &request)
 	int	code = 201;
 	if (request._header["content-length"] == "0")
 		code = 204;
-	
+
 	Response	response(_statusCodeList[code]);
 	std::string	header = response.makeHeader();
 
-	int			ret = send(client.getSocket(), header.c_str(), header.length(), 0);
+	int ret = send(client.getSocket(), header.c_str(), header.length(), MSG_NOSIGNAL);
 	if (ret < 0)
 		client.displayErrorPage(_statusCodeList.find(500));
 	else if (ret == 0)
@@ -159,7 +160,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 
 	if (S_ISDIR(fileStat.st_mode))
 	{
-		std::cout << "> Path requested is directory" << std::endl;
+		std::cout << BLUE "> Path requested is directory" RESET<< std::endl;
 		Location *location = client._server->getLocation(path);
 		StrVector indexVec;
 		bool notFound = true;
@@ -195,7 +196,6 @@ void	Webserv::getMethod(Client &client, std::string path)
 	}
 
 	file = fopen(filePath.c_str(), "rb");
-	std::cout << BLUE "> File requested is " << filePath << RESET << std::endl;
 	const char *mime = getMimeType(filePath.c_str()); // Protected inside getMimeType function
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	response.addHeader("content-length", to_string(fileStat.st_size));
@@ -208,29 +208,30 @@ void	Webserv::getMethod(Client &client, std::string path)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 	char		buffer[BUFFER_SIZE + 1];
 	ssize_t		readSize = 0;
-	// send() fail pour la requete 'localhost:<PORT>/' -> il envoie deux fois le fichier
-	// std::cout << 'sending file: \n';
+	ssize_t		totalSize = 0;
 	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0) // fread allowed ?
 	{
-		// std::cout << buffer << std::endl;
+		totalSize += readSize;
 		ret = send(client.getSocket(), buffer, readSize, MSG_NOSIGNAL);
 		if (ret < 0)
-		{
-			std::cout << RED << "Error while sending file " << filePath << RESET << std::endl;
 			client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
-		}
 		else if (ret == 0)
 			client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
+		if (client.getRequest()->_header["transfer-encoding"] == "chunked")
+			send(client.getSocket(), CRLF, 2, MSG_NOSIGNAL);
 	}
+	if (client.getRequest()->_header["transfer-encoding"] == "chunked")
+		send(client.getSocket(), "0\r\n\r\n", 5, MSG_NOSIGNAL);
 	fclose(file);
-	std::cout << GREEN << filePath << " sent (" << client.getRequest()->_statusCode << ")" RESET << std::endl;
+	std::cout << GREEN << filePath << " sent (" << totalSize << ")" RESET << std::endl;
 }
+
 
 void	Webserv::redirectMethod(Client &client, Request &request)
 {
 	std::cout << BLUE "> Redirecting to " << client._server->redirect_url << RESET << std::endl;
 	Response	response(_statusCodeList[client._server->redirect_status]);
-	response.setDefaultErrorMessage();
+	response.setDefaultStatusPage();
 	response.addHeader("location", client._server->redirect_url);
 	if (!client._server->server_name.empty())
 		response.addHeader("server", client._server->server_name);
@@ -367,13 +368,13 @@ int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 
 	// add fd to epoll
 	struct epoll_event	event;
-	event.events = EPOLLOUT | EPOLLET;
-	event.data.fd = fd;
-	if (epoll_ctl(client.getSocket(), EPOLL_CTL_ADD, fd, &event) < 0)
+	initEvent(event, EPOLLOUT | EPOLLET, fd);
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &event) < 0)
 		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
 
 	// write body to file
 	int		ret = write(fd, body.c_str(), body.length());
+	std::cout << GREEN "> Response sent: " RESET << ret << " bytes." << std::endl;
 	if (ret < 0)
 	{
 		// close fds

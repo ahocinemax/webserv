@@ -42,7 +42,7 @@ std::string	Response::makeHeader(bool appendBody)
 	return (result);
 }
 
-void	Response::setDefaultErrorMessage() // page d'erreur par défaut
+void	Response::setDefaultStatusPage() // page d'erreur par défaut
 {
 	std::cout << "> sending default error message" << std::endl;
 	_message.clear();
@@ -70,7 +70,7 @@ std::string	Response::getStatusCode(void) const { return (_statusCode); }
 
 std::string	Response::getStatusMessage(void) const { return (_statusMessage); }
 
-void	Response::setCustomizeErrorMessage(std::string &message)
+void	Response::setCustomizeStatusPage(std::string &message)
 { _message = message; }
 
 void	Response::addHeader(std::string key, std::string value)	

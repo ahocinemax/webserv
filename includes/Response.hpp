@@ -18,17 +18,17 @@
 class Response
 {
 	public:
-		Response(void);
 		Response(std::string status);
+		Response(void);
 		~Response();
 
 		std::string	makeHeader(bool appendBody = false);
-		void		setDefaultErrorMessage(void);
+		void		setDefaultStatusPage(void);
 
 		std::string	getDate(void) const;
 		std::string	getStatusCode(void) const;
 		std::string	getStatusMessage(void) const;
-		void		setCustomizeErrorMessage(std::string &message);
+		void		setCustomizeStatusPage(std::string &message);
 		void		addHeader(std::string key, std::string value);
 		std::string	getBody(void) const { return (_message); }
 		Request*	getRequest();
