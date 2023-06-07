@@ -90,3 +90,14 @@ std::string readFd(int fd)
 	// std::cout << RED "readFd: \n" RESET << tmp << std::endl;
 	return (str);
 }
+
+bool	convertHttpCode(const std::string& str, int* code)
+{
+	size_t	found;
+
+	found = str.find_first_not_of("0123456789");
+	if (found != std::string::npos)
+		return (false);
+	*code = atoi(str.c_str());
+	return (*code >= 0 && *code <= 505);
+}

@@ -50,7 +50,8 @@
         "numbers": "cpp",
         "ranges": "cpp",
         "span": "cpp",
-        "ctime": "cpp"
+        "ctime": "cpp",
+        "iomanip": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

@@ -10,7 +10,7 @@ void	Webserv::initEvent(struct epoll_event &event, uint32_t flag, int fd)
 int	Webserv::initConnection(int socket)
 {
 	struct epoll_event	event;
-	Client				*client = new Client(_serversMap[socket]);
+	Client 				*client = new Client(_serversMap[socket]);
 
 	if ((client->setSocket(accept(socket, &client->_addr, &client->_addrLen)) < SUCCESS && !(errno == EAGAIN || errno == EWOULDBLOCK)))
 		throw AcceptException();
@@ -40,7 +40,7 @@ void Webserv::editSocket(int socket, uint32_t flag, struct epoll_event event)
 	event.data.fd = socket;
 	event.events = flag;
 	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, socket, &event) < 0) // renouveller la mode
-		throw EpollCtlException();	
+		throw EpollCtlException();
 	// std::cout << YELLOW << "Success:" << RESET << " Socket event modified. Socket FD: " << socket << ", Event Flag: " << flag << std::endl;
 }
 
@@ -64,14 +64,14 @@ void Webserv::eraseClient(int index)
 int	Webserv::routine(void)
 {
 	struct epoll_event	events[MAX_EPOLL_EVENTS];
-	int					nbEvents = 0;
+	int 				nbEvents = 0;
 	int					index = 0;
 
 	// std::cout << PURPLE << std::setw(52) << "waiting for events" << RESET << std::endl;
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, -1)) < SUCCESS)
 		return (FAILED);
 
-	for (int i = 0 ; i < nbEvents ; i++)
+	for (int i = 0; i < nbEvents; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
@@ -86,7 +86,7 @@ int	Webserv::routine(void)
 		if (_clients[index]->getRequest() == NULL)
 		{
 			eraseClient(index);
-			continue ;
+			continue;
 		}
 
 		Request *request = _clients[index]->getRequest();
@@ -106,10 +106,10 @@ int	Webserv::connectEpollToSockets()
 	_epollFd = epoll_create(MAX_EPOLL_EVENTS);
 	if (_epollFd < SUCCESS)
 		throw EpollCreateException();
-		/*check sserverVec[num]._socket for debug*/
-		std::cout << "serversVec.size(): " << _serversVec.size() << std::endl;
-		for (int i = 0; i < _serversVec.size() ; i++)
-			std::cout << "serversVec[" << i << "]._socket : " << _serversVec[i]._socket << std::endl;
+	/*check sserverVec[num]._socket for debug*/
+	std::cout << "serversVec.size(): " << _serversVec.size() << std::endl;
+	for (int i = 0; i < _serversVec.size(); i++)
+		std::cout << "serversVec[" << i << "]._socket : " << _serversVec[i]._socket << std::endl;
 	for (size_t i = 0; i < _serversVec.size(); i++)
 	{
 		initEvent(event, EPOLLIN, _serversVec[i]._socket);
@@ -118,12 +118,12 @@ int	Webserv::connectEpollToSockets()
 		ssize_t result = read(_serversVec[i]._socket, &buffer, 0);
 		if (result < 0)
 		{
-		    std::cout << "read error on socket " << _serversVec[i]._socket << " : " << errno << std::endl;
+			std::cout << "read error on socket " << _serversVec[i]._socket << " : " << errno << std::endl;
 		}
 		else
 		{
-		    std::cout << "socket " << _serversVec[i]._socket << " is open" << std::endl;
-		}	
+			std::cout << "socket " << _serversVec[i]._socket << " is open" << std::endl;
+		}
 		if (ret < SUCCESS)
 			throw EpollCtlException();
 	}
@@ -152,28 +152,76 @@ void	Webserv::handleRequest(Client *client, struct epoll_event &event)
 	*/
 }
 
-void	Webserv::handleResponse(Client *client, Request *req, struct epoll_event &event)
+const char *Webserv::EpollCreateException::what() const throw()
+{
+	return ("Error: Epoll_create() failed");
+}
+
+const char *Webserv::EpollCtlException::what() const throw()
+{
+	return ("Error: Epoll_ctl() failed");
+}
+
+const char *Webserv::EpollWaitException::what() const throw()
+{
+	return ("Error: Epoll_wait() failed");
+}
+
+const char *Webserv::AcceptException::what() const throw()
+{
+	return ("Error: Accept() failed");
+}
+
+bool Webserv::HandleCgi(Request &request)
+{
+    CgiHandler cgi(request);
+
+	cgi.setEnv("SERVER_NAME", _serversVec[0].server_name);
+    if (request._statusCode == NOT_FOUND)
+		return (false);
+	else
+	{
+		std::string output = request.getBody();
+        if (cgi.getCgiOutput(output))
+		{
+			request.setCgiBody(output);
+			std::cout << RED "CGI Executed" RESET<< std::endl;
+		}
+		else
+		{
+			std::cout << "ERROR CGI EXECUTION" << std::endl;
+			request._statusCode = INTERNAL_SERVER_ERROR;
+		    return (false);
+        }
+    }
+	return (true);
+}
+
+void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &event)
 {
 	(void)event;
-	
-		std::cout << "> Handling response" << std::endl;
+
+	std::cout << "> Handling response" << std::endl;
 	if (req == NULL)
-		return ;
+		return;
 	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
-	// GENERATE RESPONSE //
-	if (isValidCGI(req->getPath()))
+	std::pair<bool, std::string> cgi = isValidCGI(req->getRoot());	
+	if (cgi.first) // is CGI valid or not
 	{
-		HandleCgi(*req);
-		// if (req->getMethod() == "GET")
-		// 	getMethodCGI(client, req->getPath());
-		// else if (req->getMethod() == "POST")
-		// 	postMethodCGI(client, *req);
-		// else if (req->getMethod() == "DELETE")
-		// 	deleteMethodCGI(client, req->getPath());
-		// else
-		// 	return (client.displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
-		std::cout << RED "CGI BOOL IS TRUE" RESET << std::endl;
+		req->setRoot(cgi.second); // set new root path
+		if (!HandleCgi(*req))
+			return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
+		else
+		{
+			std::cout << RED "CGI BOOL IS TRUE" RESET << std::endl;
+			if (req->getMethod() == "GET")
+				getCGIMethod(*client, req);
+			else if (req->getMethod() == "POST")
+				postMethod(*client, *req);
+			else
+				return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+		}
 	}
 	else
 	{
@@ -186,40 +234,6 @@ void	Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		else
 			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 	}
-	
 	//->if la classe response est bien "generee"
 	// editSocket(client.getSocket(), EPOLLOUT, event);
 }
-
-const char*	Webserv::EpollCreateException::what() const throw()
-{
-	return ("Error: Epoll_create() failed");
-}
-
-const char*	Webserv::EpollCtlException::what() const throw()
-{
-	return ("Error: Epoll_ctl() failed");
-}
-
-const char*	Webserv::EpollWaitException::what() const throw()
-{
-	return ("Error: Epoll_wait() failed");
-}
-
-const char*	Webserv::AcceptException::what() const throw()
-{
-	return ("Error: Accept() failed");
-}
-
-void	Webserv::HandleCgi(Request& request)
-{
-	CgiHandler Cgi(request);
-	std::string	body = "";//test
-	if (!Cgi.getCgiOutput(body))
-		return ;
-	/*
-	else
-		(エラー処理で必要になるボディの生成)
-	*/
-}
-

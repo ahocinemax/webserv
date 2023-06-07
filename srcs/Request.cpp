@@ -23,6 +23,8 @@ void	Request::initVariables()
 	_headerParsed = false;
 	_chunked = false;
 	_payloadsize = 0;
+	_root = "html";
+	_cgibody = "";
 	_methods.insert(std::make_pair(GET, "GET"));
 	_methods.insert(std::make_pair(POST, "POST"));
 	_methods.insert(std::make_pair(DELETE, "DELETE"));
@@ -75,6 +77,7 @@ void	Request::parsePath()
 		path.erase(pos);
 	}
 	_path = path;
+	_root += path;
 	_statusCode = OK;
 }
 
@@ -352,7 +355,11 @@ std::string	Request::getMethod() const {return (_method);}
 
 std::string	Request::getPath() const { return (_path); }
 
+std::string	Request::getRoot() const { return (_root); }
+
 std::string	Request::getBody() const { return (_body); }
+
+std::string	Request::getCgiBody() const { return (_cgibody); }
 
 size_t		Request::getPayloadSize() const { return (_payloadsize); }
 
@@ -366,6 +373,16 @@ std::string	Request::getHost() const { return (_host); }
 
 int	Request::getPort() const { return (_port); }
 
+void	Request::setRoot(std::string& root)
+{ 
+	_root = root; 
+}
+
+void	Request::setCgiBody(std::string& body)
+{ 
+	_cgibody = body; 
+}
+
 void	Request::PrintHeader()
 {
 	StringMap::iterator ite;
@@ -376,6 +393,7 @@ void	Request::PrintHeader()
 	std::cout << "Method type	: " << getMethod() << std::endl;
 	std::cout << "ProtocolHTTP	: " << getProtocolHTTP() << std::endl;
 	std::cout << "Path			: " << getPath() << std::endl;
+	std::cout << "Root			: " << getRoot() << std::endl;
 	std::cout << "host			: " << getHost() << std::endl;
 	for (ite = _header.begin(); ite != _header.end(); ite++)
 		std::cout << ite->first << "	: " << ite->second << std::endl;

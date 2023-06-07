@@ -111,6 +111,7 @@ std::string methodTypeToStr(MethodType method);
 std::string	trimSpacesStr(std::string *str);
 void		toLower(std::string *str);
 std::string readFd(int fd);
+bool		convertHttpCode(const std::string& str, int* code);
 
 template <typename T>
 std::string to_string(T input)
