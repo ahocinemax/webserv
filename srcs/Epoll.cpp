@@ -167,7 +167,7 @@ const char *Webserv::AcceptException::what() const throw()
 bool Webserv::HandleCgi(Request &request)
 {
     CgiHandler cgi(request);
-
+	std::string body;
 	cgi.setEnv("SERVER_NAME", _serversVec[0].server_name);
     if (request._statusCode == NOT_FOUND)
 		return (false);
@@ -176,7 +176,8 @@ bool Webserv::HandleCgi(Request &request)
 		std::string output = request.getBody();
         if (cgi.getCgiOutput(output))
 		{
-			request.setCgiBody(output);
+			request.setCgiBody(request.getCgiBody().append(output));
+			//request._getCgiBody().append(output);
 			std::cout << RED "CGI Executed" RESET<< std::endl;
 		}
 		else
@@ -198,21 +199,25 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		return;
 	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
-	std::pair<bool, std::string> cgi = isValidCGI(req->getRoot(), *client);	
+	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(req->getRoot(), *client);	
 	if (cgi.first) // is CGI valid or not
 	{
-		req->setRoot(cgi.second); // set new root path
-		if (!HandleCgi(*req))
-			return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
-		else
+		std::vector<std::string>::iterator it = cgi.second.begin();
+		for (; it != cgi.second.end(); it++)
 		{
-			std::cout << RED "CGI BOOL IS TRUE" RESET << std::endl;
-			if (req->getMethod() == "GET")
-				getCGIMethod(*client, req);
-			else if (req->getMethod() == "POST")
-				postMethod(*client, *req);
+			req->setRoot(*it); // set new root path
+			if (!HandleCgi(*req))
+				return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
 			else
-				return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+			{
+				std::cout << RED "CGI BOOL IS TRUE" RESET << std::endl;
+				if (req->getMethod() == "GET")
+					getCGIMethod(*client, req);
+				else if (req->getMethod() == "POST")
+					postMethod(*client, *req);
+				else
+					return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+		}
 		}
 	}
 	else

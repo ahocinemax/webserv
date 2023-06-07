@@ -415,16 +415,16 @@ const char *Webserv::getMimeType(const char *path)
 	return "text/plain";
 }
 
-std::pair<bool, std::string> Webserv::isValidCGI(std::string path, Client &client) const
+std::pair<bool, std::vector<std::string>> Webserv::isValidCGI(std::string path, Client &client) const
 {
-    std::pair<bool, std::string> result(false, "");
+    std::pair<bool, std::vector<std::string>> result(false, std::vector<std::string>());
     if (path.length() >= 4)
     {
         std::string extension = path.substr(path.length() - 4, 4);
         if (extension == ".cgi" || extension == ".pl" || extension == ".py" || extension == ".php")
         {
             result.first = true;
-            result.second = path;
+            result.second.push_back(path);
             return result;
         }
     }
@@ -443,25 +443,31 @@ std::pair<bool, std::string> Webserv::isValidCGI(std::string path, Client &clien
             std::ostringstream ss;
             ss << file.rdbuf();
             std::string content = ss.str();
-            size_t start = content.find("<?php");
-            size_t end = content.find("?>");
-            if (start != std::string::npos && end != std::string::npos)
-            {
-                std::string phpSection = content.substr(start + 5, end - start - 5);
+			size_t start = 0;
+			size_t tmp = start;
+			while (start != std::string::npos)
+			{
+				tmp = end + 1;
+				size_t start = content.find_first_of("<?php", tmp);
+				size_t end = content.find_first_of("?>", tmp);
+				if (start != std::string::npos && end != std::string::npos)
+				{
+					std::string phpSection = content.substr(start + 5, end - start - 5);
 
-                size_t requirePos = phpSection.find("require '");
-                if (requirePos != std::string::npos)
-                {
-                    size_t startFilename = requirePos + 9;
-                    size_t endFilename = phpSection.find("'", startFilename);
-                    if (endFilename != std::string::npos)
-                    {
-                        result.first = true;
-                        result.second = phpSection.substr(startFilename, endFilename - startFilename);
-						return result;
-                    }
-                }
-            }
+					size_t requirePos = phpSection.find("require '");
+					if (requirePos != std::string::npos)
+					{
+						size_t startFilename = requirePos + 9;
+						size_t endFilename = phpSection.find("'", startFilename);
+						if (endFilename != std::string::npos)
+						{
+							result.first = true;
+							result.second.push_back(phpSection.substr(startFilename, endFilename - startFilename));
+							return result;
+						}
+					}
+				}
+			}
         }
     }
 	std::vector<Location>::iterator it = client._server->locations.begin();
@@ -475,7 +481,7 @@ std::pair<bool, std::string> Webserv::isValidCGI(std::string path, Client &clien
 				if (it2->second != "")
 				{
 					result.first = true;
-					result.second = path;
+					result.second.push_back(path);
 					return result;
 				}
 			}
