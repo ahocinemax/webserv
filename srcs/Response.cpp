@@ -12,7 +12,7 @@
 
 #include "Response.hpp"
 
-Response::Response(void) : _statusCode("") {}
+Response::Response(void) : _statusCode(""), _cgibody("") {}
 
 Response::Response(std::string status)
 {
@@ -77,6 +77,75 @@ void	Response::addHeader(std::string key, std::string value)
 { _head.insert(std::make_pair(key, value)); }
 
 Request*	Response::getRequest(){return (_request);}
+
+void	Response::setCgiBody(const std::string& body)
+{ 
+	_cgibody = body; 
+}
+
+
+void Response::setStatusCode(int status)
+{
+	_statusCode = status;
+}
+
+void Response::parseCgiStatusLine()
+{
+	std::string name;
+	std::string value;
+	int code;
+
+	name = _cgibody.substr(0, _cgibody.find(":"));
+	if (name != "Status" && name != "status")
+		return;
+	getNextWord(_cgibody, name, ":");
+	_cgibody.erase(0, _cgibody.find_first_not_of(" "));
+	getNextWord(_cgibody, value, " ");
+	trimSpacesStr(&value);
+	if (convertHttpCode(value, &code))
+	{
+		getNextWord(_cgibody, value, "\r\n");
+		trimSpacesStr(&value);
+		if (_statusCode == value)
+			setStatusCode(code);
+	}
+}
+
+void Response::parseCgiBody()
+{
+	size_t pos;
+	std::string headerName;
+	std::string headerValue;
+
+	/*if _cgibody doesn't have header*/
+	if (_cgibody.find("\r\n\r\n") == std::string::npos && _cgibody.find("\n\n") == std::string::npos)
+		return;
+	pos = 0;
+	parseCgiStatusLine();
+	while (pos != std::string::npos && _cgibody.find("\r\n"))
+	{
+		pos = getNextWord(_cgibody, headerName, ":");
+		if (pos == std::string::npos)
+			break;
+		getNextWord(_cgibody, headerValue, "\r\n");
+		trimSpacesStr(&headerValue);
+		addHeader(headerName, headerValue);
+	}
+	getNextWord(_cgibody, headerName, "\r\n");
+}
+
+size_t Response::getNextWord(std::string &body, std::string &word, std::string const &delimiter)
+{
+	size_t pos;
+	size_t totalSize;
+
+	pos = body.find(delimiter);
+	std::string nextWord(body, 0, pos);
+	totalSize = pos + delimiter.length();
+	body.erase(0, totalSize);
+	word = nextWord;
+	return (pos);
+}
 
 std::string	Response::getDate(void) const
 {

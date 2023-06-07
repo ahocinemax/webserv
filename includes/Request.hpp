@@ -65,13 +65,18 @@ class Request
 		std::string		getMethod() const;
 
 		std::string		getPath() const;
+		std::string		getRoot() const;
 		std::string		getBody() const;
+		std::string		getCgiBody() const;
 		size_t			getPayloadSize() const;
 		std::string		getQuery() const;
 		std::string		getProtocolHTTP() const;
 		size_t			getSize() const;
 		std::string		getHost() const;
 		int				getPort() const;
+		void			setRoot(std::string& root);
+		void			setCgiBody(std::string& body);
+
 		/*test*/
 		void			PrintHeader();
 
@@ -104,6 +109,7 @@ class Request
 		std::string			_query;
 		std::string			_request;
 		std::string			_body;
+		std::string			_cgibody;
 		bool				_headerParsed;
 		bool				_chunked;
 		size_t				_size;
@@ -111,6 +117,7 @@ class Request
 		std::string			_host;
 		int					_port;
 		size_t				_payloadsize;
+		std::string			_root;
 		std::map<MethodType, std::string> _methods;
 };
 

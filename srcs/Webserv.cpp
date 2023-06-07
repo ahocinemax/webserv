@@ -417,34 +417,61 @@ const char *Webserv::getMimeType(const char *path)
 	return "text/plain";
 }
 
-bool Webserv::isValidCGI(std::string path, Client &client) const
+std::pair<bool, std::vector<std::string>> Webserv::isValidCGI(std::string path, Client &client) const
 {
-	// Vérifiez l'extension du fichier
-	if (path.length() >= 4)
-	{
-		std::string extension = path.substr(path.length() - 4, 4);
-		if (extension == ".cgi" || extension == ".pl" || extension == ".py" || extension == ".php")
-			return (true);
-	}
+    std::pair<bool, std::vector<std::string>> result(false, std::vector<std::string>());
+    if (path.length() >= 4)
+    {
+        std::string extension = path.substr(path.length() - 4, 4);
+        if (extension == ".cgi" || extension == ".pl" || extension == ".py" || extension == ".php")
+        {
+            result.first = true;
+            result.second.push_back(path);
+            return result;
+        }
+    }
+    if (path.length() >= 5)
+    {
+        std::string extension = path.substr(path.length() - 5, 5);
+        if (extension == ".html")
+        {
+            std::ifstream file(path.c_str());
+            if (!file)
+            {
+                std::cerr << RED << "Failed to open file: " << RESET << path << std::endl;
+                return result;
+            }
 
-	// Si le fichier est .html, vérifiez la présence de balises PHP
-	if (path.length() >= 5)
-	{
-		std::string extension = path.substr(path.length() - 5, 5);
-		if (extension == ".html")
-		{
-			std::ifstream file(path.c_str());
-			std::ostringstream ss;
-			ss << file.rdbuf();
-			std::string content = ss.str();
-			
-			// Recherchez les balises PHP ouvrantes et fermantes
-			if (content.find("<?php") != std::string::npos && content.find("?>") != std::string::npos)
-				return (true);
-		}
-	}
+            std::ostringstream ss;
+            ss << file.rdbuf();
+            std::string content = ss.str();
+			size_t start = 0;
+			size_t tmp = start;
+			while (start != std::string::npos)
+			{
+				tmp = end + 1;
+				size_t start = content.find_first_of("<?php", tmp);
+				size_t end = content.find_first_of("?>", tmp);
+				if (start != std::string::npos && end != std::string::npos)
+				{
+					std::string phpSection = content.substr(start + 5, end - start - 5);
 
-	// Vérifiez si le fichier est dans un emplacement CGI
+					size_t requirePos = phpSection.find("require '");
+					if (requirePos != std::string::npos)
+					{
+						size_t startFilename = requirePos + 9;
+						size_t endFilename = phpSection.find("'", startFilename);
+						if (endFilename != std::string::npos)
+						{
+							result.first = true;
+							result.second.push_back(phpSection.substr(startFilename, endFilename - startFilename));
+							return result;
+						}
+					}
+				}
+			}
+        }
+    }
 	std::vector<Location>::iterator it = client._server->locations.begin();
 	StringMap::iterator it2;
 	for (; it != client._server->locations.end(); it++)
@@ -454,10 +481,36 @@ bool Webserv::isValidCGI(std::string path, Client &client) const
 			if (path.find(it2->first) != std::string::npos)
 			{
 				if (it2->second != "")
-					return (true);
+				{
+					result.first = true;
+					result.second.push_back(path);
+					return result;
+				}
 			}
 		}
 	}
 
-	return (false);
+    return result;
+}
+
+void Webserv::getCGIMethod(Client &client, Request *req)
+{
+    if (req->getCgiBody().empty())
+        return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
+	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
+	response.setCgiBody(req->getCgiBody());	
+	response.parseCgiBody();
+    response.addHeader("Content-Length", to_string(req->getCgiBody().size()));
+    // MIME type of CGI script =  "text/html" 
+    response.addHeader("Content-Type", "text/html");
+    std::string header = response.makeHeader(false);
+    // send header
+    int ret = send(client.getSocket(), header.c_str(), header.length(), 0);
+    if (ret <= 0)
+        return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
+    // send CGI body
+    ret = send(client.getSocket(), response.getCgiBody().c_str(), response.getCgiBody().size(), MSG_NOSIGNAL);
+    if (ret <= 0)
+        return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
+    std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
 }

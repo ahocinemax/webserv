@@ -1,7 +1,6 @@
 #ifndef CGIHANDLER_HPP
 #define CGIHANDLER_HPP
 
-#include <exception>
 #include <unistd.h>
 #include <string>
 #include <sys/types.h>
@@ -29,9 +28,11 @@ class CgiHandler
         const std::string&                          getProgram() const;
         const std::string&                          getScriptPath() const;
         const std::map<std::string, std::string>&   GetEnv() const;
+        void                                        setEnv(const std::string &key, const std::string &val);
         char**                                      GetEnvAsCstrArray() const;
         void                                        FreeEnvCstrArray(char** env) const;
         bool                                        getCgiOutput(std::string& output);
+        void                                        initCgiEnvironment();
 
         class CgiError : public virtual std::exception 
         {
@@ -54,7 +55,6 @@ class CgiHandler
         void    SetupParentIO();
         bool    WaitforChild(int pid);
         void    WriteToStdin();
-        void    setCgiEnvironment();
         void    TestEnv();
     
         Response                            *_response;
