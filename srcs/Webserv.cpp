@@ -142,7 +142,8 @@ void	Webserv::postMethod(Client &client, Request &request)
 		client.displayErrorPage(_statusCodeList.find(500));
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(400));
-	std::cout << GREEN << filePath << " posted (" << code << ")" RESET << std::endl;
+	else
+		std::cout << GREEN << filePath << " posted (" << code << ")" RESET << std::endl;
 }
 
 void	Webserv::getMethod(Client &client, std::string path)
@@ -223,9 +224,8 @@ void	Webserv::getMethod(Client &client, std::string path)
 	if (client.getRequest()->_header["transfer-encoding"] == "chunked")
 		send(client.getSocket(), "0\r\n\r\n", 5, MSG_NOSIGNAL);
 	fclose(file);
-	std::cout << GREEN << filePath << " sent (" << totalSize << ")" RESET << std::endl;
+	std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
 }
-
 
 void	Webserv::redirectMethod(Client &client, Request &request)
 {
@@ -360,11 +360,13 @@ int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 		if (!S_ISDIR(fileStat.st_mode))
 			return (client.displayErrorPage(_statusCodeList.find(400)), FAILED);
 	}
+	std::string	tmpPath = path + ".tmp";
 	std::string	command = "mkdir -p " + dirPath;
-	int			fd = open(path.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	int			fd = open(tmpPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
 	system(command.c_str());
 	if (fd < 0)
 		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
+
 
 	// add fd to epoll
 	struct epoll_event	event;
@@ -374,7 +376,7 @@ int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 
 	// write body to file
 	int		ret = write(fd, body.c_str(), body.length());
-	std::cout << GREEN "> Response sent: " RESET << ret << " bytes." << std::endl;
+	std::cout << GREEN "> Response sent: " RESET << convertToOctets(ret) << "." << std::endl;
 	if (ret < 0)
 	{
 		// close fds

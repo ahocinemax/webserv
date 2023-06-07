@@ -11,6 +11,7 @@
 /* ************************************************************************** */
 
 #include "Utils.hpp"
+#include <iomanip>
 
 StrVector split(std::string input, char delimiter)
 {
@@ -89,4 +90,29 @@ std::string readFd(int fd)
 	// std::string tmp = str.empty() ? "EMPTY REQUEST" : str;
 	// std::cout << RED "readFd: \n" RESET << tmp << std::endl;
 	return (str);
+}
+
+std::string convertToOctets(int octets)
+{
+	std::ostringstream result;
+
+	if (octets < 1024)
+		result << octets << " octets";
+	else if (octets < 1024 * 1024)
+	{
+		double kilo = static_cast<double>(octets) / 1024;
+		result << std::fixed << std::setprecision(1) << kilo << " Kb";
+	}
+	else if (octets < 1024 * 1024 * 1024)
+	{
+		double mega = static_cast<double>(octets) / (1024 * 1024);
+		result << std::fixed << std::setprecision(1) << mega << " Mb";
+	}
+	else
+	{
+		double giga = static_cast<double>(octets) / (1024 * 1024 * 1024);
+		result << std::fixed << std::setprecision(1) << giga << " Gb";
+	}
+
+	return (result.str());
 }
