@@ -62,6 +62,7 @@ class Webserv
 		StatusMap				_statusCodeList;
 		int						_epollFd;
 
+		void				redirectMethod(Client &client, Request &request);
 		void				deleteMethod(Client &client, std::string path);
 		void				postMethod(Client &client, Request &request);
 		void				getMethod(Client &client, std::string path);
@@ -70,6 +71,7 @@ class Webserv
 		std::pair<bool, std::string>	isValidCGI(std::string path) const;
 		void				setStatusCodes(void);
 
+		void				sendAutoindex(Client &client, std::string filePath);
 		std::string			getPath(Client &client, std::string path);
 
 		int					writeResponse(Client &client, std::string response, std::string path);

@@ -42,8 +42,9 @@ std::string	Response::makeHeader(bool appendBody)
 	return (result);
 }
 
-void	Response::setDefaultErrorMessage() // page d'erreur par défaut
+void	Response::setDefaultStatusPage() // page d'erreur par défaut
 {
+	std::cout << "> sending default error message" << std::endl;
 	_message.clear();
 	_message = "<!DOCTYPE html> \
 	<html> \
@@ -69,7 +70,7 @@ std::string	Response::getStatusCode(void) const { return (_statusCode); }
 
 std::string	Response::getStatusMessage(void) const { return (_statusMessage); }
 
-void	Response::setCustomizeErrorMessage(std::string &message)
+void	Response::setCustomizeStatusPage(std::string &message)
 { _message = message; }
 
 void	Response::addHeader(std::string key, std::string value)	
@@ -144,4 +145,16 @@ size_t Response::getNextWord(std::string &body, std::string &word, std::string c
 	body.erase(0, totalSize);
 	word = nextWord;
 	return (pos);
+}
+
+std::string	Response::getDate(void) const
+{
+	time_t		now = time(0);
+	struct tm	tstruct;
+	char		buf[80];
+
+	tstruct = *gmtime(&now);
+	strftime(buf, sizeof(buf), "%a, %d %b %G %X GMT", &tstruct);
+	std::string date(buf);
+	return (date);
 }

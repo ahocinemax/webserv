@@ -18,7 +18,7 @@ Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(0), _server(s
 }
 
 Client::~Client(void)
-{ 
+{
 	if (_request)
 		delete _request;
 }
@@ -28,6 +28,8 @@ void	Client::setTimer(struct timeval &timer) { _timer = timer; }
 int	Client::setSocket(int socket)
 {
 	_socket = socket;
+	_ipAdress = getClientAddr();
+	_port = getClientPort();
 	if (fcntl(_socket, F_SETFL, O_NONBLOCK) < SUCCESS)
 	{
 		std::cerr << RED "Error:" RESET " fcntl() failed" << std::endl;
@@ -118,12 +120,13 @@ void	Client::clearRequest(void)
 
 void	Client::displayErrorPage(StatusMap::iterator statusCode)
 {
-	// std::cout << RED "> Sending error page: " RESET << statusCode->first << " " << statusCode->second << std::endl;
+	std::cout << RED "> Sending page: " RESET << statusCode->second << std::endl;
 	std::ifstream file;
 	if (statusCode != _server->error_pages.end())
 	{
-		const char *path = _server->error_pages[statusCode->first].c_str();
-		file.open(path);
+		std::string path = _server->error_pages[statusCode->first];
+		// std::cout << BLUE "tmp: " << path << RESET << std::endl;
+		file.open(path.c_str());
 		if (!file.is_open())
 			statusCode = _server->error_pages.find(NOT_FOUND);
 	}
@@ -140,13 +143,13 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 			body += line;
 			body += "\n";
 		}
-		response.setCustomizeErrorMessage(statusCode->second);
+		response.setCustomizeStatusPage(body);
 		file.close();
 	}
-	else // Pas de page d'erreur trouvée, page par défaut
-		response.setDefaultErrorMessage();
-	response.addHeader("Content-Type", "text/html");
-	response.addHeader("Content-Length", to_string(response.getBody().length()));
+	else // page d'erreur pas trouvée, envoie de la page par défaut
+		response.setDefaultStatusPage();
+	response.addHeader("content-type", "text/html");
+	response.addHeader("content-length", to_string(response.getBody().length()));
 	if (statusCode->first == METHOD_NOT_ALLOWED)
 	{
 		std::string allowedMethods;
@@ -156,19 +159,22 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 				allowedMethods += ", ";
 			allowedMethods += methodTypeToStr(*it);
 		}
-		response.addHeader("Allow", allowedMethods);
+		response.addHeader("allow", allowedMethods);
 	}
 
 	std::string	result = response.makeHeader(true);
 	int sendSize = 0;
 	if (_socket > 0)
 		sendSize = send(_socket, result.c_str(), result.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
-	if (sendSize < 0)
-		std::cerr << RED "Error:" RESET " send() failed" << std::endl;
+	if (sendSize < 0) ;
+		// std::cerr << RED "Error:" RESET " send() failed to send error page" << std::endl;
 	else if (sendSize == 0)
+	{
 		std::cerr << RED "Error:" RESET " send() failed: connection closed" << std::endl;
+		close(_socket);
+	}
 	else
-		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes" << std::endl;
+		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes." << std::endl;
 }
 
 void Client::parse(const std::string& str)

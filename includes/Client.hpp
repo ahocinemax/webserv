@@ -27,9 +27,11 @@
 class Client
 {
 	public:
-		socklen_t					_addrLen;
-		struct sockaddr				_addr;
-		Server						*_server;
+		socklen_t			_addrLen;
+		struct sockaddr		_addr;
+		Server				*_server;
+		const char			*_ipAdress;
+		const char			*_port;
 
 		Client(Server *server);
 		~Client(void);

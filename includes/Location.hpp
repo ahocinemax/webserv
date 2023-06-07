@@ -20,18 +20,18 @@ class Location
 	public:
 		Location(/* args */);
 		~Location();
-		void				printLocation(void) const;
-		std::string			getRoot(void) const;
-		std::string			getPath(void) const;
-		std::string			getCgi(std::string extension) const;
+		void			printLocation(void) const;
+		std::string		getRoot(void) const;
+		std::string		getPath(void) const;
+		std::string		getCgi(std::string extension) const;
 
 	public:
-		int						_client_body_limit;
-		MethodVector			_allowMethods;
-		StrVector				_index;
-		std::string				_path;
-		std::string				_root;
-		StringMap				_cgi;
+		int				_client_body_limit;
+		MethodVector	_allowMethods;
+		StrVector		_index;
+		std::string		_path;
+		std::string		_root;
+		StringMap		_cgi;
 };
 
 #endif

@@ -21,16 +21,11 @@ Server::Server(void) :	client_body_limit(1024),
 	struct timeval timer;
 	timer.tv_sec = 60;
 	timer.tv_usec = 0;
-/*
-	if (recv_timeout.tv_sec != 0)	recv_timeout = timer;
-	if (send_timeout.tv_sec != 0)	send_timeout = timer;
-*/
 	recv_timeout = timer;
 	send_timeout = timer;
 }
 
 Server::~Server(void) {}
-
 void	Server::createSocket(void)
 {
 	struct addrinfo hints, *info;
@@ -55,9 +50,10 @@ void	Server::createSocket(void)
 			throw SocketConnectionException();
 		}
 		freeaddrinfo(info);
-		std::cout << "> Listening on socket..." << std::endl;
+		std::cout << "> Listening on socket " << newSocket << "..." << std::endl;
 		if (listen(newSocket, 100) < 0)
 			throw SocketListenException();
+		std::cout << std::endl;
 		this->_socket = newSocket;
 	}
 	else
@@ -159,3 +155,17 @@ bool	Server::validLocation(std::string pathLocation, std::string uriRequest) con
 	}
 	return (true);
 }
+
+const char *Server::SocketCreationException::what() const throw() { return ("Error: Cannot create socket"); }
+
+const char *Server::SocketListenException::what() const throw() { return ("Error: Cannot listen to socket"); }
+
+const char *Server::AcceptSocketException::what() const throw() { return ("Error: Server failed to accept incoming connection"); }
+
+const char *Server::SocketConnectionException::what() const throw() { return ("Error: Cannot connect with socket"); }
+
+const char *Server::ReadSocketException::what() const throw() { return ("Error: Cannot read from socket"); }
+
+const char *Server::WriteSocketException::what() const throw() { return ("Error: Cannot write to socket"); }
+
+const char *Server::GetAddrInfoException::what() const throw() { return ("Error: Cannot get address info"); }

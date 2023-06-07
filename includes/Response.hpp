@@ -17,13 +17,13 @@
 
 class Response
 {
-public:
-	Response(void);
-	Response(std::string status);
-	~Response();
+	public:
+		Response(std::string status);
+		Response(void);
+		~Response();
 
-	std::string	makeHeader(bool appendBody = false);
-	void 		setDefaultErrorMessage(void);
+		std::string	makeHeader(bool appendBody = false);
+		void		setDefaultStatusPage(void);
 
 	std::string getStatusCode(void) const;
 	std::string getStatusMessage(void) const;

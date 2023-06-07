@@ -59,19 +59,13 @@ class Server
 		class SocketCreationException : public std::exception
 		{
 			public:
-				virtual const char *what() const throw()
-				{
-					return ("Error: Cannot create socket");
-				}
+				virtual const char *what() const throw();
 		};
 
 		class SocketListenException : public std::exception
 		{
 			public:
-				virtual const char *what() const throw()
-				{
-					return ("Error: Cannot listen to socket");
-				}
+				virtual const char *what() const throw();
 		};
 
 		class AcceptSocketException : public std::exception
@@ -79,46 +73,31 @@ class Server
 			friend class Server;
 
 			public:
-				virtual const char *what() const throw()
-				{
-					return ("Error: Server failed to accept incoming connection");
-				}
+				virtual const char *what() const throw();
 		};
 
 		class SocketConnectionException : public std::exception
 		{
 			public:
-				virtual const char *what() const throw()
-				{
-					return ("Error: Cannot connect with socket");
-				}
+				virtual const char *what() const throw();
 		};
 
 		class ReadSocketException : public std::exception
 		{
 			public:
-				virtual const char *what() const throw()
-				{
-					return ("Error: Cannot read from socket");
-				}
+				virtual const char *what() const throw();
 		};
 
 		class WriteSocketException : public std::exception
 		{
 			public:
-				virtual const char *what() const throw()
-				{
-					return ("Error: Cannot write to socket");
-				}
+				virtual const char *what() const throw();
 		};
 
 		class GetAddrInfoException : public std::exception
 		{
 			public:
-				virtual const char *what() const throw()
-				{
-					return ("Error: Cannot get address info");
-				}
+				virtual const char *what() const throw();
 		};
 
 };
