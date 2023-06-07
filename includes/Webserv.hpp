@@ -68,7 +68,7 @@ class Webserv
 		void				getMethod(Client &client, std::string path);
 		void				getCGIMethod(Client &client, Request *req);
 
-		std::pair<bool, std::string>	isValidCGI(std::string path) const;
+		std::pair<bool, std::string>	isValidCGI(std::string path, Client &client) const;
 		void				setStatusCodes(void);
 
 		void				sendAutoindex(Client &client, std::string filePath);

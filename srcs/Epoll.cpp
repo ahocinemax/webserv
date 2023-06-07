@@ -198,7 +198,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		return;
 	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
-	std::pair<bool, std::string> cgi = isValidCGI(req->getRoot());	
+	std::pair<bool, std::string> cgi = isValidCGI(req->getRoot(), *client);	
 	if (cgi.first) // is CGI valid or not
 	{
 		req->setRoot(cgi.second); // set new root path

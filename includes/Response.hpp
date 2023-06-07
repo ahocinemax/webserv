@@ -25,9 +25,10 @@ class Response
 		std::string	makeHeader(bool appendBody = false);
 		void		setDefaultStatusPage(void);
 
+	std::string getDate(void) const;
 	std::string getStatusCode(void) const;
 	std::string getStatusMessage(void) const;
-	void 		setCustomizeErrorMessage(std::string &message);
+	void 		setCustomizeStatusPage(std::string &message);
 	void 		addHeader(std::string key, std::string value);
 	std::string getBody(void) const { return (_message); }
 	std::string getCgiBody(void) const { return (_cgibody); }
@@ -46,7 +47,6 @@ private:
 	StringMap	_head;
 	std::string _cgibody;
 	Request*	_request;
-	std::string getDate(void);
 };
 
 #endif

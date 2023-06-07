@@ -449,7 +449,21 @@ std::pair<bool, std::string> Webserv::isValidCGI(std::string path, Client &clien
             {
                 std::string phpSection = content.substr(start + 5, end - start - 5);
 
-	// Vérifiez si le fichier est dans un emplacement CGI
+                size_t requirePos = phpSection.find("require '");
+                if (requirePos != std::string::npos)
+                {
+                    size_t startFilename = requirePos + 9;
+                    size_t endFilename = phpSection.find("'", startFilename);
+                    if (endFilename != std::string::npos)
+                    {
+                        result.first = true;
+                        result.second = phpSection.substr(startFilename, endFilename - startFilename);
+						return result;
+                    }
+                }
+            }
+        }
+    }
 	std::vector<Location>::iterator it = client._server->locations.begin();
 	StringMap::iterator it2;
 	for (; it != client._server->locations.end(); it++)
@@ -459,25 +473,36 @@ std::pair<bool, std::string> Webserv::isValidCGI(std::string path, Client &clien
 			if (path.find(it2->first) != std::string::npos)
 			{
 				if (it2->second != "")
-					return (true);
+				{
+					result.first = true;
+					result.second = path;
+					return result;
+				}
 			}
 		}
 	}
 
-	// Vérifiez si le fichier est dans un emplacement CGI
-	std::vector<Location>::iterator it = client._server->locations.begin();
-	StringMap::iterator it2;
-	for (; it != client._server->locations.end(); it++)
-	{
-		for (it2 = it->_cgi.begin() ; it2 != it->_cgi.end(); it2++)
-		{
-			if (path.find(it2->first) != std::string::npos)
-			{
-				if (it2->second != "")
-					return (true);
-			}
-		}
-	}
+    return result;
+}
 
-	return (false);
+void Webserv::getCGIMethod(Client &client, Request *req)
+{
+    if (req->getCgiBody().empty())
+        return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
+	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
+	response.setCgiBody(req->getCgiBody());	
+	response.parseCgiBody();
+    response.addHeader("Content-Length", to_string(req->getCgiBody().size()));
+    // MIME type of CGI script =  "text/html" 
+    response.addHeader("Content-Type", "text/html");
+    std::string header = response.makeHeader(false);
+    // send header
+    int ret = send(client.getSocket(), header.c_str(), header.length(), 0);
+    if (ret <= 0)
+        return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
+    // send CGI body
+    ret = send(client.getSocket(), response.getCgiBody().c_str(), response.getCgiBody().size(), MSG_NOSIGNAL);
+    if (ret <= 0)
+        return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
+    std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
 }
