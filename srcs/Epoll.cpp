@@ -176,8 +176,7 @@ bool Webserv::HandleCgi(Request &request)
 		std::string output = request.getBody();
         if (cgi.getCgiOutput(output))
 		{
-			request.setCgiBody(request.getCgiBody().append(output));
-			//request._getCgiBody().append(output);
+			request.appendCgiBody(output);
 			std::cout << RED "CGI Executed" RESET<< std::endl;
 		}
 		else
@@ -208,17 +207,14 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 			req->setRoot(*it); // set new root path
 			if (!HandleCgi(*req))
 				return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
-			else
-			{
-				std::cout << RED "CGI BOOL IS TRUE" RESET << std::endl;
-				if (req->getMethod() == "GET")
-					getCGIMethod(*client, req);
-				else if (req->getMethod() == "POST")
-					postMethod(*client, *req);
-				else
-					return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 		}
-		}
+		std::cout << RED "CGI BOOL IS TRUE" RESET << std::endl;
+		if (req->getMethod() == "GET")
+			getCGIMethod(*client, req);
+		else if (req->getMethod() == "POST")
+			postMethod(*client, *req);
+		else
+			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 	}
 	else
 	{

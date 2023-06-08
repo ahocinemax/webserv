@@ -268,6 +268,8 @@ void	Request::ContentLength()
 	_size = size;
 }
 
+void	Request::appendCgiBody(const std::string &output) { _cgibody.append(output); }
+
 void	Request::parse()
 {
 	if (_request.find("\r\n\r\n") == std::string::npos)

@@ -57,6 +57,7 @@ class Request
 		bool	isHttpMethod(const std::string& str) const;
 		bool	isHeader(const std::string& headerName);
 		void	ContentLength();
+		void	appendCgiBody(const std::string &output);
 
 		/* Getter */
 		std::string		getHeader(const std::string& headerName);
