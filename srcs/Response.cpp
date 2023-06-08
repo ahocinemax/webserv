@@ -12,7 +12,7 @@
 
 #include "Response.hpp"
 
-Response::Response(void) : _statusCode(""), _cgibody("") {}
+Response::Response(void) : _statusCode("") {}
 
 Response::Response(std::string status)
 {
@@ -80,9 +80,8 @@ Request*	Response::getRequest(){return (_request);}
 
 void	Response::setCgiBody(const std::string& body)
 { 
-	_cgibody = body; 
+	_cgibody.push_back(body);
 }
-
 
 void Response::setStatusCode(int status)
 {

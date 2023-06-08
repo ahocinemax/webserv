@@ -215,6 +215,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 			postMethod(*client, *req);
 		else
 			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+		// eraseTmpFile(cgi.second);
 	}
 	else
 	{

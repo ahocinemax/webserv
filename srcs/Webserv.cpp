@@ -510,8 +510,11 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 	if (req->getCgiBody().empty())
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
-	response.setCgiBody(req->getCgiBody());	
-	response.parseCgiBody();
+	while (true)
+	{
+		response.setCgiBody(req->getCgiBody());	
+		response.parseCgiBody();
+	}
 	response.addHeader("Content-Length", to_string(req->getCgiBody().size()));
 	// MIME type of CGI script =  "text/html" 
 	response.addHeader("Content-Type", "text/html");
