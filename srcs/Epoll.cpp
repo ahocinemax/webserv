@@ -195,7 +195,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 
 	std::cout << "> Handling response" << std::endl;
 	if (req == NULL)
-		return;
+		return ;
 	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
 	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(req->getRoot(), *client);	
