@@ -39,7 +39,6 @@ class Response
 	void		parseCgiBody();
 	size_t		getNextWord(std::string& body, std::string &word, std::string const& delimiter);
 
-
 private:
 	std::string					_statusCode;
 	std::string					_statusMessage;

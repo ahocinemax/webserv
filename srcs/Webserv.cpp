@@ -510,12 +510,40 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 	if (req->getCgiBody().empty())
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
-	while (true)
-	{
-		response.setCgiBody(req->getCgiBody());	
-		response.parseCgiBody();
-	}
-	response.addHeader("Content-Length", to_string(req->getCgiBody().size()));
+	response.setCgiBody(req->getCgiBody(index++));	
+	//response.parseCgiBody();
+	std::string        line;
+    std::ifstream    file;
+    std::size_t        balise;
+    line.clear();
+    file.open(req->getPath(), std::ifstream::in);
+    int end;
+    int i = 0;
+    if (file.is_open())
+    {
+        while (!file.eof())
+        {
+            std::getline(file, line);
+            balise = line.find("<?php");
+            if (balise == std::string::npos)
+                response._message.append(line);
+            else
+            {
+                if (balise != 0)
+                    response._message.append(line, 0, balise - 1);
+                response._message.append(response.getCgiBody(i));
+                i++;
+                while ((end = line.find("?>")) == std::string::npos)
+                    std::getline(file, line);
+                if (end < line.length())
+                    response._message.append(line, end, line.length());
+            }
+        }
+        file.close();
+    }
+    else
+        return (client.displayErrorPage());
+	//response.addHeader("Content-Length", to_string(req->getCgiBody().size()));
 	// MIME type of CGI script =  "text/html" 
 	response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
