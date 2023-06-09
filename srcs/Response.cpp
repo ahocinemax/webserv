@@ -83,6 +83,10 @@ void	Response::setCgiBody(const std::string& body)
 	_cgibody = body; 
 }
 
+std::string	Response::getHeader(std::string key)
+{
+	return (_head.find(key) != _head.end() ? _head[key] : "");
+}
 
 void Response::setStatusCode(int status)
 {

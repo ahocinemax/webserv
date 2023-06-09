@@ -201,28 +201,50 @@ void	Webserv::getMethod(Client &client, std::string path)
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	response.addHeader("content-length", to_string(fileStat.st_size));
 	response.addHeader("content-type", mime);
+	if (fileStat.st_size >= BUFFER_SIZE)
+	{
+		response.addHeader("transfer-encoding", "chunked");
+		std::cout << BLUE "> Sending file with chunked encoding" RESET << std::endl;
+	}
 	std::string	header = response.makeHeader(false);
 	int			ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 	if (ret < 0)
 		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
-	char		buffer[BUFFER_SIZE + 1];
-	ssize_t		readSize = 0;
-	ssize_t		totalSize = 0;
-	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0) // fread allowed ?
-	{
+	char buffer[BUFFER_SIZE + 1];
+	ssize_t readSize = 0;
+	ssize_t totalSize = 0;
+
+	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
 		totalSize += readSize;
-		ret = send(client.getSocket(), buffer, readSize, MSG_NOSIGNAL);
-		if (ret < 0)
+
+		// Envoi de l'en-tête de morceau
+		if (response.getHeader("transfer-encoding") == "chunked")
+		{
+			std::string chunkHeader = to_string(readSize) + CRLF;
+			send(client.getSocket(), chunkHeader.c_str(), chunkHeader.length(), MSG_NOSIGNAL);
+		}
+		// Envoi des données réelles du morceau
+		ssize_t sentSize = send(client.getSocket(), buffer, readSize, MSG_NOSIGNAL);
+		if (sentSize < 0)
+		{
 			client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
-		else if (ret == 0)
+			break;
+		}
+		else if (sentSize == 0)
+		{
 			client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
-		if (client.getRequest()->_header["transfer-encoding"] == "chunked")
-			send(client.getSocket(), CRLF, 2, MSG_NOSIGNAL);
+			break;
+		}
 	}
-	if (client.getRequest()->_header["transfer-encoding"] == "chunked")
-		send(client.getSocket(), "0\r\n\r\n", 5, MSG_NOSIGNAL);
+
+	// Envoi du morceau final (avec une taille de 0 pour indiquer la fin)
+	if (response.getHeader("transfer-encoding") == "chunked")
+	{
+		std::string finalChunk = "0\r\n\r\n";
+		send(client.getSocket(), finalChunk.c_str(), finalChunk.length(), MSG_NOSIGNAL);
+	}
 	fclose(file);
 	std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
 }
@@ -501,19 +523,51 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 	if (req->getCgiBody().empty())
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
-	response.setCgiBody(req->getCgiBody());	
+	response.setCgiBody(req->getCgiBody());
 	response.parseCgiBody();
-	response.addHeader("Content-Length", to_string(req->getCgiBody().size()));
-	// MIME type of CGI script =  "text/html" 
+	response.addHeader("Content-Length", to_string(req->_message.size()));
+	// MIME type of CGI script =  "text/html"
 	response.addHeader("Content-Type", "text/html");
+	std::string		line;
+	std::ifstream	file;
+	std::size_t		balise;
+
+	line.clear();
+	file.open(req->getPath(), std::ifstream::in);
+	int end;
+	int i = 0;
+	if (file.is_open())
+	{
+		while (!file.eof())
+		{
+			std::getline(file, line);
+			balise = line.find("<?php");
+			if (balise == std::string::npos)
+				response._message.append(line);
+			else
+			{
+				if (balise != 0)
+					response._message.append(line, 0, balise - 1);
+				response._message.append(response.getCgiBody(i));
+				i++;
+				while ((end = line.find("?>")) == std::string::npos)
+					std::getline(file, line);
+				if (end < line.length())
+					response._message.append(line, end, line.length());
+			}
+		}
+		file.close();
+	}
+	else
+		return (client.displayErrorPage());
 	std::string header = response.makeHeader(false);
 	// send header
 	int ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	// send CGI body
-	ret = send(client.getSocket(), response.getCgiBody().c_str(), response.getCgiBody().size(), MSG_NOSIGNAL);
+	ret = send(client.getSocket(), response._message().c_str(), response._message().size(), MSG_NOSIGNAL);
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
-	std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
+	std::cout << GREEN << "CGI response sent (" << convertToOctets(ret) << ")\n" RESET << std::endl;
 }

@@ -178,7 +178,7 @@ bool Webserv::HandleCgi(Request &request)
 		{
 			request.setCgiBody(request.getCgiBody().append(output));
 			//request._getCgiBody().append(output);
-			std::cout << RED "CGI Executed" RESET<< std::endl;
+			std::cout << GREEN "CGI Executed" RESET<< std::endl;
 		}
 		else
 		{
@@ -210,7 +210,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 				return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
 			else
 			{
-				std::cout << RED "CGI BOOL IS TRUE" RESET << std::endl;
+				std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
 				if (req->getMethod() == "GET")
 					getCGIMethod(*client, req);
 				else if (req->getMethod() == "POST")
