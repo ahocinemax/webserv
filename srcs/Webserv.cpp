@@ -439,9 +439,9 @@ const char *Webserv::getMimeType(const char *path)
 	return "text/plain";
 }
 
-std::pair<bool, std::vector<std::string>> Webserv::isValidCGI(std::string path, Client &client) const
+std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(std::string path, Client &client) const
 {
-	std::pair<bool, std::vector<std::string>> result(false, std::vector<std::string>());
+	std::pair<bool, std::vector<std::string> > result(false, std::vector<std::string>());
 	if (path.length() >= 4)
 	{
 		std::string extension = path.substr(path.length() - 4, 4);
@@ -470,6 +470,8 @@ std::pair<bool, std::vector<std::string>> Webserv::isValidCGI(std::string path, 
 			size_t start = 0;
 			size_t end = 0;
 			size_t tmp;
+			size_t count = 0;
+			
 			while (start != std::string::npos)
 			{
 				tmp = end;
@@ -477,22 +479,29 @@ std::pair<bool, std::vector<std::string>> Webserv::isValidCGI(std::string path, 
 				end = content.find("?>", tmp + 1);
 				if (start != std::string::npos && end != std::string::npos)
 				{
-					std::string phpSection = content.substr(start + 5, end - start - 5); // On ajoute chaque section PHP dans un nouveau fichier
-					std::string filePath = path + ".php"; // Trouver un bon nom de fichier (ave un itérateur ?)
+					std::string phpSection = content.substr(start, end - start + 2); // On ajoute chaque section PHP dans un nouveau fichier
+					std::string filePath;
+					std::stringstream ss_php;
+					ss_php << path << count++ << ".php"; // Add counter to filename to make it unique
+					ss_php >> filePath;
 					int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-					write(fd, phpSection.c_str(), phpSection.length()); // On garde le fichier pour l'exécuter dans le CGI Handler
-					close(fd);
-					size_t requirePos = phpSection.find("require '");
-					if (requirePos != std::string::npos)
+					if (fd < 0)
 					{
-						size_t startFilename = requirePos + 9;
-						size_t endFilename = phpSection.find("'", startFilename);
-						if (endFilename != std::string::npos)
-						{
-							result.first = true;
-							result.second.push_back(phpSection.substr(startFilename, endFilename - startFilename));
-						}
+						std::cerr << RED << "Failed to open php script: " << RESET << path << std::endl;
+						return result;							
 					}
+					if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
+					{
+						std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
+						return result;							
+					} // On garde le fichier pour l'exécuter dans le CGI Handler
+					if (close(fd) < 0)
+					{
+						std::cerr << RED << "Failed to close php script: " << RESET << path << std::endl;
+						return result;						
+					}
+					result.first = true;
+					result.second.push_back(filePath);
 				}
 			}
 		}
@@ -520,13 +529,45 @@ std::pair<bool, std::vector<std::string>> Webserv::isValidCGI(std::string path, 
 
 void Webserv::getCGIMethod(Client &client, Request *req)
 {
-	if (req->getCgiBody().empty())
-		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
-	response.setCgiBody(req->getCgiBody());
-	response.parseCgiBody();
-	response.addHeader("Content-Length", to_string(req->_message.size()));
-	// MIME type of CGI script =  "text/html"
+	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
+		response.setCgiBody(req->getCgiBody(index));
+	//response.parseCgiBody();
+	std::string		line;
+	std::ifstream	file;
+	std::size_t		balise;
+	line.clear();
+	std::string filePath = client._server->root + req->getPath();
+	file.open(filePath.c_str(), std::ifstream::in);
+	int end;
+	int i = 0;
+	if (file.is_open())
+	{
+		while (!file.eof())
+		{
+			std::getline(file, line);
+			balise = line.find("<?php");
+			if (balise == std::string::npos)
+				response._message.append(line);
+			else
+			{
+				if (balise != 0)
+					response._message.append(line, 0, balise - 1);
+				response._message.append(response.getCgiBody(i));
+				i++;
+				while ((end = line.find("?>")) == std::string::npos)
+					std::getline(file, line);
+				if (end < line.length())
+					response._message.append(line, end, line.length());
+			}
+		}
+		file.close();
+	}
+	else
+		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
+	// remove all 
+	response.addHeader("Content-Length", to_string(response._message.length()));
+	// MIME type of CGI script =  "text/html" 
 	response.addHeader("Content-Type", "text/html");
 	std::string		line;
 	std::ifstream	file;
@@ -566,8 +607,17 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	// send CGI body
-	ret = send(client.getSocket(), response._message().c_str(), response._message().size(), MSG_NOSIGNAL);
+	ret = send(client.getSocket(), response.getCgiBody().c_str(), response.getCgiBody().size(), MSG_NOSIGNAL);
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	std::cout << GREEN << "CGI response sent (" << convertToOctets(ret) << ")\n" RESET << std::endl;
+}
+
+void Webserv::eraseTmpFile(StrVector vec)
+{
+	for (int i = 0 ; i < vec.size() ; i++)
+	{
+		if (remove(vec[i].c_str()) != 0)
+			std::cerr << RED << "Failed to remove tmp file: " << RESET << vec[i] << std::endl;
+	}
 }

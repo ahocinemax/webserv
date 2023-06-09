@@ -31,22 +31,21 @@ class Response
 	void 		setCustomizeStatusPage(std::string &message);
 	void 		addHeader(std::string key, std::string value);
 	std::string getBody(void) const { return (_message); }
-	std::string getCgiBody(void) const { return (_cgibody); }
+	std::string getCgiBody(int index) const { return (_cgibody[index]); }
 	Request 	*getRequest();
 	void 		setCgiBody(const std::string& cgibody);
 	void		setStatusCode(int status);
-	void		parseCgiStatusLine();
-	void		parseCgiBody();
+	void		parseCgiStatusLine(std::string &body);
+	void		parseCgiBody(std::string &body);
 	size_t		getNextWord(std::string& body, std::string &word, std::string const& delimiter);
-
+	std::string					_message;
 
 private:
-	std::string	_statusCode;
-	std::string	_statusMessage;
-	std::string	_message;
-	StringMap	_head;
-	std::string _cgibody;
-	Request*	_request;
+	std::string					_statusCode;
+	std::string					_statusMessage;
+	StringMap					_head;
+	std::vector<std::string>	_cgibody;
+	Request*					_request;
 };
 
 #endif
