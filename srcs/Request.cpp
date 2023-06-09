@@ -23,7 +23,7 @@ void	Request::initVariables()
 	_headerParsed = false;
 	_chunked = false;
 	_payloadsize = 0;
-	_root = "html";
+	// _root = "html";
 	_methods.insert(std::make_pair(GET, "GET"));
 	_methods.insert(std::make_pair(POST, "POST"));
 	_methods.insert(std::make_pair(DELETE, "DELETE"));
@@ -361,6 +361,8 @@ std::string	Request::getRoot() const { return (_root); }
 std::string	Request::getBody() const { return (_body); }
 
 std::string	Request::getCgiBody(int index) const { return (_cgibody[index]); }
+
+StrVector	Request::getCgiBody() const { return (_cgibody); }
 
 size_t		Request::getPayloadSize() const { return (_payloadsize); }
 

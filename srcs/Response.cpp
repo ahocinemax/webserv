@@ -88,49 +88,50 @@ void Response::setStatusCode(int status)
 	_statusCode = status;
 }
 
-void Response::parseCgiStatusLine()
+void Response::parseCgiStatusLine(std::string &body)
 {
 	std::string name;
 	std::string value;
 	int code;
 
-	name = _cgibody.substr(0, _cgibody.find(":"));
+	name = body.substr(0, body.find(":"));
 	if (name != "Status" && name != "status")
 		return;
-	getNextWord(_cgibody, name, ":");
-	_cgibody.erase(0, _cgibody.find_first_not_of(" "));
-	getNextWord(_cgibody, value, " ");
+	getNextWord(body, name, ":");
+	body.erase(0, body.find_first_not_of(" "));
+	getNextWord(body, value, " ");
 	trimSpacesStr(&value);
 	if (convertHttpCode(value, &code))
 	{
-		getNextWord(_cgibody, value, "\r\n");
+		getNextWord(body, value, "\r\n");
 		trimSpacesStr(&value);
 		if (_statusCode == value)
 			setStatusCode(code);
 	}
 }
 
-void Response::parseCgiBody()
+void Response::parseCgiBody(std::string &body)
 {
 	size_t pos;
 	std::string headerName;
 	std::string headerValue;
 
 	/*if _cgibody doesn't have header*/
-	if (_cgibody.find("\r\n\r\n") == std::string::npos && _cgibody.find("\n\n") == std::string::npos)
+	if (body.find("\r\n\r\n") == std::string::npos && body.find("\n\n") == std::string::npos)
 		return;
 	pos = 0;
-	parseCgiStatusLine();
-	while (pos != std::string::npos && _cgibody.find("\r\n"))
+	for (size_t index = 0; index < _cgibody.size(); index++)
+		parseCgiStatusLine(_cgibody[index]);
+	while (pos != std::string::npos && body.find("\r\n"))
 	{
-		pos = getNextWord(_cgibody, headerName, ":");
+		pos = getNextWord(body, headerName, ":");
 		if (pos == std::string::npos)
 			break;
-		getNextWord(_cgibody, headerValue, "\r\n");
+		getNextWord(body, headerValue, "\r\n");
 		trimSpacesStr(&headerValue);
 		addHeader(headerName, headerValue);
 	}
-	getNextWord(_cgibody, headerName, "\r\n");
+	getNextWord(body, headerName, "\r\n");
 }
 
 size_t Response::getNextWord(std::string &body, std::string &word, std::string const &delimiter)

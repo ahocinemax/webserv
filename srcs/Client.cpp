@@ -180,6 +180,7 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 void Client::parse(const std::string& str)
 {
 	_request = new Request(str);
+	_request->setRoot(_server->root);
 	_request->parse();
 	// _request->PrintHeader();
 	return ;

@@ -54,6 +54,7 @@ class Webserv
 		const char			*getMimeType(const char *path);
 		bool 				HandleCgi(Request& request);
 
+
 	private:
 		std::vector<Client*>	_clients;
 		ServerVector			_serversVec;
@@ -67,6 +68,7 @@ class Webserv
 		void				postMethod(Client &client, Request &request);
 		void				getMethod(Client &client, std::string path);
 		void				getCGIMethod(Client &client, Request *req);
+		void				eraseTmpFile(StrVector vec);
 
 		std::pair<bool, std::vector<std::string> >	isValidCGI(std::string path, Client &client) const;
 		void				setStatusCodes(void);

@@ -24,16 +24,15 @@
 class Request
 {
 	public:
-		/* member type */
 		typedef void (Request::*FuncForParse)();
 		typedef std::vector<FuncForParse>	listFuncForParse;
-		//typedef void (*FuncForParse)();
 		Request(const std::string &request);
 		~Request();
 
-		StringMap	_header;
-		std::size_t	_contentLength;
-		//std::string	_method;
+		int				_requestStatus;
+		int				_statusCode;
+		StringMap		_header;
+		std::size_t		_contentLength;
 
 		/* Init */
 		void	initVariables();
@@ -68,7 +67,6 @@ class Request
 		std::string		getPath() const;
 		std::string		getRoot() const;
 		std::string		getBody() const;
-		std::string		getCgiBody(int index) const;
 		size_t			getPayloadSize() const;
 		std::string		getQuery() const;
 		std::string		getProtocolHTTP() const;
@@ -77,6 +75,8 @@ class Request
 		int				getPort() const;
 		void			setRoot(std::string& root);
 		void			setCgiBody(std::string& body);
+		std::string		getCgiBody(int index) const;
+		StrVector		getCgiBody() const;
 
 		/*test*/
 		void			PrintHeader();
@@ -100,8 +100,6 @@ class Request
 		private:
 			const char* _msg;
 		};
-		int					_requestStatus;
-		int					_statusCode;
 
 	private:
 		std::string							_method;
