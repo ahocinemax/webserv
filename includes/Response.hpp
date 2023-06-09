@@ -33,6 +33,8 @@ class Response
 	std::string getBody(void) const { return (_message); }
 	std::string getCgiBody(int index) const { return (_cgibody[index]); }
 	Request 	*getRequest();
+	std::string	getHeader(std::string key);
+
 	void 		setCgiBody(const std::string& cgibody);
 	void		setStatusCode(int status);
 	void		parseCgiStatusLine(std::string &body);

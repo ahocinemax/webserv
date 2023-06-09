@@ -569,45 +569,13 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 	response.addHeader("Content-Length", to_string(response._message.length()));
 	// MIME type of CGI script =  "text/html" 
 	response.addHeader("Content-Type", "text/html");
-	std::string		line;
-	std::ifstream	file;
-	std::size_t		balise;
-
-	line.clear();
-	file.open(req->getPath(), std::ifstream::in);
-	int end;
-	int i = 0;
-	if (file.is_open())
-	{
-		while (!file.eof())
-		{
-			std::getline(file, line);
-			balise = line.find("<?php");
-			if (balise == std::string::npos)
-				response._message.append(line);
-			else
-			{
-				if (balise != 0)
-					response._message.append(line, 0, balise - 1);
-				response._message.append(response.getCgiBody(i));
-				i++;
-				while ((end = line.find("?>")) == std::string::npos)
-					std::getline(file, line);
-				if (end < line.length())
-					response._message.append(line, end, line.length());
-			}
-		}
-		file.close();
-	}
-	else
-		return (client.displayErrorPage());
 	std::string header = response.makeHeader(false);
 	// send header
 	int ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	// send CGI body
-	ret = send(client.getSocket(), response.getCgiBody().c_str(), response.getCgiBody().size(), MSG_NOSIGNAL);
+	ret = send(client.getSocket(), response._message.c_str(), response._message.size(), MSG_NOSIGNAL);
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
 	std::cout << GREEN << "CGI response sent (" << convertToOctets(ret) << ")\n" RESET << std::endl;
