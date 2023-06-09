@@ -110,7 +110,7 @@ void Response::parseCgiStatusLine(std::string &body)
 	}
 }
 
-void Response::parseCgiBody(std::string &body)
+void Response::parseCgiBody(std::string body)
 {
 	size_t pos;
 	std::string headerName;

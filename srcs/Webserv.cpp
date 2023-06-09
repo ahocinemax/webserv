@@ -222,7 +222,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 			send(client.getSocket(), CRLF, 2, MSG_NOSIGNAL);
 	}
 	if (client.getRequest()->_header["transfer-encoding"] == "chunked")
-		send(client.getSocket(), "0\r\n\r\n", 5, MSG_NOSIGNAL);
+		send(client.getSocket(), "0\r\n\r\n", 6, MSG_NOSIGNAL);
 	fclose(file);
 	std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
 }
@@ -509,8 +509,10 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 {
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
+	{
+		response.parseCgiBody(req->getCgiBody(index));
 		response.setCgiBody(req->getCgiBody(index));
-	//response.parseCgiBody();
+	}
 	std::string		line;
 	std::ifstream	file;
 	std::size_t		balise;
@@ -535,8 +537,8 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 				i++;
 				while ((end = line.find("?>")) == std::string::npos)
 					std::getline(file, line);
-				if (end < line.length())
-					response._message.append(line, end, line.length());
+				if (end + 2< line.length())
+					response._message.append(line, end + 2, line.length());
 			}
 		}
 		file.close();

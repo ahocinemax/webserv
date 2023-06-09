@@ -75,7 +75,7 @@ class Request
 		int				getPort() const;
 		void			setRoot(std::string& root);
 		void			setCgiBody(std::string& body);
-		std::string		getCgiBody(int index) const;
+		std::string		getCgiBody(int index);
 		StrVector		getCgiBody() const;
 
 		/*test*/
