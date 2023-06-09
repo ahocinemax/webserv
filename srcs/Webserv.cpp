@@ -201,11 +201,11 @@ void	Webserv::getMethod(Client &client, std::string path)
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	response.addHeader("content-length", to_string(fileStat.st_size));
 	response.addHeader("content-type", mime);
-	if (fileStat.st_size >= BUFFER_SIZE)
-	{
-		response.addHeader("transfer-encoding", "chunked");
-		std::cout << BLUE "> Sending file with chunked encoding" RESET << std::endl;
-	}
+	// if (fileStat.st_size >= BUFFER_SIZE)
+	// {
+	// 	response.addHeader("transfer-encoding", "chunked");
+	// 	std::cout << BLUE "> Sending file with chunked encoding" RESET << std::endl;
+	// }
 	std::string	header = response.makeHeader(false);
 	int			ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 	if (ret < 0)
@@ -215,16 +215,19 @@ void	Webserv::getMethod(Client &client, std::string path)
 	char buffer[BUFFER_SIZE + 1];
 	ssize_t readSize = 0;
 	ssize_t totalSize = 0;
-
-	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0) {
+	int repeat = 0;
+	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0 && totalSize + readSize < fileStat.st_size)
+	{
 		totalSize += readSize;
-
+		buffer[readSize] = 0;
 		// Envoi de l'en-tête de morceau
-		if (response.getHeader("transfer-encoding") == "chunked")
-		{
-			std::string chunkHeader = to_string(readSize) + CRLF;
-			send(client.getSocket(), chunkHeader.c_str(), chunkHeader.length(), MSG_NOSIGNAL);
-		}
+		// if (response.getHeader("transfer-encoding") == "chunked")
+		// {
+		// 	std::cout << BLUE "> Sending chunk #" << ++repeat << RESET "(" << readSize << ")" << std::endl;
+		// 	// std::cout << YELLOW << buffer << RESET << std::endl;
+		// 	std::string chunkHeader = to_string(readSize) + CRLF;
+		// 	send(client.getSocket(), chunkHeader.c_str(), chunkHeader.length(), MSG_NOSIGNAL);
+		// }
 		// Envoi des données réelles du morceau
 		ssize_t sentSize = send(client.getSocket(), buffer, readSize, MSG_NOSIGNAL);
 		if (sentSize < 0)
@@ -240,11 +243,11 @@ void	Webserv::getMethod(Client &client, std::string path)
 	}
 
 	// Envoi du morceau final (avec une taille de 0 pour indiquer la fin)
-	if (response.getHeader("transfer-encoding") == "chunked")
-	{
-		std::string finalChunk = "0\r\n\r\n";
-		send(client.getSocket(), finalChunk.c_str(), finalChunk.length(), MSG_NOSIGNAL);
-	}
+	// if (response.getHeader("transfer-encoding") == "chunked")
+	// {
+	// 	std::cout << PURPLE "> Sending final chunk" RESET << std::endl;
+	// 	send(client.getSocket(), "0\r\n\r\n", 6, MSG_NOSIGNAL);
+	// }
 	fclose(file);
 	std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
 }
