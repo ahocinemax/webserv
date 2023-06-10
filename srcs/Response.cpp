@@ -44,7 +44,7 @@ std::string	Response::makeHeader(bool appendBody)
 
 void	Response::setDefaultStatusPage() // page d'erreur par défaut
 {
-	std::cout << "> sending default error message" << std::endl;
+	std::cout << "> sending default response page" << std::endl;
 	_message.clear();
 	_message = "<!DOCTYPE html> \
 	<html> \

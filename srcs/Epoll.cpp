@@ -175,10 +175,7 @@ bool Webserv::HandleCgi(Request &request)
 	{
 		std::string output = request.getBody();
         if (cgi.getCgiOutput(output))
-		{
 			request.appendCgiBody(output);
-			std::cout << GREEN "CGI Executed" RESET<< std::endl;
-		}
 		else
 		{
 			std::cout << RED "ERROR CGI EXECUTION" << std::endl;
@@ -221,7 +218,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	{
 		if (client->_server->redirect_status != -1)
 			redirectMethod(*client, *req);
-		if (req->getMethod() == "GET")
+		else if (req->getMethod() == "GET")
 			getMethod(*client, req->getPath());
 		else if (req->getMethod() == "POST")
 			postMethod(*client, *req);
