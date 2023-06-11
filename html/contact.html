@@ -77,10 +77,10 @@
               </h3>
             </div>
             <div>
-              <input type="text" name="Nom" placeholder="Name" class="pt-3">
+              <input type="text" name="Name" placeholder="Name" class="pt-3">
             </div>
             <div>
-              <input type=" text" name="Telephone" placeholder="Pone Number">
+              <input type=" text" name="Telephone" placeholder="Telephone">
             </div>
             <div>
               <input type="email" name="Email" placeholder="Email">
@@ -93,6 +93,32 @@
                 SEND
               </button>
             </div>
+            <?php
+            session_start();  // Add this line at the beginning of your PHP script
+            
+            if (isset($_SERVER['REQUEST_METHOD']))
+            {
+              if ($_SERVER['REQUEST_METHOD'] == 'POST')
+              {
+                  //phpinfo();  // Add this line for debugging purposes, but remove it when you're done.
+                  $_SESSION['cart'][] = array(
+                    'Name' => $_POST['Name'],
+                    'Telephone' => $_POST['Telephone'],
+                    'Email' => $_POST['Email'],
+                    'Message' => $_POST['Message']
+                  );
+                  echo 'Method : '.$_SERVER['REQUEST_METHOD'].'<br>';
+                  echo 'Votre nom : '.$_POST["Name"].'<br>';
+                  echo 'Votre phone : '.$_POST["Telephone"].'<br>';
+                  echo 'Votre message: '.$_POST["Message"].'<br>';
+                  $postdata = file_get_contents("php://input");
+                  var_dump($postdata);                  
+              }
+              else
+                  echo "test (this string will dissapear if good value will be SEND)\n";
+            }
+            
+            ?>            
           </form>
         </div>
       </div>

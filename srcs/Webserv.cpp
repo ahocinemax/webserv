@@ -505,7 +505,7 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(std::string path,
 	return result;
 }
 
-void Webserv::getCGIMethod(Client &client, Request *req)
+void Webserv::getCgiMethod(Client &client, Request *req)
 {
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
@@ -562,10 +562,79 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 }
 
 void Webserv::eraseTmpFile(StrVector vec)
-{
+{	
 	for (int i = 0 ; i < vec.size() ; i++)
 	{
 		if (remove(vec[i].c_str()) != 0)
 			std::cerr << RED << "Failed to remove tmp file: " << RESET << vec[i] << std::endl;
 	}
+}
+
+void Webserv::postCgiMethod(Client &client, Request *req)
+{
+	/*
+		MEMO: Mariko
+		pour l'instant cette fonction est copie-colle de getCgiMethod
+		je n'arrive pas a regler des problemes d'execution CGI, je n'ai	pas avance,
+		sorry.
+	*/
+	Response	response(_statusCodeList[req->_statusCode]);
+
+	// POST request specific: pass the request body to the CGI script
+	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
+	{
+		response.parseCgiBody(req->getCgiBody(index));
+		response.setCgiBody(req->getCgiBody(index));
+	}
+	std::string		line;
+	std::ifstream	file;
+	std::size_t		balise;
+	line.clear();
+	std::string filePath = client._server->root + req->getPath();
+	file.open(filePath.c_str(), std::ifstream::in);
+	int end;
+	int i = 0;
+
+	if (file.is_open())
+	{
+		while (!file.eof())
+		{
+			std::getline(file, line);
+			balise = line.find("<?php");
+			if (balise == std::string::npos)
+				response._message.append(line);
+			else
+			{
+				if (balise != 0)
+					response._message.append(line, 0, balise - 1);
+				response._message.append(response.getCgiBody(i));
+				i++;
+				while ((end = line.find("?>")) == std::string::npos)
+					std::getline(file, line);
+				if (end + 2 < line.length())
+					response._message.append(line, end + 2, line.length());
+			}
+		}
+		file.close();
+	}
+	else
+		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
+
+	// remove all 
+	response.addHeader("Content-Length", to_string(response._message.length()));
+	// MIME type of CGI script =  "text/html" 
+	response.addHeader("Content-Type", "text/html");
+	std::string header = response.makeHeader(false);
+
+	// send header
+	int ret = send(client.getSocket(), header.c_str(), header.length(), 0);
+	if (ret <= 0)
+		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
+
+	// send CGI body
+	ret = send(client.getSocket(), response._message.c_str(), response._message.length(), MSG_NOSIGNAL);
+	if (ret <= 0)
+		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
+
+	std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
 }

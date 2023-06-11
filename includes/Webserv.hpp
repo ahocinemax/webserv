@@ -52,7 +52,7 @@ class Webserv
 		void				handleResponse(Client *client, Request *req, struct epoll_event &event);
 		bool				clientNotConnected(int socket);
 		const char			*getMimeType(const char *path);
-		bool 				HandleCgi(Request& request);
+		bool 				HandleCgi(Request& request, Client& client);
 
 
 	private:
@@ -67,7 +67,8 @@ class Webserv
 		void				deleteMethod(Client &client, std::string path);
 		void				postMethod(Client &client, Request &request);
 		void				getMethod(Client &client, std::string path);
-		void				getCGIMethod(Client &client, Request *req);
+		void				getCgiMethod(Client &client, Request *req);
+		void				postCgiMethod(Client& client, Request *req);
 		void				eraseTmpFile(StrVector vec);
 
 		std::pair<bool, std::vector<std::string> >	isValidCGI(std::string path, Client &client) const;

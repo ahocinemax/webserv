@@ -92,6 +92,14 @@ std::string readFd(int fd)
 	return (str);
 }
 
+std::string	convertToString(int nb)
+{
+	std::stringstream	ss;
+
+	ss << nb;
+	return (ss.str());
+}
+
 std::string convertToOctets(int octets)
 {
 	std::ostringstream result;

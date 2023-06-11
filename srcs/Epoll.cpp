@@ -164,20 +164,20 @@ const char *Webserv::AcceptException::what() const throw()
 	return ("Error: Accept() failed");
 }
 
-bool Webserv::HandleCgi(Request &request)
+bool Webserv::HandleCgi(Request &request, Client& client)
 {
     CgiHandler cgi(request);
 	std::string body;
-	cgi.setEnv("SERVER_NAME", _serversVec[0].server_name);
+	cgi.setEnv("SERVER_NAME", client._server->server_name);
     if (request._statusCode == NOT_FOUND)
 		return (false);
 	else
 	{
-		std::string output = request.getBody();
+		std::string output;
         if (cgi.getCgiOutput(output))
 		{
 			request.appendCgiBody(output);
-			std::cout << GREEN "CGI Executed" RESET<< std::endl;
+			//std::cout << GREEN "CGI Executed" RESET<< std::endl;
 		}
 		else
 		{
@@ -205,14 +205,14 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		for (; it != cgi.second.end(); it++)
 		{
 			req->setRoot(*it); // set new root path
-			if (!HandleCgi(*req))
+			if (!HandleCgi(*req, *client))
 				return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
 		}
 		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
 		if (req->getMethod() == "GET")
-			getCGIMethod(*client, req);
+			getCgiMethod(*client, req);
 		else if (req->getMethod() == "POST")
-			postMethod(*client, *req);
+			postCgiMethod(*client, req);
 		else
 			return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 		eraseTmpFile(cgi.second);
