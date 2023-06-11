@@ -7,9 +7,6 @@
 *.o
 *.obj
 
-# debug files
-.vscode/
-
 # Precompiled Headers
 *.gch
 *.pch
