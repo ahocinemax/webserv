@@ -194,24 +194,15 @@ bool	Client::sendContent(const char *content, std::size_t size, bool display)
 	{
 		if (display)
 			displayErrorPage(_server->error_pages.find(INTERNAL_SERVER_ERROR));
-		else
-		{
-			std::string tmp = RED;
-			tmp.append("send()");
-			tmp += RESET;
-			perror(tmp.c_str());
-		}
 		return (false);
 	}
 	else if (sendSize == 0)
 	{
 		if (display)
 			displayErrorPage(_server->error_pages.find(BAD_REQUEST));
-		else
-			std::cerr << RED "Error:" RESET " send() failed: connection closed" << std::endl;
 		return (false);
 	}
 	else
-		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes." << std::endl;
+		std::cout << "> " GREEN "Response sent: " RESET << sendSize << " bytes." << std::endl;
 	return (true);
 }

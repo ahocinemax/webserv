@@ -55,6 +55,8 @@ ServerVector	*Parser::parse(void)
 		std::string key = _content.substr(prev, curr - prev);
 		if (key == "server")
 			result->push_back(parseServer(&curr));
+		else if (key == "#")
+			curr = _content.find_first_of("\n", curr);
 		else
 			exit(printError(2));
 	}
@@ -144,7 +146,8 @@ Server	Parser::parseServer(std::size_t *i)
 				exit(printError(15));
 			if (static_cast<int>(end) == EMPTY)
 				continue ;
-			std::string val = _content.substr(prev, end - prev + start + 1);
+			int i = (_content.find(";") != std::string::npos ? 1 : 2);
+			std::string val = _content.substr(prev, end - prev + start + i);
 			if (setServer(&result, key, val) == FAILED)
 				exit(printError(16));
 		}
@@ -155,7 +158,7 @@ Server	Parser::parseServer(std::size_t *i)
 int Parser::setLocation(Location *loc, std::string &key, std::string &val)
 {
 	std::size_t value;
-	// std::cout << "key: \"" << key << "\" val: {" << val << "}" << std::endl;
+
 	if (key == "root")
 		loc->_root = val;
 	else if (key == "client_body_limit")
@@ -209,7 +212,6 @@ int	Parser::setServer(Server *serv, std::string &key, std::string &val)
 			std::size_t split = val.find_first_of(':');
 			if (split == std::string::npos)
 				return (FAILED);
-			std::cout << val.substr(0, split) << std::endl;
 			serv->_ipAddress = val.substr(0, split);
 			serv->_port = val.substr(split + 1, val.length() - 1);
 		}
@@ -273,14 +275,14 @@ int	Parser::checkSyntax(std::string line)
 	if (split != std::string::npos)
 	{
 		line.erase(split);
-		if ((find = line.find_first_not_of(SEP)) != std::string::npos)
+		if ((find = line.find_first_not_of(SEP)) == std::string::npos)
 			return (EMPTY);
 	}
 
 	std::size_t	semicol = line.find_first_of(";");
 
 	if (semicol == std::string::npos)
-		return (FAILED);
+		semicol = line.length() - 1;
 	if ((find = line.find_first_not_of(SEP, semicol + 1, line.length() \
 	- semicol - 1)) != std::string::npos)
 		return (FAILED);
