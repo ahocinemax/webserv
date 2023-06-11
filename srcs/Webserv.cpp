@@ -562,7 +562,7 @@ void Webserv::getCgiMethod(Client &client, Request *req)
 }
 
 void Webserv::eraseTmpFile(StrVector vec)
-{	
+{
 	for (int i = 0 ; i < vec.size() ; i++)
 	{
 		if (remove(vec[i].c_str()) != 0)

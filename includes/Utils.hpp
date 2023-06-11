@@ -111,7 +111,6 @@ std::string methodTypeToStr(MethodType method);
 std::string	trimSpacesStr(std::string *str);
 void		toLower(std::string *str);
 std::string readFd(int fd);
-std::string	convertToString(int nb);
 std::string convertToOctets(int octets);
 bool		convertHttpCode(const std::string& str, int* code);
 

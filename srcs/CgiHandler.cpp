@@ -264,13 +264,13 @@ void CgiHandler::initCgiEnvironment()
     _env["SERVER_PROTOCOL"] = _request->getProtocolHTTP();
     _env["REQUEST_METHOD"] = _request->getMethod();
     _env["SCRIPT_NAME"] = _request->getPath();
-    _env["SERVER_PORT"] = convertToString(_request->getPort());
+    _env["SERVER_PORT"] = to_string(_request->getPort());
     _env["REMOTE_IDENT"] = _request->getHeader("autorization");
     _env["REMOTE_ADDR"] = _request->getHost();
     _env["SCRIPT_FILENAME"] = _request->getRoot(); // traduire filename par path -> coder au 2/06
     _env["SERVER_NAME"] = "webserv";
     _env["SERVER_SOFTWARE"] = "webserv/1.0";
-    _env["CONTENT_LENGTH"] = convertToString(_request->getSize());
+    _env["CONTENT_LENGTH"] = to_string(_request->getSize());
 }
 
 void CgiHandler::setEnv(const std::string &key, const std::string &val)
