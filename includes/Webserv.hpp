@@ -52,7 +52,6 @@ class Webserv
 		void				handleResponse(Client *client, Request *req, struct epoll_event &event);
 		bool				clientNotConnected(int socket);
 		const char			*getMimeType(const char *path);
-		bool 				HandleCgi(Request& request);
 
 
 	private:
@@ -63,17 +62,20 @@ class Webserv
 		StatusMap				_statusCodeList;
 		int						_epollFd;
 
+		void				sendAutoindex(Client &client, std::string filePath);
 		void				redirectMethod(Client &client, Request &request);
 		void				deleteMethod(Client &client, std::string path);
 		void				postMethod(Client &client, Request &request);
 		void				getMethod(Client &client, std::string path);
+
+		// CGI methods
+		std::pair<bool, std::vector<std::string> >	isValidCGI(std::string path, Client &client) const;
 		void				getCGIMethod(Client &client, Request *req);
+		bool 				HandleCgi(Request& request);
 		void				eraseTmpFile(StrVector vec);
 
-		std::pair<bool, std::vector<std::string> >	isValidCGI(std::string path, Client &client) const;
 		void				setStatusCodes(void);
 
-		void				sendAutoindex(Client &client, std::string filePath);
 		std::string			getPath(Client &client, std::string path);
 
 		int					writeResponse(Client &client, std::string response, std::string path);

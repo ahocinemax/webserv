@@ -198,7 +198,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		{
 			req->setRoot(*it); // set new root path
 			if (!HandleCgi(*req))
-				return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
+				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
 		}
 		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
 		if (req->getMethod() == "GET")
