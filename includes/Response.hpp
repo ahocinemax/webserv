@@ -38,7 +38,7 @@ class Response
 	void 		setCgiBody(const std::string& cgibody);
 	void		setStatusCode(int status);
 	void		parseCgiStatusLine(std::string &body);
-	void		parseCgiBody(std::string &body);
+	void		parseCgiBody(std::string body);
 	size_t		getNextWord(std::string& body, std::string &word, std::string const& delimiter);
 	std::string					_message;
 

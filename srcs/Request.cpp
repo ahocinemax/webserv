@@ -360,7 +360,7 @@ std::string	Request::getRoot() const { return (_root); }
 
 std::string	Request::getBody() const { return (_body); }
 
-std::string	Request::getCgiBody(int index) const { return (_cgibody[index]); }
+std::string	Request::getCgiBody(int index) { return (_cgibody[index]); }
 
 StrVector	Request::getCgiBody() const { return (_cgibody); }
 
