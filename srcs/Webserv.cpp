@@ -201,11 +201,10 @@ void	Webserv::getMethod(Client &client, std::string path)
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	response.addHeader("content-length", to_string(fileStat.st_size));
 	response.addHeader("content-type", mime);
-	response.addHeader("accept-endoding", "gzip");
 	std::string	header = response.makeHeader(false);
-	if (!client.sendContent(header, header.length(), true))
+	if (!client.sendContent(header.c_str(), header.length(), true))
 		return ;
-	char		buffer[BUFFER_SIZE + 1];
+	char		*buffer = new char[BUFFER_SIZE + 1];
 	ssize_t		readSize = 0;
 	ssize_t		totalSize = header.length();
 	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0)
@@ -215,11 +214,12 @@ void	Webserv::getMethod(Client &client, std::string path)
 			std::cout << RED "> Error while reading file" RESET << std::endl;
 		else if (readSize == 0)
 			std::cout << RED "> File is empty" RESET << std::endl;
-		else
-			client.sendContent(buffer, readSize);
+		else if (!client.sendContent(buffer, readSize))
+			break ;
 	}
 	fclose(file);
-	if (totalSize > fileStat.st_size)
+	delete[] buffer;
+	if (totalSize == fileStat.st_size + header.length())
 		std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
 	else
 		std::cout << RED "> Error on size sent { file_size: " << fileStat.st_size << " ; total sent: ( " << header.length() << " + " << totalSize - header.length() << " )}" RESET << std::endl;
@@ -236,7 +236,7 @@ void	Webserv::redirectMethod(Client &client, Request &request)
 	response.addHeader("content-length", 0);
 	response.addHeader("date", response.getDate());
 	std::string	header = response.makeHeader();
-	client.sendContent(header, header.length());
+	client.sendContent(header.c_str(), header.length());
 }
 
 void Webserv::setStatusCodes(void)
@@ -332,10 +332,7 @@ void	Webserv::sendAutoindex(Client &client, std::string filePath)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 	ret = send(client.getSocket(), output.c_str(), output.length(), MSG_NOSIGNAL);
 	if (ret < 0)
-	{
-		std::cout << RED << "Error while sending body :\n" << output << RESET << std::endl;
 		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
-	}
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 }
@@ -539,9 +536,9 @@ void Webserv::getCGIMethod(Client &client, Request *req)
 	response.addHeader("Content-Length", to_string(response._message.length()));
 	response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
-	if (!client.sendContent(header, header.length()))
+	if (!client.sendContent(header.c_str(), header.length()))
 		return ;
-	if (!client.sendContent(response._message, response._message.length()))
+	if (!client.sendContent(response._message.c_str(), response._message.length()))
 		return ;
 	std::cout << GREEN << "CGI response sent (" << convertToOctets(header.length() + response._message.length()) << ")" RESET << std::endl;
 }

@@ -113,8 +113,6 @@ int		Client::charCounter(std::string str, char c)
 
 void	Client::clearRequest(void)
 {
-// 	for (int i = 0 ; i < MAX_REQUEST_SIZE + 1 ; i++)
-// 		_request[i] = 0;
 	_recvSize = 0;
 }
 
@@ -125,7 +123,6 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	if (statusCode != _server->error_pages.end())
 	{
 		std::string path = _server->error_pages[statusCode->first];
-		// std::cout << BLUE "tmp: " << path << RESET << std::endl;
 		file.open(path.c_str());
 		if (!file.is_open())
 			statusCode = _server->error_pages.find(NOT_FOUND);
@@ -186,11 +183,11 @@ void Client::parse(const std::string& str)
 	return ;
 }
 
-bool	Client::sendContent(std::string content, std::size_t size, bool display)
+bool	Client::sendContent(const char *content, std::size_t size, bool display)
 {
 	ssize_t sendSize = 0;
 	if (_socket > 0)
-		sendSize = send(_socket, content.c_str(), size, MSG_NOSIGNAL);
+		sendSize = send(_socket, content, size, MSG_NOSIGNAL);
 	else
 		return (printf("send failed\n"), false);
 	if (sendSize < 0)

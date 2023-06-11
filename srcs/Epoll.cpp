@@ -39,7 +39,7 @@ void Webserv::editSocket(int socket, uint32_t flag, struct epoll_event event)
 	memset(&event, 0, sizeof(epoll_event));
 	event.data.fd = socket;
 	event.events = flag;
-	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, socket, &event) < 0) // renouveller la mode
+	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, socket, &event) < 0) // renouveler le mode
 		throw EpollCtlException();
 	// std::cout << YELLOW << "Success:" << RESET << " Socket event modified. Socket FD: " << socket << ", Event Flag: " << flag << std::endl;
 }
@@ -59,7 +59,6 @@ void Webserv::eraseClient(int index)
 		std::cerr << "eraseClient(close) error" << std::endl;
 	_clients.erase(_clients.begin() + index);
 	delete _clients[index];
-	// std::cout << YELLOW << "[Close]" << RESET << " connection on socket " + to_string(clientfd) << std::endl;
 }
 
 int	Webserv::routine(void)
@@ -68,7 +67,6 @@ int	Webserv::routine(void)
 	int 				nbEvents = 0;
 	int					index = 0;
 
-	// std::cout << PURPLE << std::setw(52) << "waiting for events" << RESET << std::endl;
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, -1)) < SUCCESS)
 		return (FAILED);
 
@@ -76,7 +74,7 @@ int	Webserv::routine(void)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
 			return (close(events[i].data.fd), SUCCESS);
-		if (events[i].data.fd == STDIN_FILENO) // NOT WORKING !
+		if (events[i].data.fd == STDIN_FILENO) // ignore les entrées clavier
 		{
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
 			return (FAILED);
@@ -85,11 +83,8 @@ int	Webserv::routine(void)
 			index = initConnection(events[i].data.fd);
 
 		handleRequest(_clients[index], events[i]);
-		if (_clients[index]->getRequest() == NULL)
-		{
-			eraseClient(index);
+		if (_clients[index]->getRequest() == NULL) // si la requête n'est pas encore complète
 			continue;
-		}
 		Request *request = _clients[index]->getRequest();
 		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
