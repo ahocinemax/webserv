@@ -69,8 +69,9 @@ class Webserv
 		void				getMethod(Client &client, std::string path);
 
 		// CGI methods
-		std::pair<bool, std::vector<std::string> >	isValidCGI(std::string path, Client &client) const;
-		void				getCGIMethod(Client &client, Request *req);
+		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
+		void				getCgiMethod(Client &client, Request *req);
+		void				postCgiMethod(Client& client, Request *req);
 		bool 				HandleCgi(Request& request);
 		void				eraseTmpFile(StrVector vec);
 

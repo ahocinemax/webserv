@@ -32,8 +32,7 @@ class Request
 		int				_requestStatus;
 		int				_statusCode;
 		StringMap		_header;
-		std::size_t		_contentLength;
-
+		
 		/* Init */
 		void	initVariables();
 		void	initFuncForParse();

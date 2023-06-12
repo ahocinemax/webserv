@@ -59,8 +59,8 @@ class CgiHandler
     
         Response                            *_response;
         Request                             *_request;
-        int                                 _fd_in[2];
-        int                                 _fd_out[2];
+        int                                 fd_in[2];
+        int                                 fd_out[2];
         std::string                         _request_body;
         int                                 _in;
         int                                 _out;
