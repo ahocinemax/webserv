@@ -122,43 +122,6 @@ int	Webserv::connectEpollToSockets()
 	return (SUCCESS);
 }
 
-void	Webserv::handleRequest(Client *client, struct epoll_event &event)
-{
-	(void)event;
-	std::string	str = readFd(client->getSocket());
-	if (str.empty())
-		return;
-	client->parse(str);
-	if (client->getRequest()->_statusCode != OK)
-		return;
-	else
-		editSocket(client->getSocket(), EPOLLIN, event);
-	/*
-		question: est-ce qu'on a pas besoin de mettre _client.erase
-		dans chaque handles(request handle / response handle)?
-	*/
-}
-
-const char *Webserv::EpollCreateException::what() const throw()
-{
-	return ("Error: Epoll_create() failed");
-}
-
-const char *Webserv::EpollCtlException::what() const throw()
-{
-	return ("Error: Epoll_ctl() failed");
-}
-
-const char *Webserv::EpollWaitException::what() const throw()
-{
-	return ("Error: Epoll_wait() failed");
-}
-
-const char *Webserv::AcceptException::what() const throw()
-{
-	return ("Error: Accept() failed");
-}
-
 bool Webserv::HandleCgi(Request &request, Client& client)
 {
     CgiHandler cgi(request);
@@ -182,6 +145,23 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 	return (true);
 }
 
+void	Webserv::handleRequest(Client *client, struct epoll_event &event)
+{
+	(void)event;
+	std::string	str = readFd(client->getSocket());
+	if (str.empty())
+		return;
+	client->parse(str);
+	if (client->getRequest()->_statusCode != OK)
+		return;
+	else
+		editSocket(client->getSocket(), EPOLLIN, event);
+	/*
+		question: est-ce qu'on a pas besoin de mettre _client.erase
+		dans chaque handles(request handle / response handle)?
+	*/
+}
+
 void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &event)
 {
 	(void)event;
@@ -194,7 +174,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(*req, *client);	
 	if (cgi.first) // is CGI valid or not
 	{
-		std::cout << YELLOW "REQ BODY: " << req->getBody() << RESET << std::endl;
+		// std::cout << YELLOW "REQ BODY: " << req->getBody() << RESET << std::endl;
 		std::vector<std::string>::iterator it = cgi.second.begin();
 		for (; it != cgi.second.end(); it++)
 		{
@@ -227,4 +207,24 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	std::cout << std::endl;
 
 	// editSocket(client->getSocket(), EPOLLIN, event);
+}
+
+const char *Webserv::EpollCreateException::what() const throw()
+{
+	return ("Error: Epoll_create() failed");
+}
+
+const char *Webserv::EpollCtlException::what() const throw()
+{
+	return ("Error: Epoll_ctl() failed");
+}
+
+const char *Webserv::EpollWaitException::what() const throw()
+{
+	return ("Error: Epoll_wait() failed");
+}
+
+const char *Webserv::AcceptException::what() const throw()
+{
+	return ("Error: Accept() failed");
 }

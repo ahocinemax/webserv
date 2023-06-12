@@ -89,11 +89,6 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 
 void	Webserv::postMethod(Client &client, Request &request)
 {
-	// if (request._header["transfer-encoding"] != "chunked" && request._header.find("content_length") == request._header.end())
-	// {
-	// 	client.displayErrorPage(_statusCodeList.find(LENGTH_REQUIRED));
-	// 	return ;
-	// }
 
 	std::string		filePath = getPath(client, request.getPath());
 
@@ -453,12 +448,12 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 				std::string phpSection = content.substr(start, end - start + 2); // On ajoute chaque section PHP dans un nouveau fichier
 				std::string filePath;
 				std::stringstream ss_php;
-				ss_php << "tmp_" << path << count++ << ".php"; // Add counter to filename to make it unique
+				ss_php << path << "tmp_" << count++ << ".php"; // Add counter to filename to make it unique
 				ss_php >> filePath;
 				int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
 				if (fd < 0)
 				{
-					std::cerr << RED << "Failed to open php script: " << RESET << path << std::endl;
+					std::cerr << RED << "Failed to open php script: " << RESET << filePath << std::endl;
 					return result;							
 				}
 				if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
@@ -552,7 +547,7 @@ void Webserv::eraseTmpFile(StrVector vec)
 {
 	for (int i = 0 ; i < vec.size() ; i++)
 	{
-	    if (vec[i].substr(0, 4) == "tmp_") // prefix pour tmp file dans isValidCGI
+	    if (vec[i].find("tmp_") != std::string::npos) // prefix pour tmp file dans isValidCGI
         {
             if (remove(vec[i].c_str()) != 0)
                 std::cerr << RED << "Failed to remove tmp file: " << RESET << vec[i] << std::endl;
@@ -578,7 +573,6 @@ void Webserv::postCgiMethod(Client &client, Request *req)
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
 	{
-		response.parseCgiBody(req->getCgiBody(index));
 		response.setCgiBody(req->getCgiBody(index));
 	}
 	std::string		line;
