@@ -1,6 +1,6 @@
 #include "Webserv.hpp"
 
-void	Webserv::initEvent(struct epoll_event &event, uint32_t flag, int fd)
+void Webserv::initEvent(struct epoll_event &event, uint32_t flag, int fd)
 {
 	memset(&event, 0, sizeof(event));
 	event.events = flag;
@@ -19,6 +19,7 @@ int	Webserv::initConnection(int socket)
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, client->getSocket(), &event) < SUCCESS)
 		throw EpollCtlException();
 	_clients.push_back(client);
+	std::cout << YELLOW << "Success:" << RESET << " New client connected. Socket FD: " << client->getSocket() << std::endl;
 	return (_clients.size() - 1);
 }
 
@@ -59,6 +60,7 @@ void Webserv::eraseClient(int index)
 		std::cerr << "eraseClient(close) error" << std::endl;
 	_clients.erase(_clients.begin() + index);
 	delete _clients[index];
+	std::cout << YELLOW << "Success:" << RESET << " Client erased. Socket FD: " << clientfd << std::endl;
 }
 
 int	Webserv::routine(void)
@@ -67,9 +69,13 @@ int	Webserv::routine(void)
 	int 				nbEvents = 0;
 	int					index = 0;
 
-	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, -1)) < SUCCESS)
+	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 500)) < SUCCESS)
 		return (FAILED);
-
+	if (nbEvents == 0) // gerer le timeout -> enregistrer le timestamp de la derniere requete
+	{
+		std::cout << "No event" << std::endl;
+		return (SUCCESS);
+	}
 	for (int i = 0; i < nbEvents; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
@@ -145,7 +151,7 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 	return (true);
 }
 
-void	Webserv::handleRequest(Client *client, struct epoll_event &event)
+void Webserv::handleRequest(Client *client, struct epoll_event &event)
 {
 	(void)event;
 	std::string	str = readFd(client->getSocket());

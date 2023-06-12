@@ -363,7 +363,7 @@ int	Webserv::writeResponse(Client &client, std::string body, std::string path)
 
 	// write body to file
 	int		ret = write(fd, body.c_str(), body.length());
-	std::cout << GREEN "> Response sent: " RESET << convertToOctets(ret) << "." << std::endl;
+	// std::cout << GREEN "> Response sent: " RESET << convertToOctets(ret) << "." << std::endl;
 	if (ret < 0)
 	{
 		// close fds
@@ -540,7 +540,7 @@ void Webserv::getCgiMethod(Client &client, Request *req)
 		return ;
 	if (!client.sendContent(response._message.c_str(), response._message.length()))
 		return ;
-	std::cout << GREEN << "CGI response sent (" << convertToOctets(header.length() + response._message.length()) << ")" RESET << std::endl;
+	// std::cout << GREEN << "CGI response sent (" << convertToOctets(header.length() + response._message.length()) << ")" RESET << std::endl;
 }
 
 void Webserv::eraseTmpFile(StrVector vec)
@@ -620,5 +620,5 @@ void Webserv::postCgiMethod(Client &client, Request *req)
 	ret = send(client.getSocket(), response._message.c_str(), response._message.length(), MSG_NOSIGNAL);
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
-	std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
+	// std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
 	}
