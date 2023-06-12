@@ -169,6 +169,7 @@ bool Webserv::HandleCgi(Request &request, Client& client)
     CgiHandler cgi(request);
 	std::string body;
 	cgi.setEnv("SERVER_NAME", client._server->server_name);
+
     if (request._statusCode == NOT_FOUND)
 		return (false);
 	else
@@ -198,7 +199,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		return;
 	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
-	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(req->getRoot(), *client);	
+	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(*req, *client);	
 	if (cgi.first) // is CGI valid or not
 	{
 		std::vector<std::string>::iterator it = cgi.second.begin();

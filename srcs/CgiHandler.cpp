@@ -5,6 +5,7 @@ CgiHandler::CgiHandler(Request &request) : _response(0),
                                            _request_body(request.getBody()),
                                            _in(-1),
                                            _out(-1),
+			std::cerr << RED << "Failed to remove tmp file: " << RESET << vec[i] << std::endl;
                                            _scriptPath(request.getRoot()),
                                            _program(PHP_EXEC)
 {

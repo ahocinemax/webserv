@@ -417,9 +417,10 @@ const char *Webserv::getMimeType(const char *path)
 	return "text/plain";
 }
 
-std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(std::string path, Client &client) const
+std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request, Client &client) const
 {
 	std::pair<bool, std::vector<std::string> > result(false, std::vector<std::string>());
+	std::string	path = request.getRoot();
 	if (path.length() >= 4)
 	{
 		std::string extension = path.substr(path.length() - 4, 4);
@@ -457,29 +458,29 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(std::string path,
 				end = content.find("?>", tmp + 1);
 				if (start != std::string::npos && end != std::string::npos)
 				{
-					std::string phpSection = content.substr(start, end - start + 2); // On ajoute chaque section PHP dans un nouveau fichier
-					std::string filePath;
-					std::stringstream ss_php;
-					ss_php << path << count++ << ".php"; // Add counter to filename to make it unique
-					ss_php >> filePath;
-					int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-					if (fd < 0)
-					{
-						std::cerr << RED << "Failed to open php script: " << RESET << path << std::endl;
-						return result;							
-					}
-					if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
-					{
-						std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
-						return result;							
-					} // On garde le fichier pour l'exécuter dans le CGI Handler
-					if (close(fd) < 0)
-					{
-						std::cerr << RED << "Failed to close php script: " << RESET << path << std::endl;
-						return result;						
-					}
-					result.first = true;
-					result.second.push_back(filePath);
+				std::string phpSection = content.substr(start, end - start + 2); // On ajoute chaque section PHP dans un nouveau fichier
+				std::string filePath;
+				std::stringstream ss_php;
+				ss_php << "tmp_" << path << count++ << ".php"; // Add counter to filename to make it unique
+				ss_php >> filePath;
+				int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+				if (fd < 0)
+				{
+					std::cerr << RED << "Failed to open php script: " << RESET << path << std::endl;
+					return result;							
+				}
+				if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
+				{
+					std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
+					return result;							
+				} // On garde le fichier pour l'exécuter dans le CGI Handler
+				if (close(fd) < 0)
+				{
+					std::cerr << RED << "Failed to close php script: " << RESET << path << std::endl;
+					return result;						
+				}
+				result.first = true;
+				result.second.push_back(filePath);
 				}
 			}
 		}
@@ -565,8 +566,11 @@ void Webserv::eraseTmpFile(StrVector vec)
 {
 	for (int i = 0 ; i < vec.size() ; i++)
 	{
-		if (remove(vec[i].c_str()) != 0)
-			std::cerr << RED << "Failed to remove tmp file: " << RESET << vec[i] << std::endl;
+	    if (vec[i].substr(0, 4) == "tmp_") // prefix pour tmp file dans isValidCGI
+        {
+            if (remove(vec[i].c_str()) != 0)
+                std::cerr << RED << "Failed to remove tmp file: " << RESET << vec[i] << std::endl;
+        }
 	}
 }
 
@@ -577,10 +581,15 @@ void Webserv::postCgiMethod(Client &client, Request *req)
 		pour l'instant cette fonction est copie-colle de getCgiMethod
 		je n'arrive pas a regler des problemes d'execution CGI, je n'ai	pas avance,
 		sorry.
-	*/
-	Response	response(_statusCodeList[req->_statusCode]);
+		1 parse
+		2 check content-type
+		3 
+		4
+		5
+		6
 
-	// POST request specific: pass the request body to the CGI script
+	*/
+	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
 	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
 	{
 		response.parseCgiBody(req->getCgiBody(index));
@@ -594,7 +603,6 @@ void Webserv::postCgiMethod(Client &client, Request *req)
 	file.open(filePath.c_str(), std::ifstream::in);
 	int end;
 	int i = 0;
-
 	if (file.is_open())
 	{
 		while (!file.eof())
@@ -611,7 +619,7 @@ void Webserv::postCgiMethod(Client &client, Request *req)
 				i++;
 				while ((end = line.find("?>")) == std::string::npos)
 					std::getline(file, line);
-				if (end + 2 < line.length())
+				if (end + 2< line.length())
 					response._message.append(line, end + 2, line.length());
 			}
 		}
@@ -619,22 +627,18 @@ void Webserv::postCgiMethod(Client &client, Request *req)
 	}
 	else
 		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
-
 	// remove all 
 	response.addHeader("Content-Length", to_string(response._message.length()));
 	// MIME type of CGI script =  "text/html" 
 	response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
-
 	// send header
 	int ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
-
 	// send CGI body
 	ret = send(client.getSocket(), response._message.c_str(), response._message.length(), MSG_NOSIGNAL);
 	if (ret <= 0)
 		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
-
 	std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
-}
+	}

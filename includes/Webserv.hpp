@@ -71,7 +71,7 @@ class Webserv
 		void				postCgiMethod(Client& client, Request *req);
 		void				eraseTmpFile(StrVector vec);
 
-		std::pair<bool, std::vector<std::string> >	isValidCGI(std::string path, Client &client) const;
+		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
 		void				setStatusCodes(void);
 
 		void				sendAutoindex(Client &client, std::string filePath);
