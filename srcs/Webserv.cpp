@@ -204,7 +204,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 	std::string	header = response.makeHeader(false);
 	if (!client.sendContent(header.c_str(), header.length(), true))
 		return ;
-	char		*buffer = new char[BUFFER_SIZE + 1];
+	char		buffer[BUFFER_SIZE + 1];
 	ssize_t		readSize = 0;
 	ssize_t		totalSize = header.length();
 	while ((readSize = fread(buffer, 1, BUFFER_SIZE, file)) > 0)
@@ -217,14 +217,14 @@ void	Webserv::getMethod(Client &client, std::string path)
 		else if (!client.sendContent(buffer, readSize))
 			break ;
 	}
-	if (client.getRequest()->_header["transfer-encoding"] == "chunked")
-		send(client.getSocket(), "0\r\n\r\n", 5, MSG_NOSIGNAL);
 	fclose(file);
-	delete[] buffer;
 	if (totalSize == fileStat.st_size + header.length())
 		std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
 	else
+	{
 		std::cout << RED "> Error on size sent { file_size: " << fileStat.st_size << " ; total sent: ( " << header.length() << " + " << totalSize - header.length() << " )}" RESET << std::endl;
+		std::cout << YELLOW "> Status code: " << client.getRequest()->_statusCode << RESET << std::endl;
+	}
 }
 
 void	Webserv::redirectMethod(Client &client, Request &request)
