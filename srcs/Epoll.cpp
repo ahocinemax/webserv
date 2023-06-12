@@ -202,6 +202,7 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(*req, *client);	
 	if (cgi.first) // is CGI valid or not
 	{
+		std::cout << YELLOW "REQ BODY: " << req->getBody() << RESET << std::endl;
 		std::vector<std::string>::iterator it = cgi.second.begin();
 		for (; it != cgi.second.end(); it++)
 		{
