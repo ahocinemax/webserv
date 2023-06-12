@@ -88,16 +88,17 @@ class Request
 					return ("Invalid Method");
 				}
 		};
-		class Error : public virtual std::exception {
-		public:
-			Error(const char* msg) : _msg(msg) {}
+		class Error : public virtual std::exception
+		{
+			public:
+				Error(const char* msg) : _msg(msg) {}
 
-			const char* what() const throw() {
-				return _msg;
-			}
+				const char* what() const throw() {
+					return _msg;
+				}
 
-		private:
-			const char* _msg;
+			private:
+				const char* _msg;
 		};
 
 	private:
