@@ -110,7 +110,7 @@ int	Webserv::connectEpollToSockets()
 		char buffer;
 		ssize_t result = read(_serversVec[i]._socket, &buffer, 0);
 		if (result < 0)
-		    std::cout << "read error on socket " << _serversVec[i]._socket << std::endl;
+			std::cout << "read error on socket " << _serversVec[i]._socket << std::endl;
 		if (ret < SUCCESS)
 			throw EpollCtlException();
 	}
@@ -124,24 +124,24 @@ int	Webserv::connectEpollToSockets()
 
 bool Webserv::HandleCgi(Request &request, Client& client)
 {
-    CgiHandler cgi(request);
+	CgiHandler cgi(request);
 	std::string body;
 	cgi.setEnv("SERVER_NAME", client._server->server_name);
 
-    if (request._statusCode == NOT_FOUND)
+	if (request._statusCode == NOT_FOUND)
 		return (false);
 	else
 	{
 		std::string output;
-        if (cgi.getCgiOutput(output))
+		if (cgi.getCgiOutput(output))
 			request.appendCgiBody(output);
 		else
 		{
 			std::cout << RED "ERROR CGI EXECUTION" << std::endl;
 			request._statusCode = INTERNAL_SERVER_ERROR;
-		    return (false);
-        }
-    }
+			return (false);
+		}
+	}
 	return (true);
 }
 
