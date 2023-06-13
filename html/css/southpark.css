@@ -1,69 +1,80 @@
+/* Barre de navigation */
+
 a.nav-link
 {
-	font-family			:	'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
-	color				:	white;
-	font-size			:	26px;
-	padding				:	8px;
-	display				:	inline-flex;
-	align-self			:	flex-end;
-	width				:	12%;
+    text-decoration		:	none;
+	font-family			:	'Trebuchet MS';
+	font-weight			:	600;
+	font-size			:	1.5em;
+	padding				:	0.2em 3em;
+    display				:	block;
+    color				:	#aaa;
 }
 
 a.nav-link:hover
 {
 	background-color	:	#e7e7e7;
+	text-decoration		:	none;
 	border-radius		:	15px;
 }
 
-/* Barre de navigation */
 header
 {
-	background-color: #000;
-	padding: 15px;
+	align-items			:	center;
+	background-color	:	#000;
+	padding				:	25px;
 }
 
 nav ul li
 {
-	display				:	inline;
+	list-style-type		:	none;
+	padding-left		:	7%;
+	display				:	inline-block;
 }
 
 .logo img
 {
-	height: 4vh;
-	padding-left: 12px;
-	width: fit-content;
+	float				:	right;
+	position			:	relative;
+	height				:	4rem;
+	padding-left		:	12px;
 }
 
   /* Encadrés des personnages */
 .character
 {
-	display: flex;
-	flex-wrap: wrap;
-	justify-content: space-between;
-	margin: 20px 0;
+	padding-top			:	2em;
+	margin				:	auto;
+	width				:	75%;
+	display				:	flex;
+	justify-content		:	space-evenly;
 }
 
 .character-card
 {
-	width: 200px;
-	margin-bottom: 20px;
+	height				:	fit-content;
+	margin-bottom		:	20px;
 }
 
 .character-card img
 {
-	width: 100%;
-	height: auto;
+	margin				:	auto;
+	align-items			:	center;
+	height				:	25em;
+	width				:	auto;
 }
 
 .character-card p
 {
-	text-align: center;
+	text-align			:	center;
+	font-size			:	2em;
+	padding-top: 7px;
 }
 
-/*
+  /* Carousel */
 img#carousel-control
 {
-	width		:	39px;
+	width				:	39px;
 }
 
 div.carousel
@@ -85,9 +96,11 @@ div.carousel
 
 .carousel_image
 {
+	border-radius: 2%;
 	object-fit			:	cover;
 	height				:	100%;
-	width				:	100%;
+	display				:	block;
+	margin				:	auto;
 }
 
 .carousel-item
@@ -151,5 +164,16 @@ div.carousel
 	position			:	relative;
 	overflow			:	hidden;
 	height				:	100%;
-	width: 100%;
+	/* width				:	100%; */
+}
+
+.is-hidden
+{
+	display				:	none;
+}
+
+.hide
+{
+	display				:	none;
+	height				:	0;
 }
