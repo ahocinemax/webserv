@@ -204,9 +204,10 @@ void Webserv::handleMultipart(Request &request, Client &client)
 		name_pos = getfield(contentdispositon, "name=\"", &name);
 		pos_file += getfield(contentdispositon, "filename=\"", &filename);
 	}
-	/*
-		gestion of conversion 
-	*/
+	//if (finename != "")
+	//{
+//
+	//}
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }

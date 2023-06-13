@@ -408,6 +408,16 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 {
 	std::pair<bool, std::vector<std::string> > result(false, std::vector<std::string>());
 	std::string	path = request.getRoot();
+	if (path.length() >= 3)
+	{
+		std::string extension = path.substr(path.length() - 3, 3);
+		if (extension == ".pl" || extension == ".py")
+		{
+			result.first = true;
+			result.second.push_back(path);
+			return result;
+		}
+	}
 	if (path.length() >= 4)
 	{
 		std::string extension = path.substr(path.length() - 4, 4);

@@ -103,8 +103,6 @@ void CgiHandler::Execute()
 		const_cast<char *>(getProgram().c_str()),
 		const_cast<char *>(getScriptPath().c_str()),
 		0};
-	//setCgiEnvironment();
-	// TestEnv();
 	char **env = GetEnvAsCstrArray();
 	RedirectOutputToPipe();
 	execve(av[0], av, env);
@@ -124,6 +122,37 @@ void CgiHandler::Execute()
 	}
 	FreeEnvCstrArray(env);
 }
+
+/*Execute to show inside pipe*/
+/* garde cette fonction stp!!!!!!!!*/
+
+//void CgiHandler::Execute()
+//{
+//	char buffer[1024];
+//	ssize_t n;
+//
+//	while ((n = read(fd_in[0], buffer, sizeof(buffer) - 1)) > 0)
+//	{
+//		buffer[n] = '\0';
+//		std::cout << "Read from pipe: " << buffer << std::endl;
+//	}
+//
+//	if (n < 0)
+//	{
+//		std::cerr << "Read from pipe error: " << strerror(errno) << std::endl;
+//	}
+//	
+//	if (close(fd_in[0]))
+//	{
+//		std::cerr << "cgihandler: Execute (close) error" << std::endl;
+//		return;
+//	}
+//	if (close(fd_out[1]))
+//	{
+//		std::cerr << "cgihandler: Execute (close) error" << std::endl;
+//		return;
+//	}
+//}
 
 void CgiHandler::Restore()
 {
@@ -239,20 +268,44 @@ bool CgiHandler::WaitforChild(int pid)
 		return false;
 }
 
+//void CgiHandler::WriteToStdin()
+//{
+//	SetupParentIO();
+//	if (write(fd_in[1], _request_body.c_str(), _request_body.size()) < 0)
+//	{
+//		std::cerr << "cgihandler: WriteToStdin (write) error" << std::endl;
+//		return;
+//	}
+//	if (close(fd_in[1]) < 0)
+//	{
+//		std::cerr << "cgihandler: WriteToStdin (close) error" << std::endl;
+//		return;
+//	}
+//}
+
 void CgiHandler::WriteToStdin()
 {
 	SetupParentIO();
-	if (write(fd_in[1], _request_body.c_str(), _request_body.size()) < 0)
+	ssize_t written = write(fd_in[1], _request_body.c_str(), _request_body.size());
+	if (written < 0)
 	{
 		std::cerr << "cgihandler: WriteToStdin (write) error" << std::endl;
 		return;
 	}
+	else if ((size_t)written != _request_body.size())
+	{
+		std::cerr << "cgihandler: WriteToStdin (write) size mismatch" << std::endl;
+		return;
+	}
+	std::cout << "fd_in[1] :" << fd_in[1] << " written size: " << written << std::endl;
 	if (close(fd_in[1]) < 0)
 	{
 		std::cerr << "cgihandler: WriteToStdin (close) error" << std::endl;
 		return;
 	}
+	std::cout << "fd_in[1] :" << fd_in[1] << std::endl;
 }
+
 
 void CgiHandler::initCgiEnvironment()
 {
