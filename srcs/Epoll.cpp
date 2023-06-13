@@ -69,7 +69,7 @@ bool Webserv::getBoundary(std::string contentType, std::string &boundary)
 	if (pos == std::string::npos)
 		return (false);
 	contentType.erase(0, pos + 9);//after "boundary="
-	boundary = contentType.substr(0, contentType.find("\r\n"));
+	boundary = contentType.substr(0, contentType.find(CRLF));
 	boundary.erase(boundary.find_last_not_of("\t") + 1);
 	last = boundary.length() - 1;
 	if (boundary[0] == '\"' && boundary[last] == '\"')
@@ -117,17 +117,17 @@ void Webserv::handleMultipart(Request &request, Client &client)
 		return ;
 	 }
 	std::cout << YELLOW << "boundary is:\t" << boundary << RESET << std::endl;
-	while (body.find(boundary + "\r\n") != std::string::npos)
+	while (body.find(boundary + CRLF) != std::string::npos)
 	{
-		pos_file += body.find(boundary + "\r\n") + boundary.length() + 2;
-		body.erase(0, body.find(boundary + "\r\n") + boundary.length() + 2);
-		pos = body.find("Content-Disposition:");
+		pos_file += body.find(boundary + CRLF) + boundary.length() + 2;
+		body.erase(0, body.find(boundary + CRLF) + boundary.length() + 2);
+		pos = body.find("content-disposition:");
 		if (pos == std::string::npos)
 		{
 			request._statusCode = BAD_REQUEST;
 			return ;
 	 	}
-		contentdispositon = body.substr(pos, body.find("\r\n"));
+		contentdispositon = body.substr(pos, body.find(CRLF));
 		name_pos = getfield(contentdispositon, "name=\"", &name);
 		pos_file += getfield(contentdispositon, "filename=\"", &filename);
 	}
@@ -305,7 +305,6 @@ void Webserv::eraseClient(int index)
 		std::cerr << "eraseClient(close) error" << std::endl;
 	_clients.erase(_clients.begin() + index);
 	delete _clients[index];
-	std::cout << YELLOW << "Success:" << RESET << " Client erased. Socket FD: " << clientfd << std::endl;
 }
 
 const char *Webserv::EpollCreateException::what() const throw()

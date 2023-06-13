@@ -82,7 +82,7 @@ std::string readFd(int fd)
 		return ("");
 	}
 
-	// std::cout << RED "readFd: \n" RESET << str << std::endl;
+	std::cout << RED "readFd: \n" RESET << str << std::endl;
 	return (str);
 }
 

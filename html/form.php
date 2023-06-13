@@ -7,6 +7,7 @@
 		if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file))
 		{
 			// Redirect to upload_ok.html after successful upload
+			echo "The file ". basename( $_FILES["fileToUpload"]["name"]). " has been uploaded.";
 			header('Location: upload_ok.html');
 			exit();
 		}
