@@ -186,10 +186,12 @@ void Client::parse(const std::string& str)
 bool	Client::sendContent(const char *content, std::size_t size, bool display)
 {
 	ssize_t sendSize = 0;
+	if (!content)
+		return (true);
 	if (_socket > 0)
-		sendSize = send(_socket, content, size, MSG_NOSIGNAL);
+		sendSize = send(_socket, content, size, MSG_NOSIGNAL | MSG_DONTWAIT);
 	else
-		return (printf("send failed\n"), false);
+		return (false);
 	if (sendSize < 0)
 	{
 		if (display)

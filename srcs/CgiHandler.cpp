@@ -77,14 +77,14 @@ char **CgiHandler::GetEnvAsCstrArray() const
 {
 	char **env = new char *[this->_env.size() + 1];
 	if (!env)
-		return (NULL);
+		return (0);
 	int j = 0;
 	for (StringMap::const_iterator i = this->_env.begin(); i != this->_env.end(); i++)
 	{
 		std::string element = i->first + "=" + i->second;
 		env[j] = new char[element.size() + 1];
 		if (!env[j])
-			return (FreeEnvCstrArray(env), NULL);
+			return (FreeEnvCstrArray(env), (char **)0);
 		strcpy(env[j], element.c_str());
 		j++;
 	}

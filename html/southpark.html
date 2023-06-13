@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>South Park Page</title>
+  <link rel="stylesheet" type="text/css" href="southpark.css">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+</head>
+<body>
+  <header>
+    <nav>
+      <div class="logo">
+        <img href="/" src="img/logo.png" alt="South Park Logo">
+      </div>
+      <ul>
+        <li><a class="nav-link" href="page1.html">Page 1</a></li>
+        <li><a class="nav-link" href="page2.html">Page 2</a></li>
+        <li><a class="nav-link" href="page3.html">Page 3</a></li>
+      </ul>
+    </nav>
+  </header>
+
+	<!-- carousel section -->
+	<script type="text/javascript" src="js/carousel.js"></script>
+	<section class="carousel">
+		<div id="carousel" class="slide" data-ride="carousel">
+			<button class="carousel-control--prev is-hidden">
+				<img id="carousel-control" src="images/left.png" alt="">
+			</button>
+
+			<div class="track-container">
+				<ul class="carousel-track">
+					<li class="carousel-item active">
+						<a href="southpark.html">
+							<img class="carousel_image" src="img/avatar.png" alt="First slide">
+							
+						</a>
+					</li>
+					<li class="carousel-item">
+						<a href="southpark.html">
+							<img class="carousel_image" src="img/southpark.webp" alt="Second slide">
+						</a>
+					</li>
+					<li class="carousel-item">
+						<a href="southpark.html">
+							<img class="carousel_image" src="images/42.jpg" alt="Third slide">
+						</a>
+					</li>
+				</ul>
+			</div>			
+			<button class="carousel-control--next">
+				<img id="carousel-control" src="images/right.png" alt="">
+			</button>
+			<div class="carousel-navDots">
+				<button class="carousel-indicator active"></button>
+				<button class="carousel-indicator"></button>
+				<button class="carousel-indicator"></button>
+			</div>
+		  </div>
+	</section>
+	<!-- end carousel section -->
+
+  <section class="character">
+    <div class="character-card">
+      <img src="character1.png" alt="Character 1">
+      <p>Description du personnage 1</p>
+    </div>
+    <div class="character-card">
+      <img src="character2.png" alt="Character 2">
+      <p>Description du personnage 2</p>
+    </div>
+    <!-- Ajoutez d'autres personnages ici -->
+  </section>
+
+  <!-- Ajoutez d'autres sections au besoin -->
+
+</body>
+</html>
