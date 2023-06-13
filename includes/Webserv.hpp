@@ -74,7 +74,10 @@ class Webserv
 		void				postCgiMethod(Client &client, Request *req);
 		void				getCgiMethod(Client &client, Request *req);
 		void				eraseTmpFile(StrVector vec);
-
+		bool				isMultipartFormData(Request &request);
+		bool				getBoundary(std::string contentType, std::string &boundary);
+		size_t				getfield(std::string content, const std::string &field, std::string *name);
+		void				handleMultipart(Request &request, Client &client);
 		void				setStatusCodes(void);
 		std::string			getPath(Client &client, std::string path);
 		bool				clientNotConnected(int socket);

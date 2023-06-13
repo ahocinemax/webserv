@@ -49,6 +49,123 @@ int	Webserv::initConnection(int socket)
 	return (_clients.size() - 1);
 }
 
+/*----- CGI-----*/
+bool Webserv::isMultipartFormData(Request &request)
+{
+	size_t pos;
+	//std::cout << request.getHeader("content-type") << std::endl;//for check
+	pos = request.getHeader("content-type").find("multipart/form-data");
+	if (pos == std::string::npos)
+		return (false);
+	return (true);
+}
+
+bool Webserv::getBoundary(std::string contentType, std::string &boundary)
+{
+	size_t pos;
+	int last;
+
+	pos = contentType.find("boundary=");
+	if (pos == std::string::npos)
+		return (false);
+	contentType.erase(0, pos + 9);//after "boundary="
+	boundary = contentType.substr(0, contentType.find("\r\n"));
+	boundary.erase(boundary.find_last_not_of("\t") + 1);
+	last = boundary.length() - 1;
+	if (boundary[0] == '\"' && boundary[last] == '\"')
+	{
+		boundary.erase(0, 1);
+		boundary.erase(last - 1);
+	}
+	if (boundary.length() > 70)//max len of bounrary = 70 (RFC2046 for HTTP1.1)
+		return (false);
+	boundary = "--" + boundary;
+	return (true);
+}
+
+size_t Webserv::getfield(std::string content, const std::string &field, std::string *name)
+{
+	size_t pos;
+
+	pos = content.find(field);
+	if (pos == std::string::npos)
+	{
+		*name = "";
+		return (pos);
+	}
+	pos += field.size();
+	content.erase(0, pos);
+	*name = content.substr(0, content.find("\""));
+	return (pos);
+}
+
+void Webserv::handleMultipart(Request &request, Client &client)
+{
+	std::string	boundary;
+	size_t		pos;
+	size_t		name_pos;
+	size_t		pos_file;
+	std::string	name;
+	std::string filename;
+
+	std::string body = request.getBody();
+	std::string contentdispositon;
+
+	 if (!getBoundary(request.getHeader("content-type"), boundary))
+	 {
+		request._statusCode = BAD_REQUEST;
+		return ;
+	 }
+	std::cout << YELLOW << "boundary is:\t" << boundary << RESET << std::endl;
+	while (body.find(boundary + "\r\n") != std::string::npos)
+	{
+		pos_file += body.find(boundary + "\r\n") + boundary.length() + 2;
+		body.erase(0, body.find(boundary + "\r\n") + boundary.length() + 2);
+		pos = body.find("Content-Disposition:");
+		if (pos == std::string::npos)
+		{
+			request._statusCode = BAD_REQUEST;
+			return ;
+	 	}
+		contentdispositon = body.substr(pos, body.find("\r\n"));
+		name_pos = getfield(contentdispositon, "name=\"", &name);
+		pos_file += getfield(contentdispositon, "filename=\"", &filename);
+	}
+	/*
+		gestion of conversion 
+	*/
+	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
+	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
+}
+
+bool Webserv::HandleCgi(Request &request, Client& client)
+{
+	CgiHandler cgi(request);
+	std::string body;
+	cgi.setEnv("SERVER_NAME", client._server->server_name);
+	if (request.getMethod() == "POST")
+	{
+		if (isMultipartFormData(request))
+			handleMultipart(request, client);
+	}
+	if (request._statusCode == NOT_FOUND || request._statusCode == BAD_REQUEST)
+		return (false);
+	else
+	{
+		std::string output;
+		if (cgi.getCgiOutput(output))
+			request.appendCgiBody(output);
+		else
+		{
+			std::cout << RED "ERROR CGI EXECUTION" << std::endl;
+			request._statusCode = INTERNAL_SERVER_ERROR;
+			return (false);
+		}
+	}
+	return (true);
+}
+
+/*-----REQUEST / RESPONSE-----*/
 void Webserv::handleRequest(Client *client, struct epoll_event &event)
 {
 	(void)event;
