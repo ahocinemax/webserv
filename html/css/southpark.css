@@ -1,3 +1,8 @@
+/* body
+{
+	
+} */
+
 /* Barre de navigation */
 
 a.nav-link
@@ -43,11 +48,12 @@ nav ul li
   /* Encadrés des personnages */
 .character
 {
+	justify-content		:	space-evenly;
+	align-items			:	flex-end;
 	padding-top			:	2em;
+	display				:	flex;
 	margin				:	auto;
 	width				:	75%;
-	display				:	flex;
-	justify-content		:	space-evenly;
 }
 
 .character-card
@@ -56,10 +62,14 @@ nav ul li
 	margin-bottom		:	20px;
 }
 
+.character-card#towelie img /* Towelie doit être plus petit */
+{
+	height: 17em;
+}
+
 .character-card img
 {
 	margin				:	auto;
-	align-items			:	center;
 	height				:	25em;
 	width				:	auto;
 }
