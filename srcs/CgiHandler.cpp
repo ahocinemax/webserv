@@ -76,16 +76,20 @@ bool CgiHandler::getCgiOutput(std::string &output)
 char **CgiHandler::GetEnvAsCstrArray() const
 {
 	char **env = new char *[this->_env.size() + 1];
+	if (!env)
+		return (NULL);
 	int j = 0;
-	for (std::map<std::string, std::string>::const_iterator i = this->_env.begin(); i != this->_env.end(); i++)
+	for (StringMap::const_iterator i = this->_env.begin(); i != this->_env.end(); i++)
 	{
 		std::string element = i->first + "=" + i->second;
 		env[j] = new char[element.size() + 1];
+		if (!env[j])
+			return (FreeEnvCstrArray(env), NULL);
 		strcpy(env[j], element.c_str());
 		j++;
 	}
 	env[j] = NULL;
-	return env;
+	return (env);
 }
 
 void CgiHandler::FreeEnvCstrArray(char **env) const
@@ -106,18 +110,13 @@ void CgiHandler::Execute()
 	//setCgiEnvironment();
 	// TestEnv();
 	char **env = GetEnvAsCstrArray();
+	if (!env)
+		return ;
 	RedirectOutputToPipe();
 	execve(av[0], av, env);
-	if (errno != 0)
-	{
+	if (errno)
 		std::cerr << "execve failed with error: " << strerror(errno) << std::endl;
-	}
-	if (close(fd_in[0]))
-	{
-		std::cerr << "cgihandler: Execute (close) error" << std::endl;
-		return;
-	}
-	if (close(fd_out[1]))
+	if (close(fd_in[0]) || close(fd_out[1]))
 	{
 		std::cerr << "cgihandler: Execute (close) error" << std::endl;
 		return;
