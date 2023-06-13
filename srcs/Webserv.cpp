@@ -413,29 +413,6 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 	return result;
 }
 
-bool Webserv::HandleCgi(Request &request, Client& client)
-{
-	CgiHandler cgi(request);
-	std::string body;
-	cgi.setEnv("SERVER_NAME", client._server->server_name);
-
-	if (request._statusCode == NOT_FOUND)
-		return (false);
-	else
-	{
-		std::string output;
-		if (cgi.getCgiOutput(output))
-			request.appendCgiBody(output);
-		else
-		{
-			std::cout << RED "ERROR CGI EXECUTION" << std::endl;
-			request._statusCode = INTERNAL_SERVER_ERROR;
-			return (false);
-		}
-	}
-	return (true);
-}
-
 void Webserv::postCgiMethod(Client &client, Request *req)
 {
 	/*
