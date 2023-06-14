@@ -180,7 +180,7 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 		if (cgi.getCgiOutput(output))
 		{
 			request.appendCgiBody(output);
-			std::cout << "cgi response: "<< request.getCgiBody(0) << std::endl;
+			//std::cout << "cgi response: "<< request.getCgiBody(0) << std::endl;
 		}
 		else
 		{

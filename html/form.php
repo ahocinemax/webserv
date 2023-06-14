@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-<html>
 <head>
 	<title>Upload de fichier</title>
 	<style>

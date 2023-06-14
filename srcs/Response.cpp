@@ -117,26 +117,30 @@ void Response::parseCgiStatusLine(std::string &body)
 
 void Response::parseCgiBody(std::string body)
 {
-	size_t pos;
-	std::string headerName;
-	std::string headerValue;
+    size_t pos;
+    std::string line;
+    std::string headerName;
+    std::string headerValue;
 
-	/*if _cgibody doesn't have header*/
-	if (body.find("\r\n\r\n") == std::string::npos && body.find("\n\n") == std::string::npos)
-		return;
-	pos = 0;
-	for (size_t index = 0; index < _cgibody.size(); index++)
-		parseCgiStatusLine(_cgibody[index]);
-	while (pos != std::string::npos && body.find("\r\n"))
+    while (body.find("\r\n") != std::string::npos || body.find("\n") != std::string::npos)
 	{
-		pos = getNextWord(body, headerName, ":");
-		if (pos == std::string::npos)
-			break;
-		getNextWord(body, headerValue, "\r\n");
-		trimSpacesStr(&headerValue);
-		addHeader(headerName, headerValue);
-	}
-	getNextWord(body, headerName, "\r\n");
+        if (body.find("\r\n") != std::string::npos)
+            pos = getNextWord(body, line, "\r\n");
+        else
+            pos = getNextWord(body, line, "\n");
+        if (line.empty())
+            break;
+        if (line.find(":") != std::string::npos)
+		{
+            getNextWord(line, headerName, ":");
+            trimSpacesStr(&headerName);
+            headerValue = line;
+            trimSpacesStr(&headerValue);
+            addHeader(headerName, headerValue);
+        }
+		else
+            break;
+    }
 }
 
 size_t Response::getNextWord(std::string &body, std::string &word, std::string const &delimiter)
