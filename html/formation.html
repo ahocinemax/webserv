@@ -35,45 +35,52 @@
 			  <ul>
 				  <li><a class="nav-link" href="upload.html">Upload</a></li>
 				  <li><a class="nav-link" href="aboutme.html">About me</a></li>
-				  <li><a class="nav-link" href="formation.html">Formation</a></li>
+				  <li><a class="nav-link" href="formation.html">How it works</a></li>
 			  </ul>
 		  </nav>
 	  </div>
 	</header>
-	<!-- end header section -->
+	<!-- header section -->
 
-  <!-- service section -->
+	<!-- service section -->
 	<section class="formation-container">
 		<div class="main-formation">
 			<div class="image-main">
 				<div class="formation-one formation-content active">
-					<h1>42 School - Digital Technology Architect</h1>
+					<h1>I. Parsing et lancement de webserv</h1>
 					<ul>
-						<li>Student since June, 2021</li>
-						<li>About 8 projects done from 15</li>
-						<li>Ranked 18/143 at the piscine (March, 2021)</li>
-						<li>Bash (Linux & MACOS), C langage, Makefile, UNIX Signals</li>
-						<li>Graphics and algoritmic</li>
+						<li>Parcourir le fichier et parser les configurations dans l'objet "<i>Server</i>"</li>
+						<li>Attribuer un socket au server, grâce à : <strong>socket(addrinfo *)</strong></li>
+						<li>Lier le socket à une adresse réseau avec : <strong>bind(socket, addrinfo *)</strong></li>
+						<li>Création d'une instance d'epoll, gestionnaire de connexion : <strong>epoll_create(MAX_EVENTS);</strong></li>
+						<li>Ajout du socket au gestionnaire : <strong>epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket, &event);</strong></li>
+						<li>epoll() permet de surveiller plusieurs descripteurs de fichiers (<b>sockets</b>) en parallèle</li>
+						<li>epoll_wait() permet de récupérer les sockets qui ont des données à lire</li>
 					</ul>
 				</div>
 				<div class="formation-two formation-content">
-					<h1>MIASHS bachelor degree</h1>
+					<h1>II. Gestion des requêtes HTTP : parsing et CGI</h1>
 					<ul>
-						<li>Diplomed from the last session, on June</li>
-						<li>Mathematical analyse and others (Stats, proba)</li>
-						<li>Data sciences with RStudio, MySQL, CSV files</li>
-						<li>Economic knowledge, about micro and macro economy</li>
-						<li>Transendance of subjects</li>
+						<li>Accepter les connexions entrantes, créez un socket dédiée pour chaque client connecté</li>
+						<li>Lecture puis parsing de la requête : méthode, URI (chemin du fichier), en-têtes et body</li>
+						<li>Traitement de la requête : renvoyer une page d'erreur si la requête n'est pas conforme</li>
+						<li>Détéction du CGI : balise php dans le code html, ou script php à executer</li>
+						<li style="list-style: none;">
+							<ul class="sous-categorie">
+								<li>il faut configurer des variables d'environnement pour lancer le programme CGI</li>
+								<li>le comportement diffère selon la méthode de la requête</li>
+								<li>Exécution du CGI : création d'un processus fils, redirection des entrées/sorties</li>
+							</ul>
+						</li>
+						<li>Envoi de la réponse : <strong>[GET]</strong> envoi du fichier requis <strong>[POST]</strong> modification des données</li>
 					</ul>
 				</div>
 				<div class="formation-three formation-content">
-					<h1>BAC Scientifique</h1>
+					<h1>III. Boucle de gestion des requêtes</h1>
 					<ul>
-						<li>First ranked high school of the county</li>
-						<li>Engineer specialization (16/20)</li>
-						<li>Informatic and digita sciences Option (18/20)</li>
-						<li>ISN project : Dynamic Website with Flask (Python microframework)</li>
-						<li>SI project : Take a random set of candies, and sort them by color</li>
+						<li>Création de l'objet "<i>Client</i>" si le socket n'est associé à aucun existant</li>
+						<li>Gestion des requêtes : accepter les connexions, traiter les requêtes et y répondre</li>
+						<li>Arrêt du serveur : implémentation de la fonction <strong>exitServer()</strong>, arrêtant le serveur proprement <br>lorsqu'un signal de terminaison est détécté</li>
 					</ul>
 				</div>
 				<img src="images/main.png" alt="" class="web-page">
@@ -88,23 +95,20 @@
 			</div>
 		</div>
 	</section>
-
-  <!-- end service section -->
-
-  <!-- info section -->
-  <section class="info_section layout_padding2">
-    <div class="container">
-    </div>
-  </section>
-
-  <!-- end info_section -->
+	<!-- service section -->
 
   <!-- footer section -->
   <section class="footer_section">
-    <p>
-      &copy; 2022 All Rights Reserved By ahocine.
-	  <a style="font-size: 19px;" href="aboutme.html">En découvrir plus</a>
-    </p>
+		<?php
+			$SERVER_NAME = $_SERVER['SERVER_NAME'];
+			$MESSAGE = "You are actually on the server : <strong>";
+			if ($SERVER_NAME)
+				$MESSAGE .= "$SERVER_NAME</strong></p>";
+			else
+				$MESSAGE .= "42.fr</strong></p>";
+			echo "$MESSAGE";
+		?>
+    <p>&copy; 2023 - All Rights Reserved By mtsuji & ahocine.</p>
   </section>
   <!-- footer section -->
 

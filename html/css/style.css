@@ -444,7 +444,7 @@ img.web-page
 {
 	margin-top: 11px;
 	margin-left			:	10%;
-	font-size			:	5vh;
+	font-size			:	2em;
 	/* line-height			:	55px; */
 }
 
@@ -453,8 +453,17 @@ img.web-page
 	width				:	100%;
 	flex-direction		:	column;
 	position			:	absolute;
-	display				:	flex;
+	display				:	inherit;
 	overflow			:	auto;
+}
+
+.formation-content.active .sous-categorie
+{
+	list-style-position	:	outside;
+	margin-left			:	20px;
+	font-size			:	inherit;
+	margin-top			:	-3px;
+	list-style			:	disc;
 }
 
 .next-formation, .prev-formation

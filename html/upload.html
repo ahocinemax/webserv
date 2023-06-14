@@ -35,7 +35,7 @@
 			  <ul>
 				  <li><a class="nav-link" href="upload.html">Upload</a></li>
 				  <li><a class="nav-link" href="aboutme.html">About me</a></li>
-				  <li><a class="nav-link" href="formation.html">Formation</a></li>
+				  <li><a class="nav-link" href="formation.html">How it works</a></li>
 			  </ul>
 		  </nav>
 	  </div>
@@ -86,12 +86,18 @@
     <!-- end map section -->
 
     <!-- footer section -->
-    <section class="container-fluid footer_section">
-        <p>
-            &copy; 2022 All Rights Reserved By ahocine.
-            <a style="font-size: 19px;" href="aboutme.html">En découvrir plus</a>
-        </p>
-    </section>
+    <section class="footer_section">
+		<?php
+			$SERVER_NAME = $_SERVER['SERVER_NAME'];
+			$MESSAGE = "You are actually on the server : <strong>";
+			if ($SERVER_NAME)
+				$MESSAGE .= "$SERVER_NAME</strong></p>";
+			else
+				$MESSAGE .= "42.fr</strong></p>";
+			echo "$MESSAGE";
+		?>
+		<p>&copy; 2023 - All Rights Reserved By mtsuji & ahocine.</p>
+	</section>
     <!-- footer section -->
 
     <script type="text/javascript" src="js/form.js"></script>
