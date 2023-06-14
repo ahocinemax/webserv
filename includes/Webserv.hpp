@@ -26,7 +26,6 @@
 # include <limits>
 # include <iomanip>
 
-
 # define MAX_EPOLL_EVENTS 1000
 
 class Webserv
@@ -37,22 +36,21 @@ class Webserv
 
 		void				createServers(void);
 		void				closeServers(void);
-		int					routine(void);
 
 		/* EPOLL */
 		static void			initEvent(struct epoll_event &event, uint32_t flag, int fd);
-		int					initConnection(int socket);
 		int					connectEpollToSockets(void);
-		void		        initEpoll(void);
+		int					initConnection(int socket);
+
+		void				handleRequest(Client *client, struct epoll_event &event);
+		void				handleResponse(Client*, Request*, struct epoll_event&);
 		int					findClientIndex(int socket);
+		int					routine(void);
+
 		void				editSocket(int socket, uint32_t flag, struct epoll_event event);
 		void				removeSocket(int socket);
 		void				eraseClient(int index);
-		void				handleRequest(Client *client, struct epoll_event &event);
-		void				handleResponse(Client *client, Request *req, struct epoll_event &event);
-		bool				clientNotConnected(int socket);
-		const char			*getMimeType(const char *path);
-
+		/*  END  */
 
 	private:
 		std::vector<Client*>	_clients;
@@ -62,6 +60,8 @@ class Webserv
 		StatusMap				_statusCodeList;
 		int						_epollFd;
 
+		// Response builder
+		int					writeResponse(Client &client, std::string response, std::string path);
 		void				sendAutoindex(Client &client, std::string filePath);
 		void				redirectMethod(Client &client, Request &request);
 		void				deleteMethod(Client &client, std::string path);
@@ -70,9 +70,9 @@ class Webserv
 
 		// CGI methods
 		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
-		void				getCgiMethod(Client &client, Request *req);
-		void				postCgiMethod(Client &client, Request *req);
 		bool 				HandleCgi(Request &request, Client& client);
+		void				postCgiMethod(Client &client, Request *req);
+		void				getCgiMethod(Client &client, Request *req);
 		void				eraseTmpFile(StrVector vec);
 		bool				isMultipartFormData(Request &request);
 		bool				getBoundary(std::string contentType, std::string &boundary);
@@ -80,10 +80,9 @@ class Webserv
 		void				upload_path(Client &client, std::string &path, Request &request, size_t pos);
 		void				handleMultipart(Request &request, Client &client);
 		void				setStatusCodes(void);
-
 		std::string			getPath(Client &client, std::string path);
-
-		int					writeResponse(Client &client, std::string response, std::string path);
+		bool				clientNotConnected(int socket);
+		const char			*getMimeType(const char *path);
 
 		class EpollCreateException : public std::exception
 		{

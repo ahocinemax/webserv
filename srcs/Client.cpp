@@ -170,8 +170,8 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 		std::cerr << RED "Error:" RESET " send() failed: connection closed" << std::endl;
 		close(_socket);
 	}
-	else
-		std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes." << std::endl;
+	// else
+		// std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes." << std::endl;
 }
 
 void Client::parse(const std::string& str)
@@ -186,23 +186,29 @@ void Client::parse(const std::string& str)
 bool	Client::sendContent(const char *content, std::size_t size, bool display)
 {
 	ssize_t sendSize = 0;
+	if (!content)
+		return (true);
 	if (_socket > 0)
-		sendSize = send(_socket, content, size, MSG_NOSIGNAL);
+		sendSize = send(_socket, content, size, MSG_NOSIGNAL | MSG_DONTWAIT);
 	else
-		return (printf("send failed\n"), false);
+		return (false);
 	if (sendSize < 0)
 	{
 		if (display)
 			displayErrorPage(_server->error_pages.find(INTERNAL_SERVER_ERROR));
+		else
+			perror("send");
 		return (false);
 	}
 	else if (sendSize == 0)
 	{
 		if (display)
 			displayErrorPage(_server->error_pages.find(BAD_REQUEST));
+		else
+			perror("send");
 		return (false);
 	}
-	else
-		std::cout << "> " GREEN "Response sent: " RESET << sendSize << " bytes." << std::endl;
+	// else
+		// std::cout << "> " GREEN "Response sent: " RESET << sendSize << " bytes." << std::endl;
 	return (true);
 }

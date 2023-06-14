@@ -63,6 +63,109 @@ void	Webserv::closeServers(void)
 	}
 }
 
+int	Webserv::writeResponse(Client &client, std::string body, std::string path)
+{
+	std::size_t	begin = path.find_last_of("/");
+	std::string	dirPath = path.substr(0, begin);
+	std::string	fileName = path.substr(begin + 1);
+
+	if (dirPath != "")
+	{
+		struct stat		fileStat;
+		lstat(dirPath.c_str(), &fileStat);
+		if (!S_ISDIR(fileStat.st_mode))
+			return (client.displayErrorPage(_statusCodeList.find(400)), FAILED);
+	}
+	std::string	tmpPath = path + ".tmp";
+	std::string	command = "mkdir -p " + dirPath;
+	int			fd = open(tmpPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+	system(command.c_str());
+	if (fd < 0)
+		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
+
+
+	// add fd to epoll
+	struct epoll_event	event;
+	initEvent(event, EPOLLOUT | EPOLLET, fd);
+	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &event) < 0)
+		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
+
+	// write body to file
+	int		ret = write(fd, body.c_str(), body.length());
+	// std::cout << GREEN "> Response sent: " RESET << convertToOctets(ret) << "." << std::endl;
+	if (ret < 0)
+	{
+		// close fds
+		close(fd);
+		epoll_ctl(client.getSocket(), EPOLL_CTL_DEL, fd, &event);
+		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
+	}
+	return (close(fd), SUCCESS);
+}
+
+void	Webserv::sendAutoindex(Client &client, std::string filePath)
+{
+	std::string		path = filePath;
+	std::string		output = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
+	DIR				*dir = NULL;
+	std::cout << "Autoindexing " << filePath << std::endl;
+	if (filePath[filePath.length() - 1] != '/')
+		filePath += "/";
+	if ((dir = opendir(filePath.c_str())) == NULL)
+	{
+		client.displayErrorPage(_statusCodeList.find(NOT_FOUND));
+		return ;
+	}
+	struct dirent	*ent;
+	filePath.erase(filePath.begin(), filePath.begin() + client._server->root.length());
+	while ((ent = readdir(dir)) != NULL)
+	{
+		if (ent->d_name[0] != '.' || strcmp(ent->d_name, ".."))
+			output += "<a href='" + filePath + ent->d_name + "'>";
+		else if (filePath[filePath.length() - 1] != '/')
+			output += "<a href='" + filePath + ent->d_name + "'>";
+		else
+			output += "<a href='" + filePath + ent->d_name + "'>";
+		output += ((ent->d_type == DT_DIR) ? "" : "./");
+		output += (std::string)(ent->d_name) + (ent->d_type == DT_DIR ? "/" : "") + "</a><br>";
+	}
+	closedir(dir);
+	output += "</pre><hr></body></html>";
+
+	Response	response(_statusCodeList[OK]);
+	response.addHeader("Content-Type", "text/html");
+	response.addHeader("Content-Length", to_string(output.length()));
+	std::string	header = response.makeHeader();
+
+	int ret = send(client.getSocket(), header.c_str(), header.length(), MSG_NOSIGNAL);
+	if (ret < 0)
+	{
+		std::cout << RED << "Error while sending header :\n" << header << RESET << std::endl;
+		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+	}
+	else if (ret == 0)
+		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
+	ret = send(client.getSocket(), output.c_str(), output.length(), MSG_NOSIGNAL);
+	if (ret < 0)
+		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+	else if (ret == 0)
+		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
+}
+
+void	Webserv::redirectMethod(Client &client, Request &request)
+{
+	std::cout << BLUE "> Redirecting to " << client._server->redirect_url << RESET << std::endl;
+	Response	response(_statusCodeList[client._server->redirect_status]);
+	response.addHeader("location", client._server->redirect_url);
+	if (!client._server->server_name.empty())
+		response.addHeader("server", client._server->server_name);
+	response.addHeader("content-type", "text/html");
+	response.addHeader("content-length", 0);
+	response.addHeader("date", response.getDate());
+	std::string	header = response.makeHeader();
+	client.sendContent(header.c_str(), header.length());
+}
+
 void	Webserv::deleteMethod(Client &client, std::string path)
 {
 	std::string		filePath = getPath(client, path);
@@ -89,7 +192,6 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 
 void	Webserv::postMethod(Client &client, Request &request)
 {
-
 	std::string		filePath = getPath(client, request.getPath());
 
 	struct stat		fileStat;
@@ -222,188 +324,6 @@ void	Webserv::getMethod(Client &client, std::string path)
 	}
 }
 
-void	Webserv::redirectMethod(Client &client, Request &request)
-{
-	std::cout << BLUE "> Redirecting to " << client._server->redirect_url << RESET << std::endl;
-	Response	response(_statusCodeList[client._server->redirect_status]);
-	response.addHeader("location", client._server->redirect_url);
-	if (!client._server->server_name.empty())
-		response.addHeader("server", client._server->server_name);
-	response.addHeader("content-type", "text/html");
-	response.addHeader("content-length", 0);
-	response.addHeader("date", response.getDate());
-	std::string	header = response.makeHeader();
-	client.sendContent(header.c_str(), header.length());
-}
-
-void Webserv::setStatusCodes(void)
-{
-	_statusCodeList[OK] = "200 OK";
-	_statusCodeList[CREATED] = "201 Created";
-	_statusCodeList[ACCEPTED] = "202 Accepted";
-	_statusCodeList[NO_CONTENT] = "204 No Content";
-	_statusCodeList[MOVED_PERMANENTLY] = "301 Moved Permanently";
-	_statusCodeList[FOUND] = "302 Found";
-	_statusCodeList[SEE_OTHER] = "303 See Other";
-	_statusCodeList[NOT_MODIFIED] = "304 Not Modified";
-	_statusCodeList[TEMPORARY_REDIRECT] = "307 Temporary Redirect";
-	_statusCodeList[PERMANENT_REDIRECT] = "308 Permanent Redirect";
-	_statusCodeList[BAD_REQUEST] = "400 Bad Request";
-	_statusCodeList[UNAUTHORIZED] = "401 Unauthorized";
-	_statusCodeList[FORBIDDEN] = "403 Forbidden";
-	_statusCodeList[NOT_FOUND] = "404 Not Found";
-	_statusCodeList[METHOD_NOT_ALLOWED] = "405 Method Not Allowed";
-	_statusCodeList[NOT_ACCEPTABLE] = "406 Not Acceptable";
-	_statusCodeList[REQUEST_TIMEOUT] = "408 Request Timeout";
-	_statusCodeList[CONFLICT] = "409 Conflict";
-	_statusCodeList[GONE] = "410 Gone";
-	_statusCodeList[LENGTH_REQUIRED] = "411 Length Required";
-	_statusCodeList[PAYLOAD_TOO_LARGE] = "413 Payload Too Large";
-	_statusCodeList[URI_TOO_LONG] = "414 URI Too Long";
-	_statusCodeList[UNSUPPORTED_MEDIA_TYPE] = "415 Unsupported Media Type";
-	_statusCodeList[RANGE_NOT_SATISFIABLE] = "416 Range Not Satisfiable";
-	_statusCodeList[EXPECTATION_FAILED] = "417 Expectation Failed";
-	_statusCodeList[TOO_MANY_REQUESTS] = "429 Too Many Requests";
-	_statusCodeList[INTERNAL_SERVER_ERROR] = "500 Internal Server Error";
-	_statusCodeList[NOT_IMPLEMENTED] = "501 Not Implemented";
-	_statusCodeList[BAD_GATEWAY] = "502 Bad Gateway";
-	_statusCodeList[SERVICE_UNAVAILABLE] = "503 Service Unavailable";
-	_statusCodeList[GATEWAY_TIMEOUT] = "504 Gateway Timeout";
-	_statusCodeList[HTTP_VERSION_NOT_SUPPORTED] = "505 HTTP Version Not Supported";
-}
-
-std::string	Webserv::getPath(Client &client, std::string path)
-{
-	std::string		filePath = "";
-	std::string		res = "";
-
-	filePath.append(client.setRootPath(path));
-	Location	*location = client._server->getLocation(path);
-	if (location != NULL)
-		res = location->getPath();
-	filePath.append(path.substr(res.length()));
-	return (filePath);	
-}
-
-void	Webserv::sendAutoindex(Client &client, std::string filePath)
-{
-	std::string		path = filePath;
-	std::string		output = "<html><head><title>Index of " + path + "</title></head><body><h1>Index of " + path + "</h1><hr><pre>";
-	DIR				*dir = NULL;
-	std::cout << "Autoindexing " << filePath << std::endl;
-	if (filePath[filePath.length() - 1] != '/')
-		filePath += "/";
-	if ((dir = opendir(filePath.c_str())) == NULL)
-	{
-		client.displayErrorPage(_statusCodeList.find(NOT_FOUND));
-		return ;
-	}
-	struct dirent	*ent;
-	filePath.erase(filePath.begin(), filePath.begin() + client._server->root.length());
-	while ((ent = readdir(dir)) != NULL)
-	{
-		if (ent->d_name[0] != '.' || strcmp(ent->d_name, ".."))
-			output += "<a href='" + filePath + ent->d_name + "'>";
-		else if (filePath[filePath.length() - 1] != '/')
-			output += "<a href='" + filePath + ent->d_name + "'>";
-		else
-			output += "<a href='" + filePath + ent->d_name + "'>";
-		output += ((ent->d_type == DT_DIR) ? "" : "./");
-		output += (std::string)(ent->d_name) + (ent->d_type == DT_DIR ? "/" : "") + "</a><br>";
-	}
-	closedir(dir);
-	output += "</pre><hr></body></html>";
-
-	Response	response(_statusCodeList[OK]);
-	response.addHeader("Content-Type", "text/html");
-	response.addHeader("Content-Length", to_string(output.length()));
-	std::string	header = response.makeHeader();
-
-	int ret = send(client.getSocket(), header.c_str(), header.length(), MSG_NOSIGNAL);
-	if (ret < 0)
-	{
-		std::cout << RED << "Error while sending header :\n" << header << RESET << std::endl;
-		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
-	}
-	else if (ret == 0)
-		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
-	ret = send(client.getSocket(), output.c_str(), output.length(), MSG_NOSIGNAL);
-	if (ret < 0)
-		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
-	else if (ret == 0)
-		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
-}
-
-int	Webserv::writeResponse(Client &client, std::string body, std::string path)
-{
-	std::size_t	begin = path.find_last_of("/");
-	std::string	dirPath = path.substr(0, begin);
-	std::string	fileName = path.substr(begin + 1);
-
-	if (dirPath != "")
-	{
-		struct stat		fileStat;
-		lstat(dirPath.c_str(), &fileStat);
-		if (!S_ISDIR(fileStat.st_mode))
-			return (client.displayErrorPage(_statusCodeList.find(400)), FAILED);
-	}
-	std::string	tmpPath = path + ".tmp";
-	std::string	command = "mkdir -p " + dirPath;
-	int			fd = open(tmpPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	system(command.c_str());
-	if (fd < 0)
-		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
-
-
-	// add fd to epoll
-	struct epoll_event	event;
-	initEvent(event, EPOLLOUT | EPOLLET, fd);
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &event) < 0)
-		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
-
-	// write body to file
-	int		ret = write(fd, body.c_str(), body.length());
-	std::cout << GREEN "> Response sent: " RESET << convertToOctets(ret) << "." << std::endl;
-	if (ret < 0)
-	{
-		// close fds
-		close(fd);
-		epoll_ctl(client.getSocket(), EPOLL_CTL_DEL, fd, &event);
-		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
-	}
-	return (close(fd), SUCCESS);
-}
-
-bool	Webserv::clientNotConnected(int socket)
-{
-	for (ServerVector::iterator it = _serversVec.begin(); it != _serversVec.end(); it++)
-	{
-		if (it->_socket == socket)
-			return (false);
-	}
-	return (true);
-}
-
-const char *Webserv::getMimeType(const char *path)
-{
-	const char *extentionDot = strrchr(path, '.');
-	if (extentionDot)
-	{
-		if (strcmp(extentionDot, ".css") == 0)	return "text/css";
-		if (strcmp(extentionDot, ".csv") == 0)	return "text/csv";
-		if (strcmp(extentionDot, ".html") == 0) return "text/html";
-		if (strcmp(extentionDot, ".js") == 0)	return "application/javascript";
-		if (strcmp(extentionDot, ".json") == 0) return "application/json";
-		if (strcmp(extentionDot, ".pdf") == 0)	return "application/pdf";
-		if (strcmp(extentionDot, ".gif") == 0)	return "image/gif";
-		if (strcmp(extentionDot, ".jpeg") == 0) return "image/jpeg";
-		if (strcmp(extentionDot, ".jpg") == 0)	return "image/jpeg";
-		if (strcmp(extentionDot, ".png") == 0)	return "image/png";
-		if (strcmp(extentionDot, ".svg") == 0)	return "image/svg+xml";
-	}
-	return "text/plain";
-}
-
 std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request, Client &client) const
 {
 	std::pair<bool, std::vector<std::string> > result(false, std::vector<std::string>());
@@ -503,6 +423,72 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 	return result;
 }
 
+void Webserv::postCgiMethod(Client &client, Request *req)
+{
+	/*
+		MEMO: Mariko
+		pour l'instant cette fonction est copie-colle de getCgiMethod
+		je n'arrive pas a regler des problemes d'execution CGI, je n'ai	pas avance,
+		sorry.
+		1 parse
+		2 check content-type
+		3 
+		4
+		5
+		6
+
+	*/
+	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
+	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
+	{
+		response.setCgiBody(req->getCgiBody(index));
+	}
+	std::string		line;
+	std::ifstream	file;
+	std::size_t		balise;
+	line.clear();
+	std::string filePath = client._server->root + req->getPath();
+	file.open(filePath.c_str(), std::ifstream::in);
+	int end;
+	int i = 0;
+	if (file.is_open())
+	{
+		while (!file.eof())
+		{
+			std::getline(file, line);
+			balise = line.find("<?php");
+			if (balise == std::string::npos)
+				response._message.append(line);
+			else
+			{
+				if (balise != 0)
+					response._message.append(line, 0, balise - 1);
+				response._message.append(response.getCgiBody(i));
+				i++;
+				while ((end = line.find("?>")) == std::string::npos)
+					std::getline(file, line);
+				if (end + 2 < line.length())
+					response._message.append(line, end + 2, line.length());
+			}
+		}
+		file.close();
+	}
+	else
+		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
+	// remove all 
+	response.addHeader("content-length", to_string(response._message.length()));
+	// MIME type of CGI script =  "text/html" 
+	response.addHeader("content-type", "text/html");
+	std::string header = response.makeHeader(false);
+	// send header
+	if (!client.sendContent(header.c_str(), header.length()))
+		return ;
+	// send response
+	if (!client.sendContent(response._message.c_str(), response._message.length()))
+		return ;
+	// std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
+	}
+
 void Webserv::getCgiMethod(Client &client, Request *req)
 {
 	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
@@ -550,7 +536,7 @@ void Webserv::getCgiMethod(Client &client, Request *req)
 		return ;
 	if (!client.sendContent(response._message.c_str(), response._message.length()))
 		return ;
-	std::cout << GREEN << "CGI response sent (" << convertToOctets(header.length() + response._message.length()) << ")" RESET << std::endl;
+	// std::cout << GREEN << "CGI response sent (" << convertToOctets(header.length() + response._message.length()) << ")" RESET << std::endl;
 }
 
 void Webserv::eraseTmpFile(StrVector vec)
@@ -565,70 +551,81 @@ void Webserv::eraseTmpFile(StrVector vec)
 	}
 }
 
-void Webserv::postCgiMethod(Client &client, Request *req)
+void Webserv::setStatusCodes(void)
 {
-	/*
-		MEMO: Mariko
-		pour l'instant cette fonction est copie-colle de getCgiMethod
-		je n'arrive pas a regler des problemes d'execution CGI, je n'ai	pas avance,
-		sorry.
-		1 parse
-		2 check content-type
-		3 
-		4
-		5
-		6
+	_statusCodeList[OK] = "200 OK";
+	_statusCodeList[CREATED] = "201 Created";
+	_statusCodeList[ACCEPTED] = "202 Accepted";
+	_statusCodeList[NO_CONTENT] = "204 No Content";
+	_statusCodeList[MOVED_PERMANENTLY] = "301 Moved Permanently";
+	_statusCodeList[FOUND] = "302 Found";
+	_statusCodeList[SEE_OTHER] = "303 See Other";
+	_statusCodeList[NOT_MODIFIED] = "304 Not Modified";
+	_statusCodeList[TEMPORARY_REDIRECT] = "307 Temporary Redirect";
+	_statusCodeList[PERMANENT_REDIRECT] = "308 Permanent Redirect";
+	_statusCodeList[BAD_REQUEST] = "400 Bad Request";
+	_statusCodeList[UNAUTHORIZED] = "401 Unauthorized";
+	_statusCodeList[FORBIDDEN] = "403 Forbidden";
+	_statusCodeList[NOT_FOUND] = "404 Not Found";
+	_statusCodeList[METHOD_NOT_ALLOWED] = "405 Method Not Allowed";
+	_statusCodeList[NOT_ACCEPTABLE] = "406 Not Acceptable";
+	_statusCodeList[REQUEST_TIMEOUT] = "408 Request Timeout";
+	_statusCodeList[CONFLICT] = "409 Conflict";
+	_statusCodeList[GONE] = "410 Gone";
+	_statusCodeList[LENGTH_REQUIRED] = "411 Length Required";
+	_statusCodeList[PAYLOAD_TOO_LARGE] = "413 Payload Too Large";
+	_statusCodeList[URI_TOO_LONG] = "414 URI Too Long";
+	_statusCodeList[UNSUPPORTED_MEDIA_TYPE] = "415 Unsupported Media Type";
+	_statusCodeList[RANGE_NOT_SATISFIABLE] = "416 Range Not Satisfiable";
+	_statusCodeList[EXPECTATION_FAILED] = "417 Expectation Failed";
+	_statusCodeList[TOO_MANY_REQUESTS] = "429 Too Many Requests";
+	_statusCodeList[INTERNAL_SERVER_ERROR] = "500 Internal Server Error";
+	_statusCodeList[NOT_IMPLEMENTED] = "501 Not Implemented";
+	_statusCodeList[BAD_GATEWAY] = "502 Bad Gateway";
+	_statusCodeList[SERVICE_UNAVAILABLE] = "503 Service Unavailable";
+	_statusCodeList[GATEWAY_TIMEOUT] = "504 Gateway Timeout";
+	_statusCodeList[HTTP_VERSION_NOT_SUPPORTED] = "505 HTTP Version Not Supported";
+}
 
-	*/
-	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
-	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
+std::string	Webserv::getPath(Client &client, std::string path)
+{
+	std::string		filePath = "";
+	std::string		res = "";
+
+	filePath.append(client.setRootPath(path));
+	Location	*location = client._server->getLocation(path);
+	if (location != NULL)
+		res = location->getPath();
+	filePath.append(path.substr(res.length()));
+	return (filePath);	
+}
+
+bool	Webserv::clientNotConnected(int socket)
+{
+	for (ServerVector::iterator it = _serversVec.begin(); it != _serversVec.end(); it++)
 	{
-		response.setCgiBody(req->getCgiBody(index));
+		if (it->_socket == socket)
+			return (false);
 	}
-	std::string		line;
-	std::ifstream	file;
-	std::size_t		balise;
-	line.clear();
-	std::string filePath = client._server->root + req->getPath();
-	file.open(filePath.c_str(), std::ifstream::in);
-	int end;
-	int i = 0;
-	if (file.is_open())
+	return (true);
+}
+
+const char *Webserv::getMimeType(const char *path)
+{
+	const char *extentionDot = strrchr(path, '.');
+	if (extentionDot)
 	{
-		while (!file.eof())
-		{
-			std::getline(file, line);
-			balise = line.find("<?php");
-			if (balise == std::string::npos)
-				response._message.append(line);
-			else
-			{
-				if (balise != 0)
-					response._message.append(line, 0, balise - 1);
-				response._message.append(response.getCgiBody(i));
-				i++;
-				while ((end = line.find("?>")) == std::string::npos)
-					std::getline(file, line);
-				if (end + 2< line.length())
-					response._message.append(line, end + 2, line.length());
-			}
-		}
-		file.close();
+		if (strcmp(extentionDot, ".css") == 0)	return "text/css";
+		if (strcmp(extentionDot, ".csv") == 0)	return "text/csv";
+		if (strcmp(extentionDot, ".html") == 0) return "text/html";
+		if (strcmp(extentionDot, ".js") == 0)	return "application/javascript";
+		if (strcmp(extentionDot, ".json") == 0) return "application/json";
+		if (strcmp(extentionDot, ".pdf") == 0)	return "application/pdf";
+		if (strcmp(extentionDot, ".gif") == 0)	return "image/gif";
+		if (strcmp(extentionDot, ".jpeg") == 0) return "image/jpeg";
+		if (strcmp(extentionDot, ".jpg") == 0)	return "image/jpeg";
+		if (strcmp(extentionDot, ".png") == 0)	return "image/png";
+		if (strcmp(extentionDot, ".svg") == 0)	return "image/svg+xml";
 	}
-	else
-		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
-	// remove all 
-	response.addHeader("Content-Length", to_string(response._message.length()));
-	// MIME type of CGI script =  "text/html" 
-	response.addHeader("Content-Type", "text/html");
-	std::string header = response.makeHeader(false);
-	// send header
-	int ret = send(client.getSocket(), header.c_str(), header.length(), 0);
-	if (ret <= 0)
-		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
-	// send CGI body
-	ret = send(client.getSocket(), response._message.c_str(), response._message.length(), MSG_NOSIGNAL);
-	if (ret <= 0)
-		return (client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR)));
-	std::cout << GREEN << "CGI response sent (" << req->_statusCode << ")" RESET << std::endl;
-	}
+	return "text/plain";
+}
