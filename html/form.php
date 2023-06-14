@@ -1,8 +1,6 @@
 <?php
 //phpinfo();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // ディレクトリを変更
-    $target_dir = "./tmp/";
     // basename()関数を使用してファイル名だけを取得し、それに一意のIDを付加します
     $target_file = $target_dir . uniqid() . basename($_FILES["fileToUpload"]["name"]);
 

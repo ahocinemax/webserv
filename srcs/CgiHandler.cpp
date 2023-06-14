@@ -307,6 +307,19 @@ void CgiHandler::WriteToStdin()
 }
 
 
+std::string CgiHandler::get_cgipath() const
+{
+	std::string translation(std::string(PWD));
+	std::string relativePath = _scriptPath;
+
+	if (relativePath[0] == '.')
+		relativePath.erase(0, 1);
+	else if (relativePath[0] != '/')
+		relativePath.insert(0, "/");
+	translation += relativePath;
+	return (translation);
+}
+
 void CgiHandler::initCgiEnvironment()
 {
 	_env["AUTH_TYPE"] = "";
@@ -320,10 +333,11 @@ void CgiHandler::initCgiEnvironment()
 	_env["SERVER_PORT"] = to_string(_request->getPort());
 	_env["REMOTE_IDENT"] = _request->getHeader("autorization");
 	_env["REMOTE_ADDR"] = _request->getHost();
-	_env["SCRIPT_FILENAME"] = _request->getRoot(); // traduire filename par path -> coder au 2/06
+	_env["SCRIPT_FILENAME"] = get_cgipath(); // traduire filename par path -> coder au 2/06
 	_env["SERVER_NAME"] = "webserv";
 	_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	_env["CONTENT_LENGTH"] = to_string(_request->getSize());
+	//std::cout << "SCRIPT_FILENAME" <<  _env["SCRIPT_FILENAME"] << std::endl;
 }
 
 void CgiHandler::setEnv(const std::string &key, const std::string &val)

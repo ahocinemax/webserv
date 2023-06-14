@@ -77,6 +77,7 @@ class Webserv
 		bool				isMultipartFormData(Request &request);
 		bool				getBoundary(std::string contentType, std::string &boundary);
 		size_t				getfield(std::string content, const std::string &field, std::string *name);
+		void				upload_path(std::string &path);
 		void				handleMultipart(Request &request, Client &client);
 		void				setStatusCodes(void);
 

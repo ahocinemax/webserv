@@ -33,6 +33,7 @@ class CgiHandler
         void                                        FreeEnvCstrArray(char** env) const;
         bool                                        getCgiOutput(std::string& output);
         void                                        initCgiEnvironment();
+        std::string                                 get_cgipath() const;
 
         class CgiError : public virtual std::exception 
         {

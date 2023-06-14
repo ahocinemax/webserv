@@ -172,6 +172,21 @@ size_t Webserv::getfield(std::string content, const std::string &field, std::str
 	return (pos);
 }
 
+void Webserv::upload_path(std::string &path)
+{
+    std::string pwd(PWD);
+    std::string uploads = "/html/uploads";
+	std::string	uploadpath = uploads;
+	
+	if (uploadpath[uploadpath.length() - 1] != '/')
+		uploadpath += '/';
+	uploadpath += path;
+
+    std::string command = "mkdir -p " + pwd + uploadpath;
+    std::system(command.c_str());
+	path = uploadpath;
+}
+
 void Webserv::handleMultipart(Request &request, Client &client)
 {
 	std::string	boundary;
@@ -204,10 +219,10 @@ void Webserv::handleMultipart(Request &request, Client &client)
 		name_pos = getfield(contentdispositon, "name=\"", &name);
 		pos_file += getfield(contentdispositon, "filename=\"", &filename);
 	}
-	//if (finename != "")
-	//{
-//
-	//}
+	if (filename != "")
+	{
+		upload_path(filename);
+	}
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }
@@ -226,7 +241,7 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 		return (false);
 	else
 	{
-		std::string output;
+		std::string output = request.getBody();
 		if (cgi.getCgiOutput(output))
 			request.appendCgiBody(output);
 		else

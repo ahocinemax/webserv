@@ -62,6 +62,7 @@ WHITE		= \033[37m
 #-----------------------------------------------#
 
 RM			= rm -rf
+MACRO		= -D PWD=\"$(shell pwd)\"
 
 #-----------------------------------------------#
 #                     RULES                     #
@@ -73,13 +74,13 @@ all:		$(NAME)
 
 $(NAME):	$(OBJS)
 			@echo "${YELLOW}${UNDERLINE}\nLinking...${RESET}${YELLOW}"
-			$(CC) $(CFLAGS) $(INCLUDES) $(OBJS) -o $(NAME)
+			$(CC) $(CFLAGS) $(INCLUDES) $(MACRO) $(OBJS) -o $(NAME)
 			@echo -n "${RESET}"
 
 $(OBJS_DIR)%.o:	$(SRCS_DIR)%.cpp
 				@mkdir -p $(OBJS_DIR)
 				@echo -n "${CYAN}${UNDERLINE}Compiling $<:${RESET}    ${CYAN}"
-				$(CC) $(CFLAGS) $(INCLUDES) -c $< -o $@
+				$(CC) $(CFLAGS) $(INCLUDES) $(MACRO) -c $< -o $@
 				@echo -n "${RESET}"
 
 clean:
