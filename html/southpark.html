@@ -8,6 +8,7 @@
   <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>
 </head>
 <body>
+<!-- -------------------------------------------   HEADER   ------------------------------------------- -->
   <header>
 	  <div class="logo">
 		  <img href="/" src="img/logo.png" alt="South Park Logo">
@@ -20,7 +21,7 @@
 		</nav>
 	</div>
   </header>
-  <!-- carousel section -->
+<!-- -------------------------------------------  CAROUSEL  ------------------------------------------- -->
   <section class="carousel" style="background-color: #e6e6e6;">
 	<br>
 		<div id="carousel" class="slide" data-ride="carousel">
@@ -59,31 +60,38 @@
 		  </div>
 		<br>
 	</section>
-	<!-- end carousel section -->
+<!-- ------------------------------------------- CHARACTERS ----------------------------------------- -->
   <section>
 		<h1 style="position:relative; left: 20%;">South Park's characters</h1> <br>
-		<div class="character">
-		<div class="character-card">
-			<img src="img/characters/awesomo.webp" alt="Character 1">
-			<p>Awsome-O</p>
+		<div class="characters">
+      <div class="character-card" data-video="vid/awesomo.mp4">
+        <img src="img/characters/awesomo.webp" alt="Character 1">
+        <p>Awsome-O</p>
+      </div>
+      <div class="character-card" data-video="vid/trump.mp4">
+        <img src="img/characters/trump.webp" alt="Character 2">
+        <p>Trump  </p>
+      </div>
+      <div class="character-card" data-video="vid/lorde.mp4">
+        <img src="img/characters/lorde.webp" alt="Character 3">
+        <p>Lorde</p>
+      </div>
+      <div class="character-card" data-video="vid/towelie.mp4" id="towelie">
+        <img src="img/characters/towelie.webp" alt="Character 4">
+        <p>Servietsky</p>
+      </div>
+	  </div>
+    <div id="overlay" style="display: none;">
+      <div id="videoContainer">
+          <video id="videoPlayer" width="320" height="240" controls>
+              <!-- La source de la vidéo sera remplacée par JavaScript -->
+          </video>
+      </div>
+  </div>
 		</div>
-		<div class="character-card">
-			<img src="img/characters/trump.webp" alt="Character 2">
-			<p>Trump  </p>
-		</div>
-		<div class="character-card">
-			<img src="img/characters/lorde.webp" alt="Character 3">
-			<p>Lorde</p>
-		</div>
-		<div class="character-card" id="towelie">
-			<img src="img/characters/towelie.webp" alt="Character 4">
-			<p>Servietsky</p>
-		</div>
-	</div>
-	<!-- Ajoutez d'autres personnages ici -->
   </section>
 	<script type="text/javascript" src="js/carousel.js"></script>
-  <!-- Ajoutez d'autres sections au besoin -->
-
+	<script type="text/javascript" src="js/southpark.js"></script>
+<!-- ------------------------------------------------------------------------------------------------ -->
 </body>
 </html>
