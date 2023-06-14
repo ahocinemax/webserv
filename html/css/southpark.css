@@ -41,7 +41,7 @@ nav ul li
 {
 	float				:	right;
 	position			:	relative;
-	height				:	4rem;
+	height				:	2.6rem;
 	padding-left		:	12px;
 }
 
@@ -98,7 +98,8 @@ nav ul li
 
 #videoContainer
 {
-	z-index: 2;
+	margin				:	auto;
+	z-index				:	2;
 }
 
   /* Carousel */

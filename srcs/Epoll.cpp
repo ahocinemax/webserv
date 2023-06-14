@@ -274,8 +274,8 @@ int	Webserv::routine(void)
 		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
 		StringMap::iterator it = request->_header.find("connection");
-		if (it == request->_header.end() || it->second != "keep-alive")
-			eraseClient(index);
+		// if (it == request->_header.end() || it->second != "keep-alive")
+		// 	eraseClient(index);
 	}
 	return (SUCCESS);
 }
