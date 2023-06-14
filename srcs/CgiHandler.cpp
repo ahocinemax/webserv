@@ -109,6 +109,7 @@ void CgiHandler::Execute()
 	if (errno != 0)
 	{
 		std::cerr << "execve failed with error: " << strerror(errno) << std::endl;
+		return ;
 	}
 	if (close(fd_in[0]))
 	{
@@ -255,7 +256,7 @@ bool CgiHandler::WaitforChild(int pid)
 		{
 			break;
 		}
-		usleep(50);
+		usleep(500);
 		if (std::difftime(time(0), start) >= TIMEOUT_LIMIT)
 		{
 			kill(pid, SIGINT);
@@ -268,44 +269,20 @@ bool CgiHandler::WaitforChild(int pid)
 		return false;
 }
 
-//void CgiHandler::WriteToStdin()
-//{
-//	SetupParentIO();
-//	if (write(fd_in[1], _request_body.c_str(), _request_body.size()) < 0)
-//	{
-//		std::cerr << "cgihandler: WriteToStdin (write) error" << std::endl;
-//		return;
-//	}
-//	if (close(fd_in[1]) < 0)
-//	{
-//		std::cerr << "cgihandler: WriteToStdin (close) error" << std::endl;
-//		return;
-//	}
-//}
-
 void CgiHandler::WriteToStdin()
 {
 	SetupParentIO();
-	ssize_t written = write(fd_in[1], _request_body.c_str(), _request_body.size());
-	if (written < 0)
+	if (write(fd_in[1], _request_body.c_str(), _request_body.size()) < 0)
 	{
 		std::cerr << "cgihandler: WriteToStdin (write) error" << std::endl;
 		return;
 	}
-	else if ((size_t)written != _request_body.size())
-	{
-		std::cerr << "cgihandler: WriteToStdin (write) size mismatch" << std::endl;
-		return;
-	}
-	std::cout << "fd_in[1] :" << fd_in[1] << " written size: " << written << std::endl;
 	if (close(fd_in[1]) < 0)
 	{
 		std::cerr << "cgihandler: WriteToStdin (close) error" << std::endl;
 		return;
 	}
-	std::cout << "fd_in[1] :" << fd_in[1] << std::endl;
 }
-
 
 std::string CgiHandler::get_cgipath() const
 {
@@ -337,7 +314,6 @@ void CgiHandler::initCgiEnvironment()
 	_env["SERVER_NAME"] = "webserv";
 	_env["SERVER_SOFTWARE"] = "webserv/1.0";
 	_env["CONTENT_LENGTH"] = to_string(_request->getSize());
-	//std::cout << "SCRIPT_FILENAME" <<  _env["SCRIPT_FILENAME"] << std::endl;
 }
 
 void CgiHandler::setEnv(const std::string &key, const std::string &val)

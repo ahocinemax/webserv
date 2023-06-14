@@ -172,19 +172,26 @@ size_t Webserv::getfield(std::string content, const std::string &field, std::str
 	return (pos);
 }
 
-void Webserv::upload_path(std::string &path)
+void Webserv::upload_path(Client &client, std::string &path, Request &request, size_t pos)
 {
     std::string pwd(PWD);
-    std::string uploads = "/html/uploads";
-	std::string	uploadpath = uploads;
-	
+    std::string uploadpath = client._server->root;
+
+	if (uploadpath[uploadpath.length() - 1] != '/')
+		uploadpath += "/";
+	uploadpath += "uploads";
+	std::size_t i;
+
+	while ((i = path.find(" ")) != std::string::npos)
+		path.replace(i, 1, "_");
 	if (uploadpath[uploadpath.length() - 1] != '/')
 		uploadpath += '/';
-	uploadpath += path;
 
     std::string command = "mkdir -p " + pwd + uploadpath;
     std::system(command.c_str());
+	uploadpath += path;
 	path = uploadpath;
+	request.insertUploadpath(pos, uploadpath);
 }
 
 void Webserv::handleMultipart(Request &request, Client &client)
@@ -192,7 +199,7 @@ void Webserv::handleMultipart(Request &request, Client &client)
 	std::string	boundary;
 	size_t		pos;
 	size_t		name_pos;
-	size_t		pos_file;
+	size_t		pos_file = 0;
 	std::string	name;
 	std::string filename;
 
@@ -221,7 +228,7 @@ void Webserv::handleMultipart(Request &request, Client &client)
 	}
 	if (filename != "")
 	{
-		upload_path(filename);
+		upload_path(client, filename, request, pos_file);
 	}
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
@@ -229,21 +236,25 @@ void Webserv::handleMultipart(Request &request, Client &client)
 
 bool Webserv::HandleCgi(Request &request, Client& client)
 {
-	CgiHandler cgi(request);
-	std::string body;
-	cgi.setEnv("SERVER_NAME", client._server->server_name);
 	if (request.getMethod() == "POST")
 	{
+		std::cout << "request body size (before parse)= " << request.getBody().size() << std::endl;
 		if (isMultipartFormData(request))
 			handleMultipart(request, client);
 	}
+	CgiHandler cgi(request);
+	std::string body;
+	cgi.setEnv("SERVER_NAME", client._server->server_name);
 	if (request._statusCode == NOT_FOUND || request._statusCode == BAD_REQUEST)
 		return (false);
 	else
 	{
 		std::string output = request.getBody();
 		if (cgi.getCgiOutput(output))
+		{
 			request.appendCgiBody(output);
+			std::cout << "cgi response: "<< request.getCgiBody(0) << std::endl;
+		}
 		else
 		{
 			std::cout << RED "ERROR CGI EXECUTION" << std::endl;

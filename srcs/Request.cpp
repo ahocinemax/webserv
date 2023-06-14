@@ -386,6 +386,11 @@ void	Request::setCgiBody(std::string& body)
 	_cgibody.push_back(body); 
 }
 
+void	Request::insertUploadpath(size_t pos, const std::string& uploadpath)
+{
+	_body.insert(pos, uploadpath);
+}
+
 void	Request::PrintHeader()
 {
 	StringMap::iterator ite;

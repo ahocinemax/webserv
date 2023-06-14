@@ -76,6 +76,7 @@ class Request
 		void			setCgiBody(std::string& body);
 		std::string		getCgiBody(int index);
 		StrVector		getCgiBody() const;
+		void			insertUploadpath(size_t pos, const std::string& uploadpath);
 
 		/*test*/
 		void			PrintHeader();

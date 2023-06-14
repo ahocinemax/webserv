@@ -1,10 +1,9 @@
 #include "../includes/Utils_Cgi.hpp"
 
-void	SigPipeIgnore(int sig) {
-	(void) sig;
-}
+void	SigPipeIgnore(int sig) { (void) sig; }
 
-void	SigpipeSet(int state) {
+void	SigpipeSet(int state)
+{
 	void	(*oldHandler_SigPipe)(int) = 0;
 
 	if (state == 0) {
