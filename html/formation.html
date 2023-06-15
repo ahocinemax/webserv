@@ -54,8 +54,8 @@
 						<li>Lier le socket à une adresse réseau avec : <strong>bind(socket, addrinfo *)</strong></li>
 						<li>Création d'une instance d'epoll, gestionnaire de connexion : <strong>epoll_create(MAX_EVENTS);</strong></li>
 						<li>Ajout du socket au gestionnaire : <strong>epoll_ctl(epoll_fd, EPOLL_CTL_ADD, socket, &event);</strong></li>
-						<li>epoll() permet de surveiller plusieurs descripteurs de fichiers (<b>sockets</b>) en parallèle</li>
-						<li>epoll_wait() permet de récupérer les sockets qui ont des données à lire</li>
+						<li><strong>epoll()</strong> permet de surveiller plusieurs descripteurs de fichiers (<b>sockets</b>) en parallèle</li>
+						<li><strong>epoll_wait()</strong> permet de récupérer les sockets qui ont des données à lire</li>
 					</ul>
 				</div>
 				<div class="formation-two formation-content">
