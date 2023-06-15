@@ -104,18 +104,6 @@ img#carousel-control
 	width		:	39px;
 }
 
-img#mosaic
-{
-	display			:	flex;
-	width			:	100%;
-	border-radius	:	5px;
-}
-
-.img-project:hover
-{
-	border-radius	:	0px;
-}
-
 /* header section */
 
 h1
@@ -304,12 +292,6 @@ p
 	height			:	100%;
 	width			:	100%;
 	padding-left	:	10%;
-}
-
-section.project-mosaic
-{
-	height				:	800px;
-	width				:	100%;
 }
 
 .sub-container

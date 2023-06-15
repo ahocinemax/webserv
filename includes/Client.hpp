@@ -37,17 +37,17 @@ class Client
 		~Client(void);
 		Client(void) {}
 
-		void		setTimer(struct timeval &timer);
-		int			setSocket(int socket);
-		void		setRecvSize(int size);
 		std::string	setRootPath(std::string path);
+		void		setRecvSize(int size);
+		int			setSocket(int socket);
+		void		setTimer(void);
 
-		const char	*getClientAddr(void);
-		const char	*getClientPort(void);
+		Request		*getRequest(void) const;
 		int			getRecvSize(void) const;
 		int			getSocket(void) const;
+		const char	*getClientAddr(void);
+		const char	*getClientPort(void);
 		timeval		getTimer(void) const;
-		Request		*getRequest() const;
 
 		int			charCounter(std::string str, char c);
 		void		clearRequest(void);

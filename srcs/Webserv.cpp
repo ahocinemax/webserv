@@ -57,18 +57,34 @@ void Webserv::createServers(void)
 void	Webserv::closeServers(void)
 {
 	for (ServerMap::iterator it = _serversMap.begin(); it != _serversMap.end(); it++)
-	{
-		// std::cout << "> Closing server: " << it->first << std::endl;
 		close(it->second->_socket);
-	}
-	// for (int i = 0 ; i < _clients.size() ; i++)
-	// {
-	// 	eraseClient(i);
-	// 	_clients[i]->~Client();
-	// }
 	for (std::vector<Client*>::iterator it = _clients.begin() ; it != _clients.end() ; it++)
 		delete *it;
 	_clients.clear();
+}
+
+void	Webserv::checkTimeout(void)
+{
+	std::cout << BLUE "> Checking timeout for " RED << _clients.size() << BLUE " clients." RESET << std::endl;
+	std::vector<int> toDelete;
+	for (int it = 0 ; it < _clients.size() ; it++)
+	{
+		timeval time_LastRequest = _clients[it]->getTimer();
+		time_t	time_ToTimeout = time_LastRequest.tv_sec + _clients[it]->_server->recv_timeout.tv_sec;
+		time_t	time_Now = time(NULL);
+
+		if (time_Now > time_ToTimeout)
+		{
+			std::cout << "> Client timeout: " << _clients[it]->getSocket() << std::endl;
+			_clients[it]->displayErrorPage(_statusCodeList.find(REQUEST_TIMEOUT));
+			toDelete.push_back(it);
+		}
+	}
+	if (toDelete.size() > 0)
+		for (int it = 0 ; it < toDelete.size() ; it++)
+			eraseClient(0);
+	else
+		std::cout << GREEN "> No client timeout." RESET << std::endl;
 }
 
 int	Webserv::writeResponse(Client &client, std::string body, std::string path)
@@ -167,6 +183,8 @@ void	Webserv::redirectMethod(Client &client, Request &request)
 	response.addHeader("location", client._server->redirect_url);
 	if (!client._server->server_name.empty())
 		response.addHeader("server", client._server->server_name);
+	else
+		response.addHeader("server", "default_server");
 	response.addHeader("content-type", "text/html");
 	response.addHeader("content-length", 0);
 	response.addHeader("date", response.getDate());
