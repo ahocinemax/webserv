@@ -25,7 +25,10 @@ Server::Server(void) :	client_body_limit(1024),
 	send_timeout = timer;
 }
 
-Server::~Server(void) {}
+Server::~Server(void)
+{
+}
+
 void	Server::createSocket(void)
 {
 	struct addrinfo hints, *info;

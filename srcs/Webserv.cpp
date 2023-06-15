@@ -58,9 +58,15 @@ void	Webserv::closeServers(void)
 {
 	for (ServerMap::iterator it = _serversMap.begin(); it != _serversMap.end(); it++)
 	{
-		std::cout << "> Closing server: " << it->first << std::endl;
+		// std::cout << "> Closing server: " << it->first << std::endl;
 		close(it->second->_socket);
 	}
+	for (int i = 0 ; i < _clients.size() ; i++)
+	{
+		eraseClient(i);
+		_clients[i]->~Client();
+	}
+	_clients.clear();
 }
 
 int	Webserv::writeResponse(Client &client, std::string body, std::string path)

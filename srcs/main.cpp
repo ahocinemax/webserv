@@ -14,6 +14,18 @@
 #include "Server.hpp"
 #include "Parser.hpp"
 #include "Webserv.hpp"
+#include <csignal>
+
+int g_exit = -42;
+
+void signalHandler(int signum)
+{
+    if (signum == SIGINT)
+	{
+        std::cout << "\nSignal SIGINT reçu. Arrêt du serveur." << std::endl;
+        g_exit = signum;
+    }
+}
 
 int main(int argc, char **argv)
 {
@@ -23,7 +35,7 @@ int main(int argc, char **argv)
 		return (FAILED);
 	}
 	std::string config_file;
-
+	std::signal(SIGINT, signalHandler);
 	config_file = argv[1];
 	if (config_file.empty())
 	{
@@ -42,7 +54,7 @@ int main(int argc, char **argv)
 		}
 		Webserv webserver(*serv);
 		webserver.createServers();
-		while (true)
+		while (g_exit == -42)
 			webserver.routine();
 		webserver.closeServers();
 		delete serv;
