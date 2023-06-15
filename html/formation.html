@@ -99,15 +99,15 @@
 
   <!-- footer section -->
   <section class="footer_section">
-		<?php
-			$SERVER_NAME = $_SERVER['SERVER_NAME'];
-			$MESSAGE = "You are actually on the server : <strong>";
-			if ($SERVER_NAME)
-				$MESSAGE .= "$SERVER_NAME</strong></p>";
-			else
-				$MESSAGE .= "42.fr</strong></p>";
-			echo "$MESSAGE";
-		?>
+	<?php
+		$SERVER_NAME = $_SERVER['SERVER_NAME'];
+		$MESSAGE = "You are actually on the server : <strong>";
+		if ($SERVER_NAME)
+		$MESSAGE .= "<span style='color: blue;'>$SERVER_NAME</span></strong></p>";
+		else
+			$MESSAGE .= "42.fr</strong></p>";
+		echo "$MESSAGE";
+	?>
     <p>&copy; 2023 - All Rights Reserved By mtsuji & ahocine.</p>
   </section>
   <!-- footer section -->

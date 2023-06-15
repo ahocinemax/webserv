@@ -13,17 +13,16 @@
 #include "Client.hpp"
 
 Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(0), _server(server)
-{
-	gettimeofday(&_timer, NULL);
-}
+{}
 
-Client::~Client(void)
-{
-	if (_request)
-		delete _request;
-}
+Client::~Client(void) {}
 
-void	Client::setTimer(struct timeval &timer) { _timer = timer; }
+void	Client::setTimer(void)
+{
+    struct timeval currentTime;
+    gettimeofday(&currentTime, NULL);
+    _timer = currentTime;
+}
 
 int	Client::setSocket(int socket)
 {

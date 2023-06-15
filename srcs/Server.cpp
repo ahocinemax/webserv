@@ -19,13 +19,16 @@ Server::Server(void) :	client_body_limit(1024),
 						_port("")
 {
 	struct timeval timer;
-	timer.tv_sec = 60;
+	timer.tv_sec = 15;
 	timer.tv_usec = 0;
 	recv_timeout = timer;
 	send_timeout = timer;
 }
 
-Server::~Server(void) {}
+Server::~Server(void)
+{
+}
+
 void	Server::createSocket(void)
 {
 	struct addrinfo hints, *info;
