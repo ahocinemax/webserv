@@ -457,6 +457,13 @@ img.web-page
 	overflow			:	auto;
 }
 
+.formation-content.active h1
+{
+	font-size			:	2em;
+	/* bold */
+	
+}
+
 .formation-content.active .sous-categorie
 {
 	list-style-position	:	outside;
