@@ -143,7 +143,7 @@ void Webserv::handleMultipart(Request &request, Client &client)
 	{
 		pos_file += body.find(boundary + CRLF) + boundary.length() + 2;
 		body.erase(0, body.find(boundary + CRLF) + boundary.length() + 2);
-		pos = body.find("content-disposition:");
+		pos = body.find("Content-Disposition:");
 		if (pos == std::string::npos)
 		{
 			request._statusCode = BAD_REQUEST;
@@ -169,9 +169,10 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 		if (isMultipartFormData(request))
 			handleMultipart(request, client);
 	}
-	CgiHandler cgi(request);
 	std::string body;
+	CgiHandler cgi(request);
 	cgi.setEnv("SERVER_NAME", client._server->server_name);
+	cgi.setEnv("DOCUMENT_ROOT", "./html");
 	if (request._statusCode == NOT_FOUND || request._statusCode == BAD_REQUEST)
 		return (false);
 	else
