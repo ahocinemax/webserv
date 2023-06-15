@@ -19,8 +19,6 @@ Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(0), _server(s
 
 Client::~Client(void)
 {
-	delete _request;
-	std::cout << "request deleted" << std::endl;
 }
 
 void	Client::setTimer(struct timeval &timer) { _timer = timer; }

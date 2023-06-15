@@ -61,11 +61,13 @@ void	Webserv::closeServers(void)
 		// std::cout << "> Closing server: " << it->first << std::endl;
 		close(it->second->_socket);
 	}
-	for (int i = 0 ; i < _clients.size() ; i++)
-	{
-		eraseClient(i);
-		_clients[i]->~Client();
-	}
+	// for (int i = 0 ; i < _clients.size() ; i++)
+	// {
+	// 	eraseClient(i);
+	// 	_clients[i]->~Client();
+	// }
+	for (std::vector<Client*>::iterator it = _clients.begin() ; it != _clients.end() ; it++)
+		delete *it;
 	_clients.clear();
 }
 
