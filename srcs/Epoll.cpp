@@ -45,6 +45,7 @@ int	Webserv::initConnection(int socket)
 	initEvent(event, EPOLLIN, client->getSocket());
 	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, client->getSocket(), &event) < SUCCESS)
 		throw EpollCtlException();
+	client->setTimer();
 	_clients.push_back(client);
 	return (_clients.size() - 1);
 }
@@ -200,14 +201,11 @@ void Webserv::handleRequest(Client *client, struct epoll_event &event)
 	if (str.empty())
 		return;
 	client->parse(str);
+	client->setTimer();
 	if (client->getRequest()->_statusCode != OK)
 		return;
 	else
 		editSocket(client->getSocket(), EPOLLIN, event);
-	/*
-		question: est-ce qu'on a pas besoin de mettre _client.erase
-		dans chaque handles(request handle / response handle)?
-	*/
 }
 
 void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &event)
@@ -275,13 +273,10 @@ int	Webserv::routine(void)
 	int 				nbEvents = 0;
 	int					index = 0;
 
-	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 500)) < SUCCESS)
+	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 2000)) < SUCCESS)
 		return (FAILED);
-	if (nbEvents == 0) // gerer le timeout -> enregistrer le timestamp de la derniere requete
-	{
-		// std::cout << "No event" << std::endl;
-		return (SUCCESS);
-	}
+	if (nbEvents == 0)
+		checkTimeout();
 	for (int i = 0; i < nbEvents; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
@@ -302,8 +297,6 @@ int	Webserv::routine(void)
 		handleResponse(_clients[index], request, events[i]);
 		StringMap::iterator it = request->_header.find("connection");
 		delete request;
-		// if (it == request->_header.end() || it->second != "keep-alive")
-		// 	eraseClient(index);
 	}
 	return (SUCCESS);
 }
@@ -320,8 +313,9 @@ void Webserv::editSocket(int socket, uint32_t flag, struct epoll_event event)
 
 void Webserv::removeSocket(int socket)
 {
+	std::cout << YELLOW << "remove socket: " << socket << RESET << std::endl;
 	if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, socket, 0) < 0)
-		throw EpollCtlException();
+		perror("epoll_ctl");
 }
 
 void Webserv::eraseClient(int index)
@@ -331,8 +325,22 @@ void Webserv::eraseClient(int index)
 	removeSocket(clientfd);
 	if (close(clientfd) < 0)
 		std::cerr << "eraseClient(close) error" << std::endl;
+	if (_clients[index])
+		delete _clients[index];
 	_clients.erase(_clients.begin() + index);
-	delete _clients[index];
+}
+
+void Webserv::eraseClient(std::vector<Client*>::iterator index)
+{
+	(void)index;
+	// int clientfd = (*index)->getSocket();
+
+	// removeSocket(clientfd);
+	// if (close(clientfd) < 0)
+	// 	std::cerr << "eraseClient(close) error" << std::endl;
+	// if (*index)
+	// 	delete *index;
+	// _clients.erase(index);
 }
 
 const char *Webserv::EpollCreateException::what() const throw()

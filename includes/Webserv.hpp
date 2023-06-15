@@ -36,6 +36,7 @@ class Webserv
 
 		void				createServers(void);
 		void				closeServers(void);
+		void				checkTimeout(void);
 
 		/* EPOLL */
 		static void			initEvent(struct epoll_event &event, uint32_t flag, int fd);
@@ -48,6 +49,7 @@ class Webserv
 		int					routine(void);
 
 		void				editSocket(int socket, uint32_t flag, struct epoll_event event);
+		void 				eraseClient(std::vector<Client*>::iterator index);
 		void				removeSocket(int socket);
 		void				eraseClient(int index);
 		/*  END  */
