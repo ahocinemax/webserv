@@ -543,8 +543,11 @@ void Webserv::getCgiMethod(Client &client, Request *req)
 			{
 				if (balise != 0)
 					response._message.append(line, 0, balise - 1);
-				response._message.append(response.getCgiBody(i));
-				i++;
+				if ( i < req->getCgiBody().size())
+				{
+					response._message.append(response.getCgiBody(i));
+					i++;
+				}
 				while ((end = line.find("?>")) == std::string::npos)
 					std::getline(file, line);
 				if (end + 2< line.length())

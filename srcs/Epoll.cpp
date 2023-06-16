@@ -116,6 +116,7 @@ void Webserv::upload_path(Client &client, std::string &path, Request &request, s
 		uploadpath += '/';
 
     std::string command = "mkdir -p " + pwd + uploadpath;
+	command = "chmod 777 " + pwd + uploadpath;
     std::system(command.c_str());
 	uploadpath += path;
 	path = uploadpath;
@@ -154,10 +155,10 @@ void Webserv::handleMultipart(Request &request, Client &client)
 		name_pos = getfield(contentdispositon, "name=\"", &name);
 		pos_file += getfield(contentdispositon, "filename=\"", &filename);
 	}
-	if (filename != "")
-	{
-		upload_path(client, filename, request, pos_file);
-	}
+	//if (filename != "")
+	//{
+	//	upload_path(client, filename, request, pos_file);
+	//}
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }
