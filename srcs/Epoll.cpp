@@ -270,15 +270,21 @@ int	Webserv::routine(void)
 	std::vector<int>	toDelete;
 	int 				nbEvents = 0;
 	int					index = 0;
+	Request				*request;
 
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 2000)) < SUCCESS)
 		return (FAILED);
 	if (nbEvents == 0)
 		checkTimeout();
+	else
+		std::cout << "nbEvents: " << nbEvents << std::endl;
 	for (int i = 0; i < nbEvents; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
+		{
+			std::cerr << RED "epoll error on event" RESET << std::endl;
 			return (close(events[i].data.fd), SUCCESS);
+		}
 		if (events[i].data.fd == STDIN_FILENO) // ignore les entrées clavier
 		{
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -288,9 +294,8 @@ int	Webserv::routine(void)
 			index = initConnection(events[i].data.fd);
 
 		handleRequest(_clients[index], events[i]);
-		if (_clients[index]->getRequest() == NULL) // si la requête n'est pas encore complète
+		if ((request = _clients[index]->getRequest()) == NULL) // si la requête n'est pas encore complète
 			continue;
-		Request *request = _clients[index]->getRequest();
 		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
 		// StringMap::iterator it = request->_header.find("connection");

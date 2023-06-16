@@ -1,8 +1,36 @@
-/* body
+.game-board
 {
-	
-} */
+	display: flex;
+	justify-content: space-evenly;
+}
 
+.card
+{
+	width				:	100px;
+	height				:	160px;
+	background-image	:	url("../img/card-back.jpg");
+	background-size		:	contain;
+	background-repeat	:	no-repeat;
+	display				:	inline-block;
+	margin				:	10px;
+	cursor				:	pointer;
+	position			:	relative;
+}
+
+.card img
+{
+	position			:	absolute;
+	display				:	none;
+	height				:	100%;
+	margin				:	auto;
+
+}
+
+.flipped img
+{
+	background-color	:	#aaa;
+	display				:	inline-block;
+}
 /* Barre de navigation */
 
 a.nav-link

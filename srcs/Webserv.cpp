@@ -69,6 +69,7 @@ void	Webserv::checkTimeout(void)
 	std::vector<int> toDelete;
 	for (int it = 0 ; it < _clients.size() ; it++)
 	{
+		std::cout << CYAN "> Client " << _clients[it]->getSocket() << RESET << std::endl;
 		timeval time_LastRequest = _clients[it]->getTimer();
 		time_t	time_ToTimeout = time_LastRequest.tv_sec + _clients[it]->_server->recv_timeout.tv_sec;
 		time_t	time_Now = time(NULL);
@@ -81,8 +82,13 @@ void	Webserv::checkTimeout(void)
 		}
 	}
 	if (toDelete.size() > 0)
-		for (int it = 0 ; it < toDelete.size() ; it++)
-			eraseClient(0);
+	{
+		for (int i = toDelete.size() - 1 ; i >= 0 ; i--)
+		{
+			std::cout << "> Erasing client " << _clients[toDelete[i]]->getSocket() << std::endl;
+			eraseClient(toDelete[i]);
+		}
+	}
 	else
 		std::cout << GREEN "> No client timeout." RESET << std::endl;
 }
