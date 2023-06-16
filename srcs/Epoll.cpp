@@ -296,16 +296,16 @@ int	Webserv::routine(void)
 		Request *request = _clients[index]->getRequest();
 		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
-		StringMap::iterator it = request->_header.find("connection");
-		if (it != request->_header.end() && it->second != "keep-alive")
-			toDelete.push_back(index);
+		// StringMap::iterator it = request->_header.find("connection");
+		// if (it != request->_header.end() && it->second != "keep-alive")
+		// 	toDelete.push_back(index);
 		delete request;
 	}
-	if (nbEvents && toDelete.size() > 0) // pas encore testé
-	{
-		for (std::vector<int>::iterator it = toDelete.end()-- ; it >= toDelete.begin() ; it--)
-			eraseClient(*it);
-	}
+	// if (nbEvents && toDelete.size() > 0) // pas encore testé
+	// {
+	// 	for (std::vector<int>::iterator it = toDelete.end()-- ; it >= toDelete.begin() ; it--)
+	// 		eraseClient(*it);
+	// }
 	return (SUCCESS);
 }
 
