@@ -310,8 +310,16 @@ void CgiHandler::initCgiEnvironment()
 	_env["REMOTE_ADDR"] = _request->getHost();
 	_env["SCRIPT_FILENAME"] = get_cgipath(); // traduire filename par path -> coder au 2/06
 	_env["SERVER_NAME"] = "webserv";
-	_env["SERVER_SOFTWARE"] = "webserv/1.0";
+	_env["SERVER_SOFTWARE"] = "webserv";
+	_env["PATH_INFO"] = "";
 	_env["CONTENT_LENGTH"] = to_string(_request->getSize());
+
+	_env["HTTP_ACCEPT"] = _request->getHeader("accept");
+	_env["HTTP_ACCEPT_LANGUAGE"] = _request->getHeader("accept-language");
+	_env["HTTP_USER_AGENT"]= _request->getHeader("user-agent");
+	_env["HTTP_COOKIE"] = _request->getHeader("cookie");
+	_env["HTTP_REFERER"] = _request->getHeader("referer");
+	_env["REDIRECT_STATUS"] = to_string(_request->_statusCode);
 }
 
 void CgiHandler::setEnv(const std::string &key, const std::string &val)

@@ -543,8 +543,11 @@ void Webserv::getCgiMethod(Client &client, Request *req)
 			{
 				if (balise != 0)
 					response._message.append(line, 0, balise - 1);
-				response._message.append(response.getCgiBody(i));
-				i++;
+				if ( i < req->getCgiBody().size())
+				{
+					response._message.append(response.getCgiBody(i));
+					i++;
+				}
 				while ((end = line.find("?>")) == std::string::npos)
 					std::getline(file, line);
 				if (end + 2< line.length())
@@ -556,7 +559,8 @@ void Webserv::getCgiMethod(Client &client, Request *req)
 	else
 		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
 	response.addHeader("Content-Length", to_string(response._message.length()));
-	response.addHeader("Content-Type", "text/html");
+	if (response.getHeader("Content-type") == "")
+		response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
 	if (!client.sendContent(header.c_str(), header.length()))
 		return ;

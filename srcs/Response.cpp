@@ -122,10 +122,10 @@ void Response::parseCgiBody(std::string body)
     std::string headerName;
     std::string headerValue;
 
-    while (body.find("\r\n") != std::string::npos || body.find("\n") != std::string::npos)
+    while (body.find(CRLF) != std::string::npos || body.find("\n") != std::string::npos)
 	{
-        if (body.find("\r\n") != std::string::npos)
-            pos = getNextWord(body, line, "\r\n");
+        if (body.find(CRLF) != std::string::npos)
+            pos = getNextWord(body, line, CRLF);
         else
             pos = getNextWord(body, line, "\n");
         if (line.empty())

@@ -17,7 +17,7 @@ int	Webserv::connectEpollToSockets(void)
 		throw EpollCreateException();
 	for (size_t i = 0; i < _serversVec.size(); i++)
 	{
-		initEvent(event, EPOLLIN | EPOLLET, _serversVec[i]._socket);
+		initEvent(event, EPOLLIN, _serversVec[i]._socket);
 		ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serversVec[i]._socket, &event);
 		char buffer;
 		ssize_t result = read(_serversVec[i]._socket, &buffer, 0);
@@ -116,6 +116,7 @@ void Webserv::upload_path(Client &client, std::string &path, Request &request, s
 		uploadpath += '/';
 
     std::string command = "mkdir -p " + pwd + uploadpath;
+	command = "chmod 777 " + pwd + uploadpath;
     std::system(command.c_str());
 	uploadpath += path;
 	path = uploadpath;
@@ -144,7 +145,7 @@ void Webserv::handleMultipart(Request &request, Client &client)
 	{
 		pos_file += body.find(boundary + CRLF) + boundary.length() + 2;
 		body.erase(0, body.find(boundary + CRLF) + boundary.length() + 2);
-		pos = body.find("content-disposition:");
+		pos = body.find("Content-Disposition:");
 		if (pos == std::string::npos)
 		{
 			request._statusCode = BAD_REQUEST;
@@ -154,10 +155,10 @@ void Webserv::handleMultipart(Request &request, Client &client)
 		name_pos = getfield(contentdispositon, "name=\"", &name);
 		pos_file += getfield(contentdispositon, "filename=\"", &filename);
 	}
-	if (filename != "")
-	{
-		upload_path(client, filename, request, pos_file);
-	}
+	//if (filename != "")
+	//{
+	//	upload_path(client, filename, request, pos_file);
+	//}
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }
@@ -170,9 +171,10 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 		if (isMultipartFormData(request))
 			handleMultipart(request, client);
 	}
-	CgiHandler cgi(request);
 	std::string body;
+	CgiHandler cgi(request);
 	cgi.setEnv("SERVER_NAME", client._server->server_name);
+	cgi.setEnv("DOCUMENT_ROOT", "./html");
 	if (request._statusCode == NOT_FOUND || request._statusCode == BAD_REQUEST)
 		return (false);
 	else
@@ -220,7 +222,6 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(*req, *client);	
 	if (cgi.first) // is CGI valid or not
 	{
-		// std::cout << YELLOW "REQ BODY: " << req->getBody() << RESET << std::endl;
 		std::vector<std::string>::iterator it = cgi.second.begin();
 		for (; it != cgi.second.end(); it++)
 		{
@@ -251,18 +252,14 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 	}
 	std::cout << std::endl;
-
-	// editSocket(client->getSocket(), EPOLLIN, event);
 }
 
 int	Webserv::findClientIndex(int socket)
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		// std::cout << _clients[i]->_server->_socket << std::endl;
 		if (_clients[i]->getSocket() == socket) // trouver UN client connecté au bon serveur
 			return (i);
-		// if (_serversMap[socket]->_connectedClients (_clients[i]->_ipAdress)) // trouver LE client connecté au bon serveur
 	}
 	return (FAILED);
 }
@@ -297,8 +294,6 @@ int	Webserv::routine(void)
 		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
 		// StringMap::iterator it = request->_header.find("connection");
-		// if (it != request->_header.end() && it->second != "keep-alive")
-		// 	toDelete.push_back(index);
 		delete request;
 	}
 	// if (nbEvents && toDelete.size() > 0) // pas encore testé
