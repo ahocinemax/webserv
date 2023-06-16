@@ -9,7 +9,7 @@
 	width				:	100px;
 	height				:	160px;
 	background-image	:	url("../img/card-back.jpg");
-	background-size		:	contain;
+	background-size		:	cover;
 	background-repeat	:	no-repeat;
 	display				:	inline-block;
 	margin				:	10px;
@@ -26,9 +26,13 @@
 
 }
 
+.card.flipped
+{
+	background-image	:	none;
+}
+
 .flipped img
 {
-	background-color	:	#aaa;
 	display				:	inline-block;
 }
 /* Barre de navigation */

@@ -276,8 +276,8 @@ int	Webserv::routine(void)
 		return (FAILED);
 	if (nbEvents == 0)
 		checkTimeout();
-	else
-		std::cout << "nbEvents: " << nbEvents << std::endl;
+	// else
+	// 	std::cout << "nbEvents: " << nbEvents << std::endl;
 	for (int i = 0; i < nbEvents; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
