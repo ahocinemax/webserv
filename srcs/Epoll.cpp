@@ -17,7 +17,7 @@ int	Webserv::connectEpollToSockets(void)
 		throw EpollCreateException();
 	for (size_t i = 0; i < _serversVec.size(); i++)
 	{
-		initEvent(event, EPOLLIN | EPOLLET, _serversVec[i]._socket);
+		initEvent(event, EPOLLIN, _serversVec[i]._socket);
 		ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serversVec[i]._socket, &event);
 		char buffer;
 		ssize_t result = read(_serversVec[i]._socket, &buffer, 0);
@@ -222,7 +222,6 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(*req, *client);	
 	if (cgi.first) // is CGI valid or not
 	{
-		// std::cout << YELLOW "REQ BODY: " << req->getBody() << RESET << std::endl;
 		std::vector<std::string>::iterator it = cgi.second.begin();
 		for (; it != cgi.second.end(); it++)
 		{
@@ -253,18 +252,14 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 	}
 	std::cout << std::endl;
-
-	// editSocket(client->getSocket(), EPOLLIN, event);
 }
 
 int	Webserv::findClientIndex(int socket)
 {
 	for (size_t i = 0; i < _clients.size(); i++)
 	{
-		// std::cout << _clients[i]->_server->_socket << std::endl;
 		if (_clients[i]->getSocket() == socket) // trouver UN client connecté au bon serveur
 			return (i);
-		// if (_serversMap[socket]->_connectedClients (_clients[i]->_ipAdress)) // trouver LE client connecté au bon serveur
 	}
 	return (FAILED);
 }
@@ -297,7 +292,7 @@ int	Webserv::routine(void)
 		Request *request = _clients[index]->getRequest();
 		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
-		StringMap::iterator it = request->_header.find("connection");
+		// StringMap::iterator it = request->_header.find("connection");
 		delete request;
 	}
 	return (SUCCESS);

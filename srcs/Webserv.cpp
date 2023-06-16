@@ -559,7 +559,8 @@ void Webserv::getCgiMethod(Client &client, Request *req)
 	else
 		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
 	response.addHeader("Content-Length", to_string(response._message.length()));
-	response.addHeader("Content-Type", "text/html");
+	if (response.getHeader("Content-type") == "")
+		response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
 	if (!client.sendContent(header.c_str(), header.length()))
 		return ;
