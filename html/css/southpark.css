@@ -240,3 +240,16 @@ div.carousel
 	display				:	none;
 	height				:	0;
 }
+
+.footer_section
+{
+	position			:	absolute;
+	bottom				:	0;
+	width				:	100%;
+	padding-bottom		:	0.8em;
+}
+
+body
+{
+	min-height			:	100vh;
+}
