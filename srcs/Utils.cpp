@@ -120,3 +120,46 @@ bool	convertHttpCode(const std::string& str, int* code)
 	*code = atoi(str.c_str());
 	return (*code >= 0 && *code <= 505);
 }
+
+
+std::string	generateCopyFile(const std::string& dir, const std::string& file)
+{
+	const size_t			pos_extention = file.rfind('.');
+	const std::string		extension = file.substr(pos_extention);
+	std::string				filename = file.substr(0, pos_extention);
+	int						last_copy = 1;
+
+	if (filename.empty())
+		filename = extension;
+	if (*(dir.rbegin()) != '/' && *(filename.begin()) != '/')
+		filename.insert(0, "/");
+
+	std::string				copy_filepath = dir + filename + "_copy" + extension;
+	while (AccessiblePath(copy_filepath))
+	{
+		const std::string	num = to_string(++last_copy);
+		copy_filepath = dir + filename + "_" + num + extension;
+	}
+	return (copy_filepath);
+}
+
+bool	AccessiblePath(const std::string& path)
+{
+	int	ret;
+
+	ret = access(path.c_str(), F_OK); 
+	return (!ret);
+}
+
+void	SigPipeIgnore(int sig) { (void) sig; }
+
+void	SigpipeSet(int state)
+{
+	void	(*oldHandler_SigPipe)(int) = 0;
+
+	if (state == 0) {
+		oldHandler_SigPipe = signal(SIGPIPE, SigPipeIgnore);
+	} else if (state == 1) {
+		signal(SIGPIPE, oldHandler_SigPipe);
+	}
+}

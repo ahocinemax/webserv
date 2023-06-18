@@ -105,6 +105,8 @@ void Webserv::upload_path(Client &client, std::string &path, Request &request, s
     std::string pwd(PWD);
     std::string uploadpath = client._server->root;
 
+    if (!uploadpath.empty() && uploadpath[0] == '.')
+        uploadpath = uploadpath.substr(1);
 	if (uploadpath[uploadpath.length() - 1] != '/')
 		uploadpath += "/";
 	uploadpath += "uploads";
@@ -115,19 +117,20 @@ void Webserv::upload_path(Client &client, std::string &path, Request &request, s
 	if (uploadpath[uploadpath.length() - 1] != '/')
 		uploadpath += '/';
 
-    std::string command = "mkdir -p " + pwd + uploadpath;
+	std::string command = "mkdir -p " + pwd + uploadpath;
+	std::system(command.c_str());
 	command = "chmod 777 " + pwd + uploadpath;
-    std::system(command.c_str());
+	std::system(command.c_str());
 	uploadpath += path;
 	path = uploadpath;
 	request.insertUploadpath(pos, uploadpath);
 }
 
-void Webserv::handleMultipart(Request &request, Client &client)
+void Webserv::CgihandleMultipart(Request &request, Client &client)
 {
 	std::string	boundary;
 	size_t		pos;
-	size_t		name_pos;
+	size_t		pos_name;
 	size_t		pos_file = 0;
 	std::string	name;
 	std::string filename;
@@ -152,13 +155,96 @@ void Webserv::handleMultipart(Request &request, Client &client)
 			return ;
 	 	}
 		contentdispositon = body.substr(pos, body.find(CRLF));
-		name_pos = getfield(contentdispositon, "name=\"", &name);
+		pos_name = getfield(contentdispositon, "name=\"", &name);
 		pos_file += getfield(contentdispositon, "filename=\"", &filename);
 	}
-	//if (filename != "")
-	//{
-	//	upload_path(client, filename, request, pos_file);
-	//}
+	if (filename != "")
+	{
+		upload_path(client, filename, request, pos_file);
+	}
+	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
+	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
+}
+
+void Webserv::writeContent(Request &request, const std::string &path, const std::string &content)
+{
+	std::ofstream 	file;
+	std::string 	pathDir;
+	std::string 	filename;
+	std::string 	newfile;
+	size_t 			pos_separator;
+	std::string		pwd(PWD);
+
+	pos_separator = path.rfind("/");
+	pathDir = path.substr(0, pos_separator + 1);
+	filename = path.substr(pos_separator + 1);
+	if (filename.empty())
+	{
+		request._statusCode = BAD_REQUEST;
+		return ;
+	}
+	else if (AccessiblePath(path))
+		newfile = pwd + generateCopyFile(pathDir, filename);
+	else
+		newfile = pwd + path;
+	request._statusCode = CREATED;
+	file.open(newfile.c_str(), std::ios::out | std::ios::binary);
+	if (!file.is_open())
+	{
+    	std::cerr << "Error: " << strerror(errno) << std::endl;
+		request._statusCode = INTERNAL_SERVER_ERROR;
+		return ;
+	}
+	file << content;
+	if (file.bad())
+	{
+		request._statusCode = INTERNAL_SERVER_ERROR;
+		return ;
+	}
+	file.close();
+}
+
+void Webserv::handleMultipart(Request &request, Client &client)
+{
+	std::string	boundary;
+	size_t		pos;
+	size_t		pos_name;
+	size_t		pos_file = 0;
+	std::string	name;
+	std::string filename;
+	std::string content;
+	std::string crlf(CRLF);
+
+	std::string body = request.getBody();
+	std::string contentdispositon;
+
+	 if (!getBoundary(request.getHeader("content-type"), boundary))
+	 {
+		request._statusCode = BAD_REQUEST;
+		return ;
+	 }
+	std::cout << YELLOW << "boundary is:\t" << boundary << RESET << std::endl;
+	while (body.find(boundary + CRLF) != std::string::npos)
+	{
+		pos_file += body.find(boundary + CRLF) + boundary.length() + 2;
+		body.erase(0, body.find(boundary + CRLF) + boundary.length() + 2);
+		pos = body.find("Content-Disposition:");
+		if (pos == std::string::npos)
+		{
+			request._statusCode = BAD_REQUEST;
+			return ;
+	 	}
+		contentdispositon = body.substr(pos, body.find(CRLF));
+		pos_name = getfield(contentdispositon, "name=\"", &name);
+		pos_file += getfield(contentdispositon, "filename=\"", &filename);
+		body.erase(0, body.find(crlf + crlf) + 4);
+		content = body.substr(0, body.find(CRLF + boundary));
+	}
+	if (filename != "")
+	{
+		upload_path(client, filename, request, pos_file);
+		writeContent(request, filename, content);
+	}
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }
@@ -169,7 +255,7 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 	{
 		std::cout << "request body size (before parse)= " << request.getBody().size() << std::endl;
 		if (isMultipartFormData(request))
-			handleMultipart(request, client);
+			CgihandleMultipart(request, client);
 	}
 	std::string body;
 	CgiHandler cgi(request);
@@ -183,7 +269,7 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 		if (cgi.getCgiOutput(output))
 		{
 			request.appendCgiBody(output);
-			//std::cout << "cgi response: "<< request.getCgiBody(0) << std::endl;
+			//std::cout << "cgi response: "<< irequest.getCgiBody(0) << std::endl;
 		}
 		else
 		{
@@ -230,10 +316,8 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
 		}
 		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
-		if (req->getMethod() == "GET")
-			getCgiMethod(*client, req);
-		else if (req->getMethod() == "POST")
-			postCgiMethod(*client, req);
+		if (req->getMethod() == "GET" || req->getMethod() == "POST")
+			CgiMethod(*client, req);
 		else
 			return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 		eraseTmpFile(cgi.second);
@@ -245,7 +329,15 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 		else if (req->getMethod() == "GET")
 			getMethod(*client, req->getPath());
 		else if (req->getMethod() == "POST")
+		{
+			if (isMultipartFormData(*req))
+			{
+				handleMultipart(*req, *client);
+				if (req->_statusCode == NOT_FOUND || req->_statusCode == BAD_REQUEST)
+					(eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+			}
 			postMethod(*client, *req);
+		}
 		else if (req->getMethod() == "DELETE")
 			deleteMethod(*client, req->getPath());
 		else

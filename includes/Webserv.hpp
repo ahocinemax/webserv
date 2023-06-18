@@ -73,13 +73,14 @@ class Webserv
 		// CGI methods
 		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
 		bool 				HandleCgi(Request &request, Client& client);
-		void				postCgiMethod(Client &client, Request *req);
-		void				getCgiMethod(Client &client, Request *req);
+		void				CgiMethod(Client &client, Request *req);
 		void				eraseTmpFile(StrVector vec);
 		bool				isMultipartFormData(Request &request);
 		bool				getBoundary(std::string contentType, std::string &boundary);
 		size_t				getfield(std::string content, const std::string &field, std::string *name);
 		void				upload_path(Client &client, std::string &path, Request &request, size_t pos);
+		void				CgihandleMultipart(Request &request, Client &client);
+		void				writeContent(Request &request, const std::string &path, const std::string &content);
 		void				handleMultipart(Request &request, Client &client);
 		void				setStatusCodes(void);
 		std::string			getPath(Client &client, std::string path);

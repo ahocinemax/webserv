@@ -113,6 +113,10 @@ void		toLower(std::string *str);
 std::string readFd(int fd);
 std::string convertToOctets(int octets);
 bool		convertHttpCode(const std::string& str, int* code);
+std::string	generateCopyFile(const std::string& dir, const std::string& file);
+bool		AccessiblePath(const std::string& path);
+void		SigpipeIgnore(int sig);
+void		SigpipeSet(int state);
 
 template <typename T>
 std::string to_string(T input)

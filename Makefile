@@ -22,7 +22,6 @@ SRCS		= Client.cpp \
 			  Response.cpp \
 			  Server.cpp \
 			  Utils.cpp \
-			  Utils_Cgi.cpp \
 			  Webserv.cpp
 
 #-----------------------------------------------#
