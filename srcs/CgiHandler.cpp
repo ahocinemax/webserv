@@ -62,6 +62,8 @@ bool CgiHandler::getCgiOutput(std::string &output)
 		if (WaitforChild(pid))
 		{
 			output = readFd(fd_out[0]);
+			if (containHeader(output))
+				removeHeader(output);
 			close(fd_out[0]);
 			return true;
 		}
@@ -71,6 +73,16 @@ bool CgiHandler::getCgiOutput(std::string &output)
 			return false;
 		}
 	}
+}
+
+bool CgiHandler::containHeader(std::string &output)
+{
+	return (output.find("\r\n\r\n") == std::string::npos) ? false : true;
+}
+
+void CgiHandler::removeHeader(std::string &output)
+{
+	output = output.substr(output.find("\r\n\r\n") + 4);
 }
 
 char **CgiHandler::GetEnvAsCstrArray() const

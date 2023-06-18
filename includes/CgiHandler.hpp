@@ -48,14 +48,16 @@ class CgiHandler
         };
 
     private:
-        void    Execute();
-        void    Restore();
-        void    RedirectOutputToPipe();
-        void    PipeSet();
-        void    SetupParentIO();
+        void    Execute(void);
+        void    Restore(void);
+        void    RedirectOutputToPipe(void);
+        void    PipeSet(void);
+        void    SetupParentIO(void);
         bool    WaitforChild(int pid);
-        void    WriteToStdin();
-        void    TestEnv();
+        void    WriteToStdin(void);
+        void    TestEnv(void);
+        bool    containHeader(std::string& output);
+        void    removeHeader(std::string& output);
     
         Response                            *_response;
         Request                             *_request;

@@ -1,8 +1,40 @@
-/* body
+.game-board
 {
-	
-} */
+	display: flex;
+	justify-content: space-evenly;
+}
 
+.card
+{
+	width				:	100px;
+	height				:	160px;
+	background-image	:	url("../img/card-back.jpg");
+	background-size		:	cover;
+	background-repeat	:	no-repeat;
+	display				:	inline-block;
+	margin				:	10px;
+	cursor				:	pointer;
+	position			:	relative;
+}
+
+.card img
+{
+	position			:	absolute;
+	display				:	none;
+	height				:	100%;
+	margin				:	auto;
+
+}
+
+.card.flipped
+{
+	background-image	:	none;
+}
+
+.flipped img
+{
+	display				:	inline-block;
+}
 /* Barre de navigation */
 
 a.nav-link
@@ -207,4 +239,17 @@ div.carousel
 {
 	display				:	none;
 	height				:	0;
+}
+
+.footer_section
+{
+	position			:	absolute;
+	bottom				:	0;
+	width				:	100%;
+	padding-bottom		:	0.8em;
+}
+
+body
+{
+	min-height			:	100vh;
 }
