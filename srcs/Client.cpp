@@ -195,16 +195,12 @@ bool	Client::sendContent(const char *content, std::size_t size, bool display)
 	{
 		if (display)
 			displayErrorPage(_server->error_pages.find(INTERNAL_SERVER_ERROR));
-		else
-			perror("send");
 		return (false);
 	}
 	else if (sendSize == 0)
 	{
 		if (display)
 			displayErrorPage(_server->error_pages.find(BAD_REQUEST));
-		else
-			perror("send");
 		return (false);
 	}
 	// else

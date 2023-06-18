@@ -236,22 +236,18 @@ int	Webserv::findClientIndex(int socket)
 int	Webserv::routine(void)
 {
 	struct epoll_event	events[MAX_EPOLL_EVENTS];
-	std::vector<int>	toDelete;
 	int 				nbEvents = 0;
 	int					index = 0;
 	Request				*request;
 
-	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 2000)) < SUCCESS)
+	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 200)) < SUCCESS)
 		return (FAILED);
 	if (nbEvents == 0)
 		checkTimeout();
 	for (int i = 0; i < nbEvents; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
-		{
-			std::cerr << RED "epoll error on event" RESET << std::endl;
 			return (close(events[i].data.fd), SUCCESS);
-		}
 		if (events[i].data.fd == STDIN_FILENO) // ignore les entrées clavier
 		{
 			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
@@ -266,7 +262,7 @@ int	Webserv::routine(void)
 		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
 		// StringMap::iterator it = request->_header.find("connection");
-		delete request;
+		_toDelete.push_back(request);
 	}
 	return (SUCCESS);
 }
@@ -283,8 +279,7 @@ void Webserv::editSocket(int socket, uint32_t flag, struct epoll_event event)
 void Webserv::removeSocket(int socket)
 {
 	std::cout << YELLOW << "remove socket: " << socket << RESET << std::endl;
-	if (epoll_ctl(_epollFd, EPOLL_CTL_DEL, socket, 0) < 0)
-		perror("epoll_ctl");
+	epoll_ctl(_epollFd, EPOLL_CTL_DEL, socket, 0);
 }
 
 void Webserv::eraseClient(int index)

@@ -60,6 +60,8 @@ void	Webserv::closeServers(void)
 		close(it->second->_socket);
 	for (std::vector<Client*>::iterator it = _clients.begin() ; it != _clients.end() ; it++)
 		delete *it;
+	for (std::vector<Request*>::iterator it = _toDelete.begin() ; it != _toDelete.end() ; it++)
+		if (*it) delete *it;
 	_clients.clear();
 }
 
@@ -69,14 +71,12 @@ void	Webserv::checkTimeout(void)
 	std::vector<int> toDelete;
 	for (int it = 0 ; it < _clients.size() ; it++)
 	{
-		std::cout << CYAN "> Client " << _clients[it]->getSocket() << RESET << std::endl;
 		timeval time_LastRequest = _clients[it]->getTimer();
 		time_t	time_ToTimeout = time_LastRequest.tv_sec + _clients[it]->_server->recv_timeout.tv_sec;
 		time_t	time_Now = time(NULL);
 
 		if (time_Now > time_ToTimeout)
 		{
-			std::cout << "> Client timeout: " << _clients[it]->getSocket() << std::endl;
 			_clients[it]->displayErrorPage(_statusCodeList.find(REQUEST_TIMEOUT));
 			toDelete.push_back(it);
 		}
@@ -85,7 +85,7 @@ void	Webserv::checkTimeout(void)
 	{
 		for (int i = toDelete.size() - 1 ; i >= 0 ; i--)
 		{
-			std::cout << "> Erasing client " << _clients[toDelete[i]]->getSocket() << std::endl;
+			std::cout << "> " RED "[TIMEOUT]" RESET " Erasing client " << _clients[toDelete[i]]->getSocket() << std::endl;
 			eraseClient(toDelete[i]);
 		}
 	}
