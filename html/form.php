@@ -51,7 +51,7 @@
 			if (move_uploaded_file($_FILES["fileToUpload"]["tmp_name"], $target_file)) {
 				// Redirect to upload_ok.html after successful upload
 				echo '<div class="message success">Le fichier "' . basename($_FILES["fileToUpload"]["name"]) . '" a été téléchargé avec succès.</div>';
-				header('Location: upload_ok.html');
+				//header('Location: upload_ok.html');
 				exit();
 			} else {
 				echo '<div class="message error">Échec du téléchargement du fichier!</div>';

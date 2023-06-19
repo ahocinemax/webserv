@@ -34,73 +34,52 @@ class Request
 		StringMap		_header;
 		
 		/* Init */
-		void	initVariables();
-		void	initFuncForParse();
+		void			initVariables();
+		void			initFuncForParse();
 		
 		/*Parse*/
-		void	parseMethod();
-		void	parse();
-		int		FuncForParseHeader();
-		void	parsePath();
-		void	parseHttpProtocol();
-		void	parseHeaders();
-		bool	ConversionPort(const std::string & str, int *num);
-		bool	parseHeaderHost();
-		void	checkHeaders();
-		int		checkChunk();
-		void	parseBody();
+		void			parseMethod();
+		void			parse();
+		void			parseHeaders();
+		void			parseBody();
+		int				FuncForParseHeader();
+		void			parsePath();
+		void			parseHttpProtocol();
+		bool			parseHeaderHost();
+		void			checkHeaders();
+		int				checkChunk();
 		
 
 		/*Util*/
-		bool	isHttpMethod(const std::string& str) const;
-		bool	isHeader(const std::string& headerName);
-		void	ContentLength();
-		void	appendCgiBody(const std::string &output);
+		bool			isHeader(const std::string& headerName);
+		void			ContentLength();
+		void			appendCgiBody(const std::string &output);
+		bool			isHttpMethod(const std::string& str) const;
+		void			insertUploadpath(size_t pos, const std::string& uploadpath);
 
-		/* Getter */
-		std::string		getHeader(const std::string& headerName);
+		/* Get */
 		size_t			getNextWord(std::string& word, const std::string& delimiter);
 		std::string		getNextWord(size_t sizeWord);
+		std::string		getHeader(const std::string& headerName);
 		std::string		getMethod() const;
-
 		std::string		getPath() const;
 		std::string		getRoot() const;
 		std::string		getBody() const;
-		size_t			getPayloadSize() const;
+		std::string		getCgiBody(int index);
+		StrVector		getCgiBody() const;
 		std::string		getQuery() const;
 		std::string		getProtocolHTTP() const;
 		size_t			getSize() const;
+		size_t			getPayloadSize() const;
 		std::string		getHost() const;
 		int				getPort() const;
-		void			setRoot(std::string& root);
+
+		/* Set */
 		void			setCgiBody(std::string& body);
-		std::string		getCgiBody(int index);
-		StrVector		getCgiBody() const;
-		void			insertUploadpath(size_t pos, const std::string& uploadpath);
+		void			setRoot(std::string& root);
 
 		/*test*/
 		void			PrintHeader();
-
-		class InvalidMethodException : public std::exception
-		{
-			public:
-				virtual const char* what() const throw()
-				{
-					return ("Invalid Method");
-				}
-		};
-		class Error : public virtual std::exception
-		{
-			public:
-				Error(const char* msg) : _msg(msg) {}
-
-				const char* what() const throw() {
-					return _msg;
-				}
-
-			private:
-				const char* _msg;
-		};
 
 	private:
 		std::string							_method;

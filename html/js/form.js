@@ -59,7 +59,6 @@ function uploadData()
     .then((response) => {
         if (response.ok) {
             displayMessage('Le fichier "' + input.files[0].name + '" a été téléchargé avec succès.', 'success');
-            window.location.href = "form_upload_ok.html";
             return;
         }
         return response.text();

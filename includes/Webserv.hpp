@@ -71,19 +71,25 @@ class Webserv
 		void				postMethod(Client &client, std::string path);
 		void				getMethod(Client &client, std::string path);
 
-		// CGI methods
-		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
-		bool 				HandleCgi(Request &request, Client& client);
-		void				CgiGetMethod(Client &client, Request *req);
-		void				CgiPostMethod(Client &client, Request *req);
-		void				eraseTmpFile(StrVector vec);
+		// Uploads
 		bool				isMultipartFormData(Request &request);
 		bool				getBoundary(std::string contentType, std::string &boundary);
 		size_t				getfield(std::string content, const std::string &field, std::string *name);
 		void				upload_path(Client &client, std::string &path, Request &request, size_t pos);
-		void				CgihandleMultipart(Request &request, Client &client);
 		void				writeContent(Request &request, const std::string &path, const std::string &content);
 		void				handleMultipart(Request &request, Client &client, std::string *filepath);
+		
+		//Cgi(Epoll.cpp)
+		void				CgihandleMultipart(Request &request, Client &client);
+		bool 				HandleCgi(Request &request, Client& client);
+		
+		//Cgi(Webserv.cpp)
+		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
+		void				CgiGetMethod(Client &client, Request *req);
+		void				CgiPostMethod(Client &client, Request *req);
+		
+		//Methods
+		void				eraseTmpFile(StrVector vec);
 		void				setStatusCodes(void);
 		std::string			getPath(Client &client, std::string path);
 		bool				clientNotConnected(int socket);

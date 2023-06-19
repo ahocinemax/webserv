@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Request.cpp                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mtsuji <mtsuji@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/06/19 11:37:38 by mtsuji            #+#    #+#             */
+/*   Updated: 2023/06/19 11:37:43 by mtsuji           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Request.hpp"
 
 Request::Request(const std::string& request) : _request(request)
@@ -53,6 +65,77 @@ void Request::parseMethod()
 	_statusCode = OK;
 }
 
+void	Request::parse()
+{
+	if (_request.find("\r\n\r\n") == std::string::npos)
+	{
+		std::cerr << RED "Error:" RESET " Request Header is incomplete" << std::endl;
+		return ;
+	}
+	if (_chunked && _requestStatus != COMPLETE)
+		checkChunk();
+	else
+	{
+		if (!_headerParsed)
+			FuncForParseHeader();
+		if (_statusCode == OK)
+			parseBody();
+	}
+}
+
+void	Request::parseHeaders()
+{
+		std::string	headerName;
+		std::string headerVal;
+		size_t pos = 0;
+		while (pos != std::string::npos && _request.find(CRLF))
+		{
+			pos = getNextWord(headerName, ":");
+			if (pos == std::string::npos)
+				break;
+			toLower(&headerName);
+			getNextWord(headerVal, CRLF);	
+			trimSpacesStr(&headerVal);
+			if (isHeader(headerName))
+				_statusCode = BAD_REQUEST;
+			_header.insert(std::make_pair(headerName, headerVal));
+			if (_payloadsize > 10485759)
+				_statusCode = PAYLOAD_TOO_LARGE;
+		}
+		getNextWord(headerName, CRLF);
+		_statusCode = OK;
+}
+
+void	Request::parseBody()
+{
+	if (_requestStatus == COMPLETE)
+		return ;
+	if (_chunked == true)
+		checkChunk();
+	else
+	{
+		_body = _request;
+		if (_body.size() == _size)
+			_requestStatus = COMPLETE;
+	}
+}
+
+int	Request::FuncForParseHeader()
+{
+
+	Request::listFuncForParse::const_iterator	func;
+	for (func = _funcforparse.begin();
+		_requestStatus != COMPLETE && func != _funcforparse.end();
+			func++)
+	{
+		(this->**func)();
+		if (_statusCode != OK)
+			return (FAILED);
+	}
+	_statusCode = OK;
+	return (SUCCESS);
+}
+
 void	Request::parsePath()
 {
 	std::string		path;
@@ -97,29 +180,6 @@ void	Request::parseHttpProtocol()
 	}
 	_protocolHTTP = protocolHTTP;
 	_statusCode = OK;
-}
-
-void	Request::parseHeaders()
-{
-		std::string	headerName;
-		std::string headerVal;
-		size_t pos = 0;
-		while (pos != std::string::npos && _request.find(CRLF))
-		{
-			pos = getNextWord(headerName, ":");
-			if (pos == std::string::npos)
-				break;
-			toLower(&headerName);
-			getNextWord(headerVal, CRLF);	
-			trimSpacesStr(&headerVal);
-			if (isHeader(headerName))
-				_statusCode = BAD_REQUEST;
-			_header.insert(std::make_pair(headerName, headerVal));
-			if (_payloadsize > 10485759)
-				_statusCode = PAYLOAD_TOO_LARGE;
-		}
-		getNextWord(headerName, CRLF);
-		_statusCode = OK;
 }
 
 bool	Request::parseHeaderHost()
@@ -219,20 +279,8 @@ int	Request::checkChunk()
 	return ((_requestStatus = COMPLETE));
 }
 
-void	Request::parseBody()
-{
-	if (_requestStatus == COMPLETE)
-		return ;
-	if (_chunked == true)
-		checkChunk();
-	else
-	{
-		_body = _request;
-		if (_body.size() == _size)
-			_requestStatus = COMPLETE;
-	}
-}
 
+/* Utils */
 bool	Request::isHeader(const std::string& headerName)
 {
 	StringMap::const_iterator	ite;
@@ -269,22 +317,21 @@ void	Request::ContentLength()
 
 void	Request::appendCgiBody(const std::string &output) { _cgibody.push_back(output); }
 
-void	Request::parse()
+bool        Request::isHttpMethod(std::string const& str) const
 {
-	if (_request.find("\r\n\r\n") == std::string::npos)
+	std::map<MethodType, std::string>::const_iterator ite;
+
+	for (ite = _methods.begin(); ite != _methods.end(); ite++)
 	{
-		std::cerr << RED "Error:" RESET " Request Header is incomplete" << std::endl;
-		return ;
+		if (ite->second == str)
+			return (true);
 	}
-	if (_chunked && _requestStatus != COMPLETE)
-		checkChunk();
-	else
-	{
-		if (!_headerParsed)
-			FuncForParseHeader();
-		if (_statusCode == OK)
-			parseBody();
-	}
+	return (false);
+}
+
+void	Request::insertUploadpath(size_t pos, const std::string& uploadpath)
+{
+	_body.insert(pos, uploadpath);
 }
 
 /*	GETTER	*/
@@ -324,34 +371,6 @@ std::string		Request::getHeader(const std::string& headerName)
 	return (_header.find(headerName) != _header.end() ? _header[headerName] : "");
 }
 
-bool        Request::isHttpMethod(std::string const& str) const
-{
-	std::map<MethodType, std::string>::const_iterator ite;
-
-	for (ite = _methods.begin(); ite != _methods.end(); ite++)
-	{
-		if (ite->second == str)
-			return (true);
-	}
-	return (false);
-}
-
-int	Request::FuncForParseHeader()
-{
-
-	Request::listFuncForParse::const_iterator	func;
-	for (func = _funcforparse.begin();
-		_requestStatus != COMPLETE && func != _funcforparse.end();
-			func++)
-	{
-		(this->**func)();
-		if (_statusCode != OK)
-			return (FAILED);
-	}
-	_statusCode = OK;
-	return (SUCCESS);
-}
-
 std::string	Request::getMethod() const {return (_method);}
 
 std::string	Request::getPath() const { return (_path); }
@@ -376,6 +395,7 @@ std::string	Request::getHost() const { return (_host); }
 
 int	Request::getPort() const { return (_port); }
 
+/* SET */
 void	Request::setRoot(std::string& root)
 { 
 	_root = root; 
@@ -386,11 +406,7 @@ void	Request::setCgiBody(std::string& body)
 	_cgibody.push_back(body); 
 }
 
-void	Request::insertUploadpath(size_t pos, const std::string& uploadpath)
-{
-	_body.insert(pos, uploadpath);
-}
-
+/* TEST */
 void	Request::PrintHeader()
 {
 	StringMap::iterator ite;

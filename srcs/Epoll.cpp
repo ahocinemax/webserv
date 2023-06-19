@@ -1,5 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   Epoll.cpp                                          :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mtsuji <mtsuji@student.42.fr>              +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/06/19 12:01:33 by mtsuji            #+#    #+#             */
+/*   Updated: 2023/06/19 12:01:40 by mtsuji           ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "Webserv.hpp"
 
+/*----- INIT -----*/
 void Webserv::initEvent(struct epoll_event &event, uint32_t flag, int fd)
 {
 	memset(&event, 0, sizeof(event));
@@ -49,8 +62,80 @@ int	Webserv::initConnection(int socket)
 	_clients.push_back(client);
 	return (_clients.size() - 1);
 }
+/*----- EPOLL -----*/
+int	Webserv::findClientIndex(int socket)
+{
+	for (size_t i = 0; i < _clients.size(); i++)
+	{
+		if (_clients[i]->getSocket() == socket) // trouver UN client connecté au bon serveur
+			return (i);
+	}
+	return (FAILED);
+}
 
-/*----- CGI-----*/
+int	Webserv::routine(void)
+{
+	struct epoll_event	events[MAX_EPOLL_EVENTS];
+	int 				nbEvents = 0;
+	int					index = 0;
+	Request				*request;
+
+	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 200)) < SUCCESS)
+		return (FAILED);
+	if (nbEvents == 0)
+		checkTimeout();
+	for (int i = 0; i < nbEvents; i++)
+	{
+		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
+			return (close(events[i].data.fd), SUCCESS);
+		if (events[i].data.fd == STDIN_FILENO) // ignore les entrées clavier
+		{
+			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+			return (FAILED);
+		}
+		else if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
+			index = initConnection(events[i].data.fd);
+
+		handleRequest(_clients[index], events[i]);
+		if ((request = _clients[index]->getRequest()) == NULL) // si la requête n'est pas encore complète
+			continue;
+		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
+		handleResponse(_clients[index], request, events[i]);
+		// StringMap::iterator it = request->_header.find("connection");
+		_toDelete.push_back(request);
+	}
+	return (SUCCESS);
+}
+
+/*----- SOCKET -----*/
+void Webserv::editSocket(int socket, uint32_t flag, struct epoll_event event)
+{
+	memset(&event, 0, sizeof(epoll_event));
+	event.data.fd = socket;
+	event.events = flag;
+	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, socket, &event) < 0) // renouveler le mode
+		throw EpollCtlException();
+}
+
+void Webserv::removeSocket(int socket)
+{
+	std::cout << YELLOW << "remove socket: " << socket << RESET << std::endl;
+	epoll_ctl(_epollFd, EPOLL_CTL_DEL, socket, 0);
+}
+
+void Webserv::eraseClient(int index)
+{
+	int clientfd = _clients[index]->getSocket();
+
+	removeSocket(clientfd);
+	if (close(clientfd) < 0)
+		std::cerr << "eraseClient(close) error" << std::endl;
+	if (_clients[index])
+		delete _clients[index];
+	_clients.erase(_clients.begin() + index);
+}
+
+/*----- UPLOAD -----*/
 bool Webserv::isMultipartFormData(Request &request)
 {
 	return (request.getHeader("content-type").find("multipart/form-data") == std::string::npos) ? false : true;
@@ -115,40 +200,9 @@ void Webserv::upload_path(Client &client, std::string &path, Request &request, s
 	std::system(command.c_str());
 	uploadpath += path;
 	path = uploadpath;
+	if (!path.empty() && path[0] != '.')
+        path.insert(0, ".");
 	request.insertUploadpath(pos, uploadpath);
-}
-
-void Webserv::CgihandleMultipart(Request &request, Client &client)
-{
-	std::string	boundary;
-	size_t		pos;
-	size_t		pos_name;
-	size_t		pos_file = 0;
-	std::string	name;
-	std::string filename;
-
-	std::string body = request.getBody();
-	std::string contentdispositon;
-
-	 if (!getBoundary(request.getHeader("content-type"), boundary))
-		return (request._statusCode = BAD_REQUEST, void());
-	while (body.find(boundary + CRLF) != std::string::npos)
-	{
-		pos_file += body.find(boundary + CRLF) + boundary.length() + 2;
-		body.erase(0, body.find(boundary + CRLF) + boundary.length() + 2);
-		pos = body.find("Content-Disposition:");
-		if (pos == std::string::npos)
-			return (request._statusCode = BAD_REQUEST, void());
-		contentdispositon = body.substr(pos, body.find(CRLF));
-		pos_name = getfield(contentdispositon, "name=\"", &name);
-		pos_file += getfield(contentdispositon, "filename=\"", &filename);
-	}
-	if (filename != "")
-	{
-		upload_path(client, filename, request, pos_file);
-	}
-	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
-	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }
 
 void Webserv::writeContent(Request &request, const std::string &path, const std::string &content)
@@ -218,6 +272,7 @@ void Webserv::handleMultipart(Request &request, Client &client, std::string *fil
 		body.erase(0, body.find(crlf + crlf) + 4);
 		content = body.substr(0, body.find(CRLF + boundary));
 	}
+	
 	if (filename != "")
 	{
 		upload_path(client, filename, request, pos_file);
@@ -230,6 +285,41 @@ void Webserv::handleMultipart(Request &request, Client &client, std::string *fil
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 	filepath = &filename;
+}
+
+
+/*----- CGI -----*/
+void Webserv::CgihandleMultipart(Request &request, Client &client)
+{
+	std::string	boundary;
+	size_t		pos;
+	size_t		pos_name;
+	size_t		pos_file = 0;
+	std::string	name;
+	std::string filename;
+
+	std::string body = request.getBody();
+	std::string contentdispositon;
+
+	 if (!getBoundary(request.getHeader("content-type"), boundary))
+		return (request._statusCode = BAD_REQUEST, void());
+	while (body.find(boundary + CRLF) != std::string::npos)
+	{
+		pos_file += body.find(boundary + CRLF) + boundary.length() + 2;
+		body.erase(0, body.find(boundary + CRLF) + boundary.length() + 2);
+		pos = body.find("Content-Disposition:");
+		if (pos == std::string::npos)
+			return (request._statusCode = BAD_REQUEST, void());
+		contentdispositon = body.substr(pos, body.find(CRLF));
+		pos_name = getfield(contentdispositon, "name=\"", &name);
+		pos_file += getfield(contentdispositon, "filename=\"", &filename);
+	}
+	if (filename != "")
+	{
+		upload_path(client, filename, request, pos_file);
+	}
+	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
+	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }
 
 bool Webserv::HandleCgi(Request &request, Client& client)
@@ -316,77 +406,9 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	std::cout << std::endl;
 }
 
-int	Webserv::findClientIndex(int socket)
-{
-	for (size_t i = 0; i < _clients.size(); i++)
-	{
-		if (_clients[i]->getSocket() == socket) // trouver UN client connecté au bon serveur
-			return (i);
-	}
-	return (FAILED);
-}
 
-int	Webserv::routine(void)
-{
-	struct epoll_event	events[MAX_EPOLL_EVENTS];
-	int 				nbEvents = 0;
-	int					index = 0;
-	Request				*request;
 
-	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 200)) < SUCCESS)
-		return (FAILED);
-	if (nbEvents == 0)
-		checkTimeout();
-	for (int i = 0; i < nbEvents; i++)
-	{
-		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
-			return (close(events[i].data.fd), SUCCESS);
-		if (events[i].data.fd == STDIN_FILENO) // ignore les entrées clavier
-		{
-			std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-			return (FAILED);
-		}
-		else if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
-			index = initConnection(events[i].data.fd);
-
-		handleRequest(_clients[index], events[i]);
-		if ((request = _clients[index]->getRequest()) == NULL) // si la requête n'est pas encore complète
-			continue;
-		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
-		handleResponse(_clients[index], request, events[i]);
-		// StringMap::iterator it = request->_header.find("connection");
-		_toDelete.push_back(request);
-	}
-	return (SUCCESS);
-}
-
-void Webserv::editSocket(int socket, uint32_t flag, struct epoll_event event)
-{
-	memset(&event, 0, sizeof(epoll_event));
-	event.data.fd = socket;
-	event.events = flag;
-	if (epoll_ctl(_epollFd, EPOLL_CTL_MOD, socket, &event) < 0) // renouveler le mode
-		throw EpollCtlException();
-}
-
-void Webserv::removeSocket(int socket)
-{
-	std::cout << YELLOW << "remove socket: " << socket << RESET << std::endl;
-	epoll_ctl(_epollFd, EPOLL_CTL_DEL, socket, 0);
-}
-
-void Webserv::eraseClient(int index)
-{
-	int clientfd = _clients[index]->getSocket();
-
-	removeSocket(clientfd);
-	if (close(clientfd) < 0)
-		std::cerr << "eraseClient(close) error" << std::endl;
-	if (_clients[index])
-		delete _clients[index];
-	_clients.erase(_clients.begin() + index);
-}
-
+/*----- EXCEPTION -----*/
 const char *Webserv::EpollCreateException::what() const throw()
 {
 	return ("Error: Epoll_create() failed");

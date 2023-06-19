@@ -138,8 +138,10 @@ std::string	generateCopyFile(const std::string& dir, const std::string& file)
 	while (AccessiblePath(copy_filepath))
 	{
 		const std::string	num = to_string(++last_copy);
-		copy_filepath = dir + filename + "_" + num + extension;
+		copy_filepath = dir + filename + "_copy" + num + extension;
 	}
+	if (!copy_filepath.empty() && copy_filepath[0] == '.')
+        copy_filepath.erase(0, 1);
 	return (copy_filepath);
 }
 
