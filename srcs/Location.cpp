@@ -12,9 +12,13 @@
 
 #include "Location.hpp"
 
-Location::Location() : _client_body_limit(0), _path(""), _root("") {}
+Location::Location() : _client_body_limit(0), _path(""), _root("")
+{
+}
 
-Location::~Location(void) {}
+Location::~Location(void)
+{
+}
 
 void	Location::printLocation(void) const
 {
@@ -50,9 +54,15 @@ void	Location::printLocation(void) const
 		std::cout << "\t" << it->first << ", " << it->second << std::endl;
 }
 
-std::string	Location::getRoot(void) const { return (this->_root); }
+std::string	Location::getRoot(void) const
+{
+	return (this->_root);
+}
 
-std::string	Location::getPath(void) const { return (this->_path); }
+std::string	Location::getPath(void) const
+{
+	return (this->_path);
+}
 
 std::string	Location::getCgi(std::string extension) const
 {
