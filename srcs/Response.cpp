@@ -76,7 +76,7 @@ void	Response::setCustomizeStatusPage(std::string &message)
 void	Response::addHeader(std::string key, std::string value)	
 { _head.insert(std::make_pair(key, value)); }
 
-Request*	Response::getRequest(){return (_request);}
+Request	Response::getRequest(){return (_request);}
 
 void	Response::setCgiBody(const std::string& body)
 { 

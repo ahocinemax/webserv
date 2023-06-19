@@ -64,14 +64,14 @@ void	Webserv::closeServers(void)
 		close((*it)->getSocket());
 		delete *it;
 	}
-	for (std::vector<Request*>::iterator it = _toDelete.begin() ; it != _toDelete.end() ; it++)
-	{
-		if (*it)
-		{
-			delete *it;
-			*it = NULL;
-		}
-	}
+	// for (std::vector<Request*>::iterator it = _toDelete.begin() ; it != _toDelete.end() ; it++)
+	// {
+	// 	if (*it)
+	// 	{
+	// 		delete *it;
+	// 		*it = NULL;
+	// 	}
+	// }
 	_clients.clear();
 }
 
@@ -232,59 +232,6 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 	std::cout << GREEN "File \"" << filePath << "\" deleted" RESET << std::endl;
 }
 
-//void	Webserv::postMethod(Client &client, Request &request)
-//{
-//	std::string		filePath = getPath(client, request.getPath());
-//
-//	struct stat		fileStat;
-//	lstat(filePath.c_str(), &fileStat);
-//	if (S_ISDIR(fileStat.st_mode))
-//	{
-//		if (request._header.find("content-type") == request._header.end())
-//			return (client.displayErrorPage(_statusCodeList.find(BAD_REQUEST)));
-//		std::size_t	begin = request._header["content-type"].find("boundary=");
-//		if (begin == std::string::npos)
-//			return (client.displayErrorPage(_statusCodeList.find(BAD_REQUEST)));
-//		std::string	boundary = request._header["content-type"].substr(begin + 9);
-//		begin = 0;
-//		std::size_t	end = 0;
-//		std::string	fileName;
-//		while (true)
-//		{
-//			begin = request.getBody().find("name=", begin) + 6;
-//			end = request.getBody().find_first_of("\"", begin);
-//			if (begin == std::string::npos || end == std::string::npos)
-//				break ;
-//			fileName = request.getBody().substr(begin, end - begin);
-//			begin = request.getBody().find("\r\n\r\n", begin) + 4;
-//			end = request.getBody().find(boundary, begin);
-//			if (begin == std::string::npos || end == std::string::npos)
-//				break ;
-//				std::cout << request.getBody() << std::endl;
-//			if (writeResponse(client, request.getBody().substr(begin, end - begin - 4), filePath + "/" + fileName) == FAILED)
-//				break ;
-//			if (request.getBody()[end + boundary.length()] == '-')
-//				break ;
-//		}		
-//	}
-//	else
-//		writeResponse(client, request.getBody(), filePath);
-//	int	code = 201;
-//	if (request._header["content-length"] == "0")
-//		code = 204;
-//
-//	Response	response(_statusCodeList[code]);
-//	std::string	header = response.makeHeader();
-//
-//	int ret = send(client.getSocket(), header.c_str(), header.length(), MSG_NOSIGNAL);
-//	if (ret < 0)
-//		client.displayErrorPage(_statusCodeList.find(500));
-//	else if (ret == 0)
-//		client.displayErrorPage(_statusCodeList.find(400));
-//	else
-//		std::cout << GREEN << filePath << " posted (" << code << ")" RESET << std::endl;
-//}
-
 void	Webserv::postMethod(Client &client, std::string path)
 {
     std::string filePath = getPath(client, path);
@@ -299,7 +246,7 @@ void	Webserv::postMethod(Client &client, std::string path)
         return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
     fclose(file);
 	
-	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
+	Response	response(_statusCodeList[client.getRequest()._statusCode]);
     response.addHeader("content-length", "0"); 
     response.addHeader("content-type", "text/plain"); 
     std::string header = response.makeHeader(false); 
@@ -360,7 +307,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 
 	file = fopen(filePath.c_str(), "rb");
 	const char *mime = getMimeType(filePath.c_str()); // Protected inside getMimeType function
-	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
+	Response	response(_statusCodeList[client.getRequest()._statusCode]);
 	response.addHeader("content-length", to_string(fileStat.st_size));
 	response.addHeader("content-type", mime);
 	std::string	header = response.makeHeader(false);
@@ -385,7 +332,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 	else
 	{
 		std::cout << RED "> Error on size sent { file_size: " << fileStat.st_size << " ; total sent: ( " << header.length() << " + " << totalSize - header.length() << " )}" RESET << std::endl;
-		std::cout << YELLOW "> Status code: " << client.getRequest()->_statusCode << RESET << std::endl;
+		std::cout << YELLOW "> Status code: " << client.getRequest()._statusCode << RESET << std::endl;
 	}
 }
 
@@ -488,14 +435,14 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 	return result;
 }
 
-void Webserv::CgiGetMethod(Client &client, Request *req)
+void Webserv::CgiGetMethod(Client &client, Request req)
 {
-	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
+	Response	response(_statusCodeList[client.getRequest()._statusCode]);
 	std::string	output;
-	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
+	for (int index = 0 ; index < req.getCgiBody().size() ; index++)
 	{
-		response.parseCgiBody(req->getCgiBody(index));
-		response.setCgiBody(req->getCgiBody(index));
+		response.parseCgiBody(req.getCgiBody(index));
+		response.setCgiBody(req.getCgiBody(index));
 	}
 	output = response.getCgiBody(0);
 	if (output.substr(0, 15) == "<!DOCTYPE html>" && output.substr(output.length() - 8) == "</html>\n")
@@ -506,7 +453,7 @@ void Webserv::CgiGetMethod(Client &client, Request *req)
 		std::ifstream	file;
 		std::size_t		balise;
 		line.clear();
-		std::string filePath = client._server->root + req->getPath();
+		std::string filePath = client._server->root + req.getPath();
 		file.open(filePath.c_str(), std::ifstream::in);
 		int end;
 		int i = 0;
@@ -522,7 +469,7 @@ void Webserv::CgiGetMethod(Client &client, Request *req)
 				{
 					if (balise != 0)
 						response._message.append(line, 0, balise - 1);
-					if ( i < req->getCgiBody().size())
+					if ( i < req.getCgiBody().size())
 					{
 						response._message.append(response.getCgiBody(i));
 						i++;
@@ -549,13 +496,13 @@ void Webserv::CgiGetMethod(Client &client, Request *req)
 	// std::cout << GREEN << "CGI response sent (" << convertToOctets(header.length() + response._message.length()) << ")" RESET << std::endl;
 }
 
-void Webserv::CgiPostMethod(Client &client, Request *req)
+void Webserv::CgiPostMethod(Client &client, Request req)
 {
-	Response	response(_statusCodeList[client.getRequest()->_statusCode]);
-	for (int index = 0 ; index < req->getCgiBody().size() ; index++)
+	Response	response(_statusCodeList[client.getRequest()._statusCode]);
+	for (int index = 0 ; index < req.getCgiBody().size() ; index++)
 	{
-		response.parseCgiBody(req->getCgiBody(index));
-		response.setBody(req->getCgiBody(index));
+		response.parseCgiBody(req.getCgiBody(index));
+		response.setBody(req.getCgiBody(index));
 	}
 	response.addHeader("Content-Length", to_string(response.getBody().length()));
 	if (response.getHeader("Content-type") == "")

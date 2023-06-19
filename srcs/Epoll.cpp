@@ -78,7 +78,6 @@ int	Webserv::routine(void)
 	struct epoll_event	events[MAX_EPOLL_EVENTS];
 	int 				nbEvents = 0;
 	int					index = 0;
-	Request				*request;
 
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 200)) < SUCCESS)
 		return (FAILED);
@@ -97,9 +96,10 @@ int	Webserv::routine(void)
 			index = initConnection(events[i].data.fd);
 
 		handleRequest(_clients[index], events[i]);
-		if ((request = _clients[index]->getRequest()) == NULL) // si la requête n'est pas encore complète
+		Request request = _clients[index]->getRequest();
+		if (request._statusCode != OK) // si la requête n'est pas encore complète
 			continue;
-		std::cout << "> " GREEN "[" << request->getMethod() << "] " BLUE "File requested is " << request->getPath() << RESET << std::endl;
+		std::cout << "> " GREEN "[" << request.getMethod() << "] " BLUE "File requested is " << request.getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
 		// StringMap::iterator it = request->_header.find("connection");
 		_toDelete.push_back(request);
@@ -354,35 +354,35 @@ void Webserv::handleRequest(Client *client, struct epoll_event &event)
 		return ;
 	client->parse(str);
 	client->setTimer();
-	if (client->getRequest()->_statusCode != OK)
+	if (client->getRequest()._statusCode != OK)
 		return (editSocket(client->getSocket(), EPOLLIN, event));
 	else
 		editSocket(client->getSocket(), EPOLLIN, event);
 }
 
-void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &event)
+void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
 {
 	(void)event;
 
 	std::cout << "> Handling response" << std::endl;
-	if (req == NULL)
+	if (req._statusCode != OK)
 		return ;
-	if (req->_statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
-		return (client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
-	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(*req, *client);	
+	if (req._statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
+		return (client->displayErrorPage(_statusCodeList.find(req._statusCode)));
+	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(req, *client);	
 	if (cgi.first) // is CGI valid or not
 	{
 		std::vector<std::string>::iterator it = cgi.second.begin();
 		for (; it != cgi.second.end(); it++)
 		{
-			req->setRoot(*it); // set new root path
-			if (!HandleCgi(*req, *client))
-				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
+			req.setRoot(*it); // set new root path
+			if (!HandleCgi(req, *client))
+				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req._statusCode)));
 		}
 		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
-		if (req->getMethod() == "GET")
+		if (req.getMethod() == "GET")
 			CgiGetMethod(*client, req);
-		else if (req->getMethod() == "POST")
+		else if (req.getMethod() == "POST")
 			CgiPostMethod(*client, req);
 		else
 			return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
@@ -391,22 +391,22 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 	else
 	{
 		if (client->_server->redirect_status != -1)
-			redirectMethod(*client, *req);
-		else if (req->getMethod() == "GET")
-			getMethod(*client, req->getPath());
-		else if (req->getMethod() == "POST")
+			redirectMethod(*client, req);
+		else if (req.getMethod() == "GET")
+			getMethod(*client, req.getPath());
+		else if (req.getMethod() == "POST")
 		{
 			std::string filepath;
-			if (isMultipartFormData(*req))
+			if (isMultipartFormData(req))
 			{
-				handleMultipart(*req, *client, &filepath);
-				if (req->_statusCode == NOT_FOUND || req->_statusCode == BAD_REQUEST)
+				handleMultipart(req, *client, &filepath);
+				if (req._statusCode == NOT_FOUND || req._statusCode == BAD_REQUEST)
 					(client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 			}
 			postMethod(*client, filepath);
 		}
-		else if (req->getMethod() == "DELETE")
-			deleteMethod(*client, req->getPath());
+		else if (req.getMethod() == "DELETE")
+			deleteMethod(*client, req.getPath());
 		else
 			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 	}

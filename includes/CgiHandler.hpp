@@ -57,7 +57,7 @@ class CgiHandler
         void                                removeHeader(std::string& output);
     
         Response                            *_response;
-        Request                             *_request;
+        Request                             _request;
         int                                 fd_in[2];
         int                                 fd_out[2];
         std::string                         _request_body;

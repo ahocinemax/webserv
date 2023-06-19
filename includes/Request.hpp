@@ -28,7 +28,7 @@ class Request
 		typedef std::vector<FuncForParse>	listFuncForParse;
 		Request(const std::string &request);
 		~Request();
-
+		Request() {}
 		int				_requestStatus;
 		int				_statusCode;
 		StringMap		_header;

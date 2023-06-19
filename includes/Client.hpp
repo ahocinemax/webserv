@@ -35,14 +35,14 @@ class Client
 
 		Client(Server *server);
 		~Client(void);
-		Client(void) {}
+		Client(void);
 
 		std::string	setRootPath(std::string path);
 		void		setRecvSize(int size);
 		int			setSocket(int socket);
 		void		setTimer(void);
 
-		Request		*getRequest(void) const;
+		Request		getRequest(void) const;
 		int			getRecvSize(void) const;
 		int			getSocket(void) const;
 		const char	*getClientAddr(void);
@@ -60,7 +60,7 @@ class Client
 		int			_socket;
 		int			_recvSize;
 		timeval		_timer;
-		Request		*_request;
+		Request		_request;
 		Response	_response;
 };
 
