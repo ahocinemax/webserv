@@ -396,7 +396,7 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 	if (path.length() >= 3)
 	{
 		std::string extension = path.substr(path.length() - 3, 3);
-		if (extension == ".pl" || extension == ".py")
+		if (extension == ".py")
 		{
 			result.first = true;
 			result.second.push_back(path);
@@ -406,7 +406,7 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 	if (path.length() >= 4)
 	{
 		std::string extension = path.substr(path.length() - 4, 4);
-		if (extension == ".cgi" || extension == ".pl" || extension == ".py" || extension == ".php")
+		if (extension == ".cgi" || extension == ".php")
 		{
 			result.first = true;
 			result.second.push_back(path);
@@ -498,8 +498,13 @@ void Webserv::CgiGetMethod(Client &client, Request *req)
 		response.setCgiBody(req->getCgiBody(index));
 	}
 	output = response.getCgiBody(0);
-	if (output.substr(0, 15) == "<!DOCTYPE html>" && output.substr(output.length() - 8) == "</html>\n")
-	    response._message = output;
+	// extrait l'extension du fichier (tout ce qui est après le dernier point)
+	std::string extension = req->getPath().substr(req->getPath().find_last_of(".") + 1);
+	std::cout << "extension : " << extension << std::endl;
+	if (extension == "php" || extension == "py")
+	{
+		response._message = output;
+	}
 	else
 	{
 		std::string		line;

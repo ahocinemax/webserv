@@ -37,9 +37,10 @@ if file_item.filename:
 else:
     message = 'No file uploaded :('
 
-print("Status: 201 Created", end="\r\n")
-print("Content-type: text/html", end="\r\n\r\n")
-print("""<!DOCTYPE html>
+response = """Status: 201 Created\r\n
+Content-type: text/html\r\n\r\n
+
+<!DOCTYPE html>
 <html>
     <head>
         <title>File Upload</title>
@@ -60,4 +61,6 @@ print("""<!DOCTYPE html>
         </form>
     </body>
 </html>
-""".format(message))
+""".format(response)
+
+sys.stdout.buffer.write(response.encode('utf-8'))
