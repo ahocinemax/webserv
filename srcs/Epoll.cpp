@@ -189,7 +189,7 @@ void Webserv::writeContent(Request &request, const std::string &path, const std:
 	file.close();
 }
 
-void Webserv::handleMultipart(Request &request, Client &client)
+void Webserv::handleMultipart(Request &request, Client &client, std::string *filepath)
 {
 	std::string	boundary;
 	size_t		pos;
@@ -229,12 +229,13 @@ void Webserv::handleMultipart(Request &request, Client &client)
 	//}
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
+	filepath = &filename;
 }
 
 bool Webserv::HandleCgi(Request &request, Client& client)
 {
 	if (request.getMethod() == "POST" && isMultipartFormData(request))
-		handleMultipart(request, client);
+		CgihandleMultipart(request, client);
 	CgiHandler cgi(request);
 	cgi.setEnv("SERVER_NAME", client._server->server_name);
 	cgi.setEnv("DOCUMENT_ROOT", "./html");
@@ -282,8 +283,10 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req->_statusCode)));
 		}
 		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
-		if (req->getMethod() == "GET" || req->getMethod() == "POST")
-			CgiMethod(*client, req);
+		if (req->getMethod() == "GET")
+			CgiGetMethod(*client, req);
+		else if (req->getMethod() == "POST")
+			CgiPostMethod(*client, req);
 		else
 			return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 		eraseTmpFile(cgi.second);
@@ -296,13 +299,14 @@ void Webserv::handleResponse(Client *client, Request *req, struct epoll_event &e
 			getMethod(*client, req->getPath());
 		else if (req->getMethod() == "POST")
 		{
+			std::string filepath;
 			if (isMultipartFormData(*req))
 			{
-				handleMultipart(*req, *client);
+				handleMultipart(*req, *client, &filepath);
 				if (req->_statusCode == NOT_FOUND || req->_statusCode == BAD_REQUEST)
-					(eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+					(client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
 			}
-			postMethod(*client, *req);
+			postMethod(*client, filepath);
 		}
 		else if (req->getMethod() == "DELETE")
 			deleteMethod(*client, req->getPath());

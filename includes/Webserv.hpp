@@ -68,13 +68,14 @@ class Webserv
 		void				sendAutoindex(Client &client, std::string filePath);
 		void				redirectMethod(Client &client, Request &request);
 		void				deleteMethod(Client &client, std::string path);
-		void				postMethod(Client &client, Request &request);
+		void				postMethod(Client &client, std::string path);
 		void				getMethod(Client &client, std::string path);
 
 		// CGI methods
 		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
 		bool 				HandleCgi(Request &request, Client& client);
-		void				CgiMethod(Client &client, Request *req);
+		void				CgiGetMethod(Client &client, Request *req);
+		void				CgiPostMethod(Client &client, Request *req);
 		void				eraseTmpFile(StrVector vec);
 		bool				isMultipartFormData(Request &request);
 		bool				getBoundary(std::string contentType, std::string &boundary);
@@ -82,7 +83,7 @@ class Webserv
 		void				upload_path(Client &client, std::string &path, Request &request, size_t pos);
 		void				CgihandleMultipart(Request &request, Client &client);
 		void				writeContent(Request &request, const std::string &path, const std::string &content);
-		void				handleMultipart(Request &request, Client &client);
+		void				handleMultipart(Request &request, Client &client, std::string *filepath);
 		void				setStatusCodes(void);
 		std::string			getPath(Client &client, std::string path);
 		bool				clientNotConnected(int socket);

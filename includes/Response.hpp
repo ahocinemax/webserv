@@ -31,6 +31,7 @@ class Response
 	void 		setCustomizeStatusPage(std::string &message);
 	void 		addHeader(std::string key, std::string value);
 	std::string getBody(void) const { return (_message); }
+	void		setBody(std::string message) { _message = message; };
 	std::string getCgiBody(int index) const { return (_cgibody[index]); }
 	Request 	*getRequest();
 	std::string	getHeader(std::string key);

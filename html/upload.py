@@ -52,7 +52,7 @@ print("""<!DOCTYPE html>
         <div>
             <center>{}</center>
         </div>
-        <form action="upload.html">
+        <form action="form.php">
             <center><input type="submit" value="Upload a new file" /></center>
         </form>
         <form action="index.html">
