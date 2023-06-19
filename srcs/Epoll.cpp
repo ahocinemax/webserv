@@ -128,8 +128,7 @@ void Webserv::eraseClient(int index)
 	int clientfd = _clients[index]->getSocket();
 
 	removeSocket(clientfd);
-	if (close(clientfd) < 0)
-		std::cerr << "eraseClient(close) error" << std::endl;
+	close(clientfd);
 	if (_clients[index])
 		delete _clients[index];
 	_clients.erase(_clients.begin() + index);

@@ -56,12 +56,22 @@ void Webserv::createServers(void)
 
 void	Webserv::closeServers(void)
 {
+	close(_epollFd);
 	for (ServerMap::iterator it = _serversMap.begin(); it != _serversMap.end(); it++)
 		close(it->second->_socket);
 	for (std::vector<Client*>::iterator it = _clients.begin() ; it != _clients.end() ; it++)
+	{
+		close((*it)->getSocket());
 		delete *it;
+	}
 	for (std::vector<Request*>::iterator it = _toDelete.begin() ; it != _toDelete.end() ; it++)
-		if (*it) delete *it;
+	{
+		if (*it)
+		{
+			delete *it;
+			*it = NULL;
+		}
+	}
 	_clients.clear();
 }
 
@@ -297,6 +307,7 @@ void	Webserv::postMethod(Client &client, std::string path)
         return;
     std::cout << GREEN << "File uploaded successfully" << RESET << std::endl;
 }
+
 void	Webserv::getMethod(Client &client, std::string path)
 {
 	std::string		filePath = getPath(client, path);
@@ -354,7 +365,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 	response.addHeader("content-type", mime);
 	std::string	header = response.makeHeader(false);
 	if (!client.sendContent(header.c_str(), header.length(), true))
-		return ;
+		return (fclose(file), void());
 	char		buffer[BUFFER_SIZE + 1];
 	ssize_t		readSize = 0;
 	ssize_t		totalSize = header.length();
