@@ -44,7 +44,7 @@ class Webserv
 		int					initConnection(int socket);
 
 		void				handleRequest(Client *client, struct epoll_event &event);
-		void				handleResponse(Client*, Request*, struct epoll_event&);
+		void				handleResponse(Client*, Request, struct epoll_event&);
 		int					findClientIndex(int socket);
 		int					routine(void);
 
@@ -55,7 +55,7 @@ class Webserv
 		/*  END  */
 
 	private:
-		std::vector<Request*>	_toDelete;
+		std::vector<Request>	_toDelete;
 		std::vector<Client*>	_clients;
 		ServerVector			_serversVec;
 		ServerMap				_serversMap;
@@ -85,8 +85,8 @@ class Webserv
 		
 		//Cgi(Webserv.cpp)
 		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
-		void				CgiGetMethod(Client &client, Request *req);
-		void				CgiPostMethod(Client &client, Request *req);
+		void				CgiGetMethod(Client &client, Request req);
+		void				CgiPostMethod(Client &client, Request req);
 		
 		//Methods
 		void				eraseTmpFile(StrVector vec);

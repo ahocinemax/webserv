@@ -33,7 +33,7 @@ class Response
 	std::string getBody(void) const { return (_message); }
 	void		setBody(std::string message) { _message = message; };
 	std::string getCgiBody(int index) const { return (_cgibody[index]); }
-	Request 	*getRequest();
+	Request 	getRequest();
 	std::string	getHeader(std::string key);
 
 	void 		setCgiBody(const std::string& cgibody);
@@ -48,7 +48,7 @@ private:
 	std::string					_statusMessage;
 	StringMap					_head;
 	std::vector<std::string>	_cgibody;
-	Request*					_request;
+	Request						_request;
 };
 
 #endif

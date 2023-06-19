@@ -12,7 +12,7 @@
 
 #include "Client.hpp"
 
-Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(0), _server(server)
+Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(""), _server(server)
 {}
 
 Client::~Client(void) {}
@@ -98,7 +98,7 @@ int		Client::getRecvSize(void) const { return _recvSize; }
 
 struct timeval	Client::getTimer(void) const { return _timer; }
 
-Request	*Client::getRequest() const { return (_request); }
+Request	Client::getRequest() const { return (_request); }
 
 int		Client::charCounter(std::string str, char c)
 {
@@ -175,9 +175,9 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 
 void Client::parse(const std::string& str)
 {
-	_request = new Request(str);
-	_request->setRoot(_server->root);
-	_request->parse();
+	_request = Request(str);
+	_request.setRoot(_server->root);
+	_request.parse();
 	//_request->PrintHeader();
 	return ;
 }
