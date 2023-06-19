@@ -38,11 +38,12 @@ class CgiHandler
         void                                        setEnv(const std::string &key, const std::string &val);
         const std::map<std::string, std::string>&   getEnv() const;
         const std::string&                          getScriptPath() const;
-        const std::string&                          getProgram() const;
+        void                                       setProgram(const std::string& program);
         bool                                        getCgiOutput(std::string& output);
         std::string                                 get_cgipath() const;
         char**                                      getEnvAsCstrArray() const;
         void                                        freeEnvCstrArray(char** env) const;
+        const std::string&                          getProgram() const;
 
     private:
         void                                Execute(void);
@@ -64,7 +65,8 @@ class CgiHandler
         int                                 _out;
         std::map<std::string, std::string>  _env;
         const std::string                   _scriptPath;
-        const std::string                   _program;
+        std::string                           _program;
+        std::string                         _pos_exec;
 };
 
 #endif

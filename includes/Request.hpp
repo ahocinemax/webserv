@@ -75,8 +75,8 @@ class Request
 		int				getPort() const;
 
 		/* Set */
-		void			setCgiBody(std::string& body);
 		void			setRoot(std::string& root);
+		void			setCgiBody(std::string& body);
 
 		/*test*/
 		void			PrintHeader();

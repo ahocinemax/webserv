@@ -18,9 +18,18 @@ CgiHandler::CgiHandler(Request &request) : _response(0),
 										   _in(-1),
 										   _out(-1),
 										   _scriptPath(request.getRoot()),
-										   _program(PHP_EXEC)
+										   _program("")
 {
+	size_t last_dot = _scriptPath.find_last_of(".");
+	if (last_dot != std::string::npos)
+	    _pos_exec = _scriptPath.substr(last_dot);
 	initCgiEnvironment();
+    if (!_pos_exec.empty())
+	{
+        setProgram(_pos_exec);
+		_program = getProgram();
+		std::cout << getProgram() << std::endl;
+	}
 	if (!AccessiblePath(_scriptPath))
 	{
 		_request->_statusCode = NOT_FOUND;
@@ -68,6 +77,19 @@ void CgiHandler::setEnv(const std::string &key, const std::string &val)
 	_env[key] = val;
 }
 
+void CgiHandler::setProgram(const std::string& program)
+{
+    if (program == ".php")
+        _program = PHP_EXEC;
+    else if (program == ".py")
+        _program = PYTHON_EXEC;
+    else
+    {
+        std::cerr << "Unsupported extension: "  << std::endl;
+        _program = "";
+    }
+}
+
 const std::map<std::string, std::string> &CgiHandler::getEnv() const
 {
 	return _env;
@@ -82,6 +104,7 @@ const std::string &CgiHandler::getProgram() const
 {
 	return (_program);
 }
+
 
 bool CgiHandler::getCgiOutput(std::string &output)
 {

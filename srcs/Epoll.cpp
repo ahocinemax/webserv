@@ -225,7 +225,15 @@ void Webserv::writeContent(Request &request, const std::string &path, const std:
 	else if (AccessiblePath(path))
 		newfile = pwd + generateCopyFile(pathDir, filename);
 	else
-		newfile = pwd + path;
+	{
+		if (!path.empty() && path[0] == '.')
+		{
+			newfile = pwd;
+			newfile.append(path, 1);
+		}
+		else
+			newfile = pwd + path;
+	}
 	request._statusCode = CREATED;
 	file.open(newfile.c_str(), std::ios::out | std::ios::binary);
 	if (!file.is_open())

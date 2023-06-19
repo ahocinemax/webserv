@@ -365,7 +365,6 @@ std::string Request::getNextWord(size_t sizeWord)
     return nextWord;
 }
 
-
 std::string		Request::getHeader(const std::string& headerName)
 {
 	return (_header.find(headerName) != _header.end() ? _header[headerName] : "");
