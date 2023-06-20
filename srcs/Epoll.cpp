@@ -364,8 +364,6 @@ void Webserv::handleRequest(Client *client, struct epoll_event &event)
 
 void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
 {
-	(void)event;
-
 	std::cout << "> Handling response" << std::endl;
 	if (req._statusCode != OK)
 		return ;
@@ -374,6 +372,7 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(req, *client);	
 	if (cgi.first) // is CGI valid or not
 	{
+		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
 		std::vector<std::string>::iterator it = cgi.second.begin();
 		for (; it != cgi.second.end(); it++)
 		{
@@ -381,7 +380,6 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 			if (!HandleCgi(req, *client))
 				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req._statusCode)));
 		}
-		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
 		if (req.getMethod() == "GET")
 			CgiGetMethod(*client, req);
 		else if (req.getMethod() == "POST")

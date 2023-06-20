@@ -15,8 +15,8 @@
         <nav>
         <ul>
           <li><a class="nav-link" href="form.php">Upload</a></li>
-          <li><a class="nav-link" href="aboutme.html">About me</a></li>
-          <li><a class="nav-link" href="formation.html">How it works</a></li>
+          <li><a class="nav-link" href="game.html">Play a game</a></li>
+          <li><a class="nav-link" href="readme.html">How it works</a></li>
         </ul>
       </nav>
     </div>
@@ -62,7 +62,7 @@
     </section>
   <!-- ------------------------------------------- CHARACTERS ----------------------------------------- -->
     <section>
-      <h1 style="position:relative; left: 20%;">South Park's characters</h1> <br>
+      <h1 style="position:relative; left: 20%; color: greenyellow;">South Park's characters</h1> <br>
       <div class="characters">
         <div class="character-card" data-video="vid/awesomeo.mp4">
           <img src="img/characters/awesomo.webp" alt="Character 1">
@@ -93,14 +93,44 @@
     <script type="text/javascript" src="js/carousel.js"></script>
     <script type="text/javascript" src="js/southpark.js"></script>
   <!-- ------------------------------------------- FOOTER ------------------------------------------- -->
-  <section class="footer_section">
+  <h1>Supprimer un fichier</h1>
+    
+    <form id="deleteForm">
+        <label for="filename">Nom du fichier :</label>
+        <input type="text" id="filename" name="filename">
+        <button type="button" onclick="deleteFile()">Supprimer</button>
+    </form>
+
+    <script>
+        function deleteFile()
+        {
+            const filenameInput = document.getElementById('filename');
+            const filename = filenameInput.value;
+
+            const request = new XMLHttpRequest();
+            request.open('DELETE', filename);
+            request.onload = function()
+            {
+                if (request.status === 200)
+                    console.log('Fichier supprimé avec succès : ' + filename);
+                else
+                    console.error('Erreur lors de la suppression du fichier : ' + filename);
+            };
+            request.onerror = function()
+            {
+                console.error('Erreur lors de la requête DELETE');
+            };
+            request.send();
+        }
+    </script>
+  <section>
 		<?php
 			$SERVER_NAME = $_SERVER['SERVER_NAME'];
 			$MESSAGE = "You are actually connected to : <strong>";
 			if ($SERVER_NAME)
       $MESSAGE .= "<span style='color: blue;'>$SERVER_NAME</span></strong></p>";
 			else
-				$MESSAGE .= "42.fr</strong></p>";
+				$MESSAGE .= "<span style='color: red;'>42.fr</span></strong></p>";
 			echo "$MESSAGE";
 		?>
     <p>&copy; 2023 - All Rights Reserved By mtsuji & ahocine.</p>

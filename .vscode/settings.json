@@ -52,7 +52,14 @@
         "span": "cpp",
         "ctime": "cpp",
         "iomanip": "cpp",
-        "csignal": "cpp"
+        "csignal": "cpp",
+        "bitset": "cpp",
+        "chrono": "cpp",
+        "condition_variable": "cpp",
+        "cstring": "cpp",
+        "ratio": "cpp",
+        "regex": "cpp",
+        "shared_mutex": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

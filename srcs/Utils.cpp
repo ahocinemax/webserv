@@ -165,3 +165,70 @@ void	SigpipeSet(int state)
 		signal(SIGPIPE, oldHandler_SigPipe);
 	}
 }
+
+std::string decodeURIComponent(std::string encoded)
+{
+    std::string decoded = encoded;
+    std::string haystack;
+
+    int dynamicLength = decoded.size() - 2;
+
+    if (decoded.size() < 3)
+        return decoded;
+
+    regex_t regex;
+    regmatch_t match;
+
+    if (regcomp(&regex, "%[0-9A-F]{2}", REG_EXTENDED) != 0)
+        return decoded;
+
+    for (int i = 0; i < dynamicLength; i++)
+    {
+        haystack = decoded.substr(i, 3);
+
+        if (regexec(&regex, haystack.c_str(), 1, &match, 0) == 0)
+        {
+            haystack.replace(0, 1, "0x");
+            unsigned int rc = 0;
+            std::istringstream(haystack) >> std::hex >> rc;
+            decoded.replace(i, 3, 1, static_cast<char>(rc));
+			i++;
+        }
+
+        dynamicLength = decoded.size() - 2;
+    }
+
+    regfree(&regex);
+
+    return decoded;
+}
+
+std::string encodeURIComponent(std::string decoded)
+{
+    std::ostringstream oss;
+    std::string pattern("[!'\\(\\)*-.0-9A-Za-z_~]");
+
+    regex_t regex;
+	regmatch_t match;
+
+    if (regcomp(&regex, pattern.c_str(), REG_EXTENDED) != 0)
+        return decoded;
+
+    for (size_t i = 0; i < decoded.size(); i++)
+    {
+        std::string c(1, decoded[i]);
+
+        if (regexec(&regex, c.c_str(), 1, &match, 0) == 0)
+        {
+            oss << c;
+        }
+        else
+        {
+            oss << "%" << std::uppercase << std::hex << (unsigned int)(0xFF & decoded[i]);
+        }
+    }
+
+    regfree(&regex);
+
+    return oss.str();
+}

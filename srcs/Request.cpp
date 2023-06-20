@@ -138,6 +138,7 @@ int	Request::FuncForParseHeader()
 
 void	Request::parsePath()
 {
+	std::size_t		it;
 	std::string		path;
 	size_t			pos;
 
@@ -156,6 +157,8 @@ void	Request::parsePath()
 	if (pos != std::string::npos)
 	{
 		_query = path.substr(pos + 1);
+		_query = decodeURIComponent(_query);
+		std::cout << "Query: " << _query << std::endl;
 		path.erase(pos);
 	}
 	_path = path;

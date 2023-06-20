@@ -27,6 +27,7 @@
 # include <stdlib.h>
 # include <cstdlib>
 # include <signal.h>
+# include <regex.h>
 
 # define MAX_URI_LENGTH					64
 # define BUFFER_SIZE					30720
@@ -118,6 +119,8 @@ std::string	generateCopyFile(const std::string& dir, const std::string& file);
 bool		AccessiblePath(const std::string& path);
 void		SigpipeIgnore(int sig);
 void		SigpipeSet(int state);
+std::string decodeURIComponent(std::string encoded);
+std::string encodeURIComponent(std::string decoded);
 
 template <typename T>
 std::string to_string(T input)

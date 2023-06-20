@@ -94,24 +94,23 @@
     </form>
 
     <script>
-        function deleteFile() {
+        function deleteFile()
+        {
             const filenameInput = document.getElementById('filename');
             const filename = filenameInput.value;
 
             const request = new XMLHttpRequest();
             request.open('DELETE', filename);
-            request.onload = function() {
-                if (request.status === 200) {
-                    console.log('Fichier supprimé avec succès : ' + filename);
-                    // Faire quelque chose après la suppression réussie
-                } else {
-                    console.error('Erreur lors de la suppression du fichier : ' + filename);
-                    // Gérer l'erreur de suppression
-                }
+            request.onload = function()
+            {
+                if (request.status === 200)
+					document.innerHTML = '<div class="message success">Le fichier "' + filename + '" a été téléchargé avec succès.</div>';
+                else
+					document.innerHTML = '<div class="message error">Échec du téléchargement du fichier!</div>';
             };
-            request.onerror = function() {
-                console.error('Erreur lors de la requête DELETE');
-                // Gérer l'erreur de requête
+            request.onerror = function()
+            {
+                document.innerHTML = 'Erreur lors de la requête DELETE';
             };
             request.send();
         }
