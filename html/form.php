@@ -84,5 +84,37 @@
 
     <!-- Include form.js -->
     <script type="text/javascript" src="js/form.js"></script>
+
+	<h1>Supprimer un fichier</h1>
+    
+    <form id="deleteForm">
+        <label for="filename">Nom du fichier :</label>
+        <input type="text" id="filename" name="filename">
+        <button type="button" onclick="deleteFile()">Supprimer</button>
+    </form>
+
+    <script>
+        function deleteFile() {
+            const filenameInput = document.getElementById('filename');
+            const filename = filenameInput.value;
+
+            const request = new XMLHttpRequest();
+            request.open('DELETE', filename);
+            request.onload = function() {
+                if (request.status === 200) {
+                    console.log('Fichier supprimé avec succès : ' + filename);
+                    // Faire quelque chose après la suppression réussie
+                } else {
+                    console.error('Erreur lors de la suppression du fichier : ' + filename);
+                    // Gérer l'erreur de suppression
+                }
+            };
+            request.onerror = function() {
+                console.error('Erreur lors de la requête DELETE');
+                // Gérer l'erreur de requête
+            };
+            request.send();
+        }
+    </script>
 </body>
 </html>

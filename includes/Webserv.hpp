@@ -55,7 +55,6 @@ class Webserv
 		/*  END  */
 
 	private:
-		std::vector<Request>	_toDelete;
 		std::vector<Client*>	_clients;
 		ServerVector			_serversVec;
 		ServerMap				_serversMap;

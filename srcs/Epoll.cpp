@@ -98,11 +98,14 @@ int	Webserv::routine(void)
 		handleRequest(_clients[index], events[i]);
 		Request request = _clients[index]->getRequest();
 		if (request._statusCode != OK) // si la requête n'est pas encore complète
-			continue;
+		{
+			if (request._requestStatus == COMPLETE)
+				_clients[index]->displayErrorPage(_statusCodeList.find(request._statusCode));
+			continue ;
+		}
 		std::cout << "> " GREEN "[" << request.getMethod() << "] " BLUE "File requested is " << request.getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
 		// StringMap::iterator it = request->_header.find("connection");
-		_toDelete.push_back(request);
 	}
 	return (SUCCESS);
 }
@@ -237,7 +240,6 @@ void Webserv::writeContent(Request &request, const std::string &path, const std:
 	file.open(newfile.c_str(), std::ios::out | std::ios::binary);
 	if (!file.is_open())
 	{
-    	std::cerr << "Error: " << strerror(errno) << std::endl;
 		request._statusCode = INTERNAL_SERVER_ERROR;
 		return ;
 	}

@@ -42,14 +42,17 @@ std::string	Response::makeHeader(bool appendBody)
 	return (result);
 }
 
-void	Response::setDefaultStatusPage() // page d'erreur par défaut
+void	Response::setDefaultStatusPage(StatusMap::iterator statusCode) // page d'erreur par défaut
 {
+	std::cout << YELLOW "[TEST]" RESET << statusCode->second << std::endl;
 	std::cout << "> sending default response page" << std::endl;
 	_message.clear();
 	_message = "<!DOCTYPE html> \
 	<html> \
 		<head> \
-			<title>Webserv - Page d'erreur (" + getStatusCode() + ") </title> \
+			<title>Webserv - Page d'erreur (";
+	_message += to_string(statusCode->first);
+	_message += ") </title> \
 			<style> \
 				body { font-family: Arial, sans-serif; background-color: #f2f2f2; color: #333333; margin: 0; padding: 0; } \
 				.error-container { text-align: center; margin-top: 200px; } \
@@ -59,8 +62,12 @@ void	Response::setDefaultStatusPage() // page d'erreur par défaut
 		</head> \
 		<body> \
 			<div class='error-container'> \
-				<h1>Erreur " + getStatusCode() +"</h1> \
-				<p>" + getStatusMessage() + ".</p> \
+				<h1>Erreur ";
+	_message += to_string(statusCode->first);
+	_message += "</h1> \
+				<p>";
+	_message += statusCode->second;
+	_message += ".</p> \
 			</div> \
 		</body> \
 	</html>";

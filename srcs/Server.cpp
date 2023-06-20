@@ -12,7 +12,7 @@
 
 #include "Parser.hpp"
 
-Server::Server(void) :	client_body_limit(1024),
+Server::Server(void) :	client_body_limit(1048576),
 						autoindex(false),
 						redirect_status(-1),
 						_ipAddress(""),

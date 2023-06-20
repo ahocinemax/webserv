@@ -31,11 +31,6 @@ Webserv::Webserv(ServerVector server) : _serversVec(server)
 				statusCode << "\" in server \"" << _serversVec[i].server_name << "\"" RESET << std::endl;
 			}
 		}
-		// if (_defaultServers.find(_serversVec[i]._socket) == _defaultServers.end())
-		// 	_defaultServers.insert(std::make_pair(_serversVec[i]._socket, &_serversVec[i]));
-
-		// if (_serversMap.find(_serversVec[i]._socket) != _serversMap.end())
-		// 	_serversMap.insert(std::make_pair(_serversVec[i]._socket, &_serversVec[i]));
 	}
 }
 
@@ -64,14 +59,6 @@ void	Webserv::closeServers(void)
 		close((*it)->getSocket());
 		delete *it;
 	}
-	// for (std::vector<Request*>::iterator it = _toDelete.begin() ; it != _toDelete.end() ; it++)
-	// {
-	// 	if (*it)
-	// 	{
-	// 		delete *it;
-	// 		*it = NULL;
-	// 	}
-	// }
 	_clients.clear();
 }
 

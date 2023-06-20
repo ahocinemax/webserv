@@ -23,7 +23,7 @@ class Response
 		~Response();
 
 		std::string	makeHeader(bool appendBody = false);
-		void		setDefaultStatusPage(void);
+		void		setDefaultStatusPage(StatusMap::iterator statusCode);
 
 	std::string getDate(void) const;
 	std::string getStatusCode(void) const;
