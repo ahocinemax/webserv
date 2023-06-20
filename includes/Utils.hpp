@@ -67,8 +67,8 @@
 #	define	GATEWAY_TIMEOUT				504
 #	define	HTTP_VERSION_NOT_SUPPORTED	505
 #	define	BUFSIZE						5000
-#	define	PHP_EXEC					"/usr/bin/php-cgi"	
-#	define	PYTHON_EXEC					"/usr/bin/python3"	
+#	define	PHP_EXEC					"/usr/bin/php-cgi"
+#	define	PYTHON_EXEC					"/usr/bin/python3"
 
 
 # define CRLF			"\r\n"
