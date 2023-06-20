@@ -84,7 +84,7 @@
 
     <!-- Include form.js -->
     <script type="text/javascript" src="js/form.js"></script>
-
+	<div class="container">
 	<h1>Supprimer un fichier</h1>
     
     <form id="deleteForm">
@@ -115,5 +115,7 @@
             request.send();
         }
     </script>
+	<a href="checkupload.py">View uploaded files</a>
+	</div>
 </body>
 </html>

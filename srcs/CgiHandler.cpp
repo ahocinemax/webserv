@@ -308,12 +308,18 @@ bool CgiHandler::WaitforChild(int pid)
 		usleep(500);
 		if (std::difftime(time(0), start) >= TIMEOUT_LIMIT)
 		{
+			std::cerr << "Timeout reached. Killing the child process." << std::endl;
 			kill(pid, SIGINT);
 			break;
 		}
 	}
-	if (WIFEXITED(wstatus) && (WEXITSTATUS(wstatus) != EXIT_FAILURE))
-		return true;
+	//if (WIFEXITED(wstatus) && (WEXITSTATUS(wstatus) != EXIT_FAILURE))
+	//	return true;
+	if (WIFEXITED(wstatus))
+    {
+		std::cerr << "Child process exited with status: " << WEXITSTATUS(wstatus) << std::endl;
+    	return (WEXITSTATUS(wstatus) != EXIT_FAILURE);
+	}
 	else
 		return false;
 }
