@@ -364,12 +364,14 @@ void Webserv::handleRequest(Client *client, struct epoll_event &event)
 
 void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
 {
+	std::pair<bool, std::vector<std::string> > cgi;
 	std::cout << "> Handling response" << std::endl;
 	if (req._statusCode != OK)
 		return ;
 	if (req._statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req._statusCode)));
-	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(req, *client);	
+	if (req.getMethod() == "GET" || req.getMethod() == "POST")
+		cgi = isValidCGI(req, *client);	
 	if (cgi.first) // is CGI valid or not
 	{
 		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
