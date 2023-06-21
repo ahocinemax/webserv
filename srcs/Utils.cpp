@@ -170,6 +170,7 @@ std::string decodeURIComponent(std::string encoded)
 {
     std::string decoded = encoded;
     std::string haystack;
+	std::string doubleHaystack;
 
     int dynamicLength = decoded.size() - 2;
 
@@ -185,12 +186,19 @@ std::string decodeURIComponent(std::string encoded)
     for (int i = 0; i < dynamicLength; i++)
     {
         haystack = decoded.substr(i, 3);
+        doubleHaystack = decoded.substr(i, 6);
 
-        if (regexec(&regex, haystack.c_str(), 1, &match, 0) == 0)
+		if (!doubleHaystack.compare("%C3%A9"))
+        {
+            decoded.replace(i, 6, "é");
+			i++;
+        }
+        else if (regexec(&regex, haystack.c_str(), 1, &match, 0) == 0)
         {
             haystack.replace(0, 1, "0x");
             unsigned int rc = 0;
             std::istringstream(haystack) >> std::hex >> rc;
+			std::cout << "hs: " << haystack << std::endl;
             decoded.replace(i, 3, 1, static_cast<char>(rc));
 			i++;
         }

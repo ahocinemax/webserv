@@ -141,10 +141,7 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 		file.close();
 	}
 	else // page d'erreur pas trouvée, envoie de la page par défaut
-	{
-		std::cout << "first: " << statusCode->first << " second: " << statusCode->second << std::endl;
 		response.setDefaultStatusPage(statusCode);
-	}	
 	response.addHeader("content-type", "text/html");
 	response.addHeader("content-length", to_string(response.getBody().length()));
 	if (statusCode->first == METHOD_NOT_ALLOWED)
@@ -179,7 +176,6 @@ void Client::parse(const std::string& str)
 	_request = Request(str);
 	_request.setRoot(_server->root);
 	_request.parse();
-	std::cout << "size: " << _request.getSize() << std::endl;
 	if (_request.getSize() > _server->client_body_limit)
 	{
 		std::cout << "client_body_limit: " << _server->client_body_limit << std::endl;
