@@ -147,10 +147,7 @@ std::string	generateCopyFile(const std::string& dir, const std::string& file)
 
 bool	AccessiblePath(const std::string& path)
 {
-	int	ret;
-
-	ret = access(path.c_str(), F_OK); 
-	return (!ret);
+	return !(access(path.c_str(), F_OK));
 }
 
 void	SigPipeIgnore(int sig) { (void) sig; }

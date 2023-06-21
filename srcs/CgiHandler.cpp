@@ -32,7 +32,7 @@ CgiHandler::CgiHandler(Request &request) : _response(0),
 	}
 	if (!AccessiblePath(_scriptPath))
 	{
-		_request._statusCode = NOT_FOUND;
+		_request._statusCode = FORBIDDEN;
 		std::cerr << "error path" << std::endl;
 		return;
 	}

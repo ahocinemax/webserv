@@ -359,7 +359,7 @@ void Webserv::handleRequest(Client *client, struct epoll_event &event)
 	if (client->getRequest()._statusCode != OK)
 		return (editSocket(client->getSocket(), EPOLLIN, event));
 	else
-		editSocket(client->getSocket(), EPOLLIN, event);
+	editSocket(client->getSocket(), EPOLLIN, event);
 }
 
 void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
