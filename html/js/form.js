@@ -48,3 +48,22 @@ function uploadData()
         displayMessage('Échec du téléchargement du fichier!', 'error');
     })
 }
+
+function downloadFile() {
+    const filenameInput = document.getElementById('downloadname');
+    const filename = filenameInput.value;
+    console.log(filename);
+    if (filename.trim() === '')
+    {
+        alert('Veuillez saisir un nom de fichier valide.');
+        return;
+    }
+
+    const link = document.createElement('a');
+    link.href = filename;
+    link.download = filename;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}

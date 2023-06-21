@@ -374,29 +374,29 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 				end = content.find("?>", tmp + 1);
 				if (start != std::string::npos && end != std::string::npos)
 				{
-				std::string phpSection = content.substr(start, end - start + 2); // On ajoute chaque section PHP dans un nouveau fichier
-				std::string filePath;
-				std::stringstream ss_php;
-				ss_php << path << "tmp_" << count++ << ".php"; // Add counter to filename to make it unique
-				ss_php >> filePath;
-				int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-				if (fd < 0)
-				{
-					std::cerr << RED << "Failed to open php script: " << RESET << filePath << std::endl;
-					return result;							
-				}
-				if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
-				{
-					std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
-					return result;							
-				} // On garde le fichier pour l'exécuter dans le CGI Handler
-				if (close(fd) < 0)
-				{
-					std::cerr << RED << "Failed to close php script: " << RESET << path << std::endl;
-					return result;						
-				}
-				result.first = true;
-				result.second.push_back(filePath);
+					std::string phpSection = content.substr(start, end - start + 2); // On ajoute chaque section PHP dans un nouveau fichier
+					std::string filePath;
+					std::stringstream ss_php;
+					ss_php << path << "tmp_" << count++ << ".php"; // Add counter to filename to make it unique
+					ss_php >> filePath;
+					int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+					if (fd < 0)
+					{
+						std::cerr << RED << "Failed to open php script: " << RESET << filePath << std::endl;
+						return result;							
+					}
+					if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
+					{
+						std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
+						return result;							
+					} // On garde le fichier pour l'exécuter dans le CGI Handler
+					if (close(fd) < 0)
+					{
+						std::cerr << RED << "Failed to close php script: " << RESET << path << std::endl;
+						return result;						
+					}
+					result.first = true;
+					result.second.push_back(filePath);
 				}
 			}
 		}

@@ -81,8 +81,6 @@ int	Webserv::routine(void)
 
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 200)) < SUCCESS)
 		return (FAILED);
-	if (nbEvents == 0)
-		checkTimeout();
 	for (int i = 0; i < nbEvents; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
@@ -99,14 +97,14 @@ int	Webserv::routine(void)
 		Request request = _clients[index]->getRequest();
 		if (request._statusCode != OK) // si la requête n'est pas encore complète
 		{
-			if (request._requestStatus == COMPLETE)
-				_clients[index]->displayErrorPage(_statusCodeList.find(request._statusCode));
+			if (request._statusCode == PAYLOAD_TOO_LARGE)
+				eraseClient(index);
 			continue ;
 		}
 		std::cout << "> " GREEN "[" << request.getMethod() << "] " BLUE "File requested is " << request.getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
-		// StringMap::iterator it = request->_header.find("connection");
 	}
+	checkTimeout();
 	return (SUCCESS);
 }
 
@@ -357,19 +355,28 @@ void Webserv::handleRequest(Client *client, struct epoll_event &event)
 	client->parse(str);
 	client->setTimer();
 	if (client->getRequest()._statusCode != OK)
-		return (editSocket(client->getSocket(), EPOLLIN, event));
-	else
-		editSocket(client->getSocket(), EPOLLIN, event);
+		client->displayErrorPage(_statusCodeList.find(client->getRequest()._statusCode));
+	editSocket(client->getSocket(), EPOLLIN, event);
 }
 
 void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
 {
 	std::cout << "> Handling response" << std::endl;
-	if (req._statusCode != OK)
-		return ;
+	MethodVector::iterator it = client->_server->allowMethods.begin();
+	for (; it != client->_server->allowMethods.end(); it++)
+	{
+		std::cout << "Method: " << *it << std::endl;
+		if (*it == strToMethodType(req.getMethod()))
+			break ;
+	}
+	if (it == client->_server->allowMethods.end())
+		return (req._statusCode = METHOD_NOT_ALLOWED, client->displayErrorPage(_statusCodeList.find(req._statusCode)));
+	std::pair<bool, std::vector<std::string> > cgi;
+	cgi.first = false;
 	if (req._statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req._statusCode)));
-	std::pair<bool, std::vector<std::string> > cgi = isValidCGI(req, *client);	
+	if (req.getMethod() == "GET" || req.getMethod() == "POST")
+		cgi = isValidCGI(req, *client);
 	if (cgi.first) // is CGI valid or not
 	{
 		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
@@ -412,8 +419,6 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 	}
 	std::cout << std::endl;
 }
-
-
 
 /*----- EXCEPTION -----*/
 const char *Webserv::EpollCreateException::what() const throw()
