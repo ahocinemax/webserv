@@ -44,7 +44,6 @@ std::string	Response::makeHeader(bool appendBody)
 
 void	Response::setDefaultStatusPage(StatusMap::iterator statusCode) // page d'erreur par défaut
 {
-	std::cout << YELLOW "[TEST]" RESET << statusCode->second << std::endl;
 	std::cout << "> sending default response page" << std::endl;
 	_message.clear();
 	_message = "<!DOCTYPE html> \

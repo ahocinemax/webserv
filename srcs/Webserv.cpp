@@ -288,7 +288,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 		{
 			if (client._server->autoindex)
 				return (sendAutoindex(client, filePath));
-			return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
+			return (client.displayErrorPage(_statusCodeList.find(FORBIDDEN)));
 		}
 	}
 
@@ -390,11 +390,7 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 						std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
 						return result;							
 					} // On garde le fichier pour l'exécuter dans le CGI Handler
-					if (close(fd) < 0)
-					{
-						std::cerr << RED << "Failed to close php script: " << RESET << path << std::endl;
-						return result;						
-					}
+					close(fd);
 					result.first = true;
 					result.second.push_back(filePath);
 				}
@@ -407,15 +403,8 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 	{
 		for (it2 = it->_cgi.begin() ; it2 != it->_cgi.end(); it2++)
 		{
-			if (path.find(it2->first) != std::string::npos)
-			{
-				if (it2->second != "")
-				{
-					result.first = true;
-					result.second.push_back(path);
-					return result;
-				}
-			}
+			if (path.find(it2->first) != std::string::npos && it2->second != "")
+				return (result.first = true, result.second.push_back(path), result);
 		}
 	}
 
@@ -434,11 +423,8 @@ void Webserv::CgiGetMethod(Client &client, Request req)
 	output = response.getCgiBody(0);
 	// extrait l'extension du fichier (tout ce qui est après le dernier point)
 	std::string extension = req.getPath().substr(req.getPath().find_last_of(".") + 1);
-	std::cout << "extension : " << extension << std::endl;
 	if (extension == "php" || extension == "py")
-	{
 		response._message = output;
-	}
 	else
 	{
 		std::string		line;
@@ -564,8 +550,8 @@ std::string	Webserv::getPath(Client &client, std::string path)
 	Location	*location = client._server->getLocation(path);
 	if (location != NULL)
 		res = location->getPath();
-	filePath.append(path.substr(res.length()));
-	return (filePath);	
+	filePath.append(path);
+	return (filePath);
 }
 
 bool	Webserv::clientNotConnected(int socket)

@@ -36,6 +36,11 @@
 	</style>
 </head>
 <body>
+	<header>
+		<div>
+			<a href="index.html">Home</a>
+		</div>
+	</header>
 	<div class="container">
 		<h1>Upload de fichier<h1>
 		<h3>(With CGI version(PHP))</h3>

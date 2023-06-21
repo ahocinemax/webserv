@@ -97,7 +97,7 @@ int	Webserv::routine(void)
 		Request request = _clients[index]->getRequest();
 		if (request._statusCode != OK) // si la requête n'est pas encore complète
 		{
-			if (request._statusCode == PAYLOAD_TOO_LARGE)
+			if (request._statusCode == PAYLOAD_TOO_LARGE || request._requestStatus == INCOMPLETE)
 				eraseClient(index);
 			continue ;
 		}
@@ -362,15 +362,31 @@ void Webserv::handleRequest(Client *client, struct epoll_event &event)
 void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
 {
 	std::cout << "> Handling response" << std::endl;
-	MethodVector::iterator it = client->_server->allowMethods.begin();
-	for (; it != client->_server->allowMethods.end(); it++)
+	std::string fullPath = getPath(*client, req.getPath());
+	// request._path is in Location ? -> yes -> check if method is allowed
+	MethodVector allowed;
+
+	// Checking particular route allowMethods
+	std::vector<Location>::iterator location = client->_server->locations.begin();
+	for (; location != client->_server->locations.end(); location++)
 	{
-		std::cout << "Method: " << *it << std::endl;
+		if (fullPath.find(location->getPath()) != std::string::npos)
+			allowed = location->_allowMethods;
+	}
+
+	// Checking server allowMethods
+	if (allowed.empty())
+		allowed = client->_server->allowMethods;
+	MethodVector::iterator it = allowed.begin();
+	for (; it != allowed.end(); it++)
+	{
 		if (*it == strToMethodType(req.getMethod()))
 			break ;
 	}
-	if (it == client->_server->allowMethods.end())
+
+	if (it == allowed.end())
 		return (req._statusCode = METHOD_NOT_ALLOWED, client->displayErrorPage(_statusCodeList.find(req._statusCode)));
+
 	std::pair<bool, std::vector<std::string> > cgi;
 	cgi.first = false;
 	if (req._statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
@@ -379,7 +395,6 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 		cgi = isValidCGI(req, *client);
 	if (cgi.first) // is CGI valid or not
 	{
-		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
 		std::vector<std::string>::iterator it = cgi.second.begin();
 		for (; it != cgi.second.end(); it++)
 		{
