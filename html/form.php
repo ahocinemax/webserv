@@ -82,9 +82,7 @@
 		</form>
 	</div>
 
-    <!-- Include form.js -->
-    <script type="text/javascript" src="js/form.js"></script>
-
+	<div class="container">
 	<h1>Supprimer un fichier</h1>
     
     <form id="deleteForm">
@@ -94,26 +92,42 @@
     </form>
 
     <script>
-        function deleteFile()
-        {
-            const filenameInput = document.getElementById('filename');
-            const filename = filenameInput.value;
+		function deleteFile()
+		{
+			const filenameInput = document.getElementById('filename');
+			const filename = filenameInput.value;
 
-            const request = new XMLHttpRequest();
-            request.open('DELETE', filename);
-            request.onload = function()
-            {
-                if (request.status === 200)
-					document.innerHTML = '<div class="message success">Le fichier "' + filename + '" a été téléchargé avec succès.</div>';
-                else
-					document.innerHTML = '<div class="message error">Échec du téléchargement du fichier!</div>';
-            };
-            request.onerror = function()
-            {
-                document.innerHTML = 'Erreur lors de la requête DELETE';
-            };
-            request.send();
-        }
-    </script>
+			const request = new XMLHttpRequest();
+			request.open('DELETE', filename);
+			request.onload = function()
+			{
+				const deleteForm = document.getElementById('deleteForm');
+				if (request.status === 200)
+				{
+					console.log('ok');
+					deleteForm.innerHTML = '<div class="message success">Le fichier "' + filename + '" a été supprimé avec succès.</div>';
+				}
+				else
+				{
+					console.log('error');
+					deleteForm.innerHTML = '<div class="message error">Échec de la suppression du fichier! Error ' + request.status + '</div>';
+				}
+			};
+			request.onerror = function()
+			{
+				deleteForm.innerHTML = 'Erreur lors de la requête DELETE';
+			};
+			request.send();
+		}
+	</script>
+	<a href="checkupload.py">View uploaded files</a>
+	</div>
+	<div class="download">
+		<h1>Téléchargement de fichier</h1>
+		<p>Entrez le nom du fichier que vous souhaitez télécharger :</p>
+		<input type="text" id="downloadname" required>
+		<button onclick="downloadFile()">Télécharger</button>
+	</div>
+	<script type="text/javascript" src="js/form.js"></script>
 </body>
 </html>

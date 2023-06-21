@@ -177,10 +177,7 @@ void Client::parse(const std::string& str)
 	_request.setRoot(_server->root);
 	_request.parse();
 	if (_request.getSize() > _server->client_body_limit)
-	{
-		std::cout << "client_body_limit: " << _server->client_body_limit << std::endl;
 		_request._statusCode = PAYLOAD_TOO_LARGE;
-	}
 }
 
 bool	Client::sendContent(const char *content, std::size_t size, bool display)
