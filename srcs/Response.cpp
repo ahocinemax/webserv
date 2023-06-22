@@ -114,7 +114,7 @@ void Response::parseCgiStatusLine(std::string &body)
 	trimSpacesStr(&value);
 	if (convertHttpCode(value, &code))
 	{
-		getNextWord(body, value, "\r\n");
+		getNextWord(body, value, CRLF);
 		trimSpacesStr(&value);
 		if (_statusCode == value)
 			setStatusCode(code);
