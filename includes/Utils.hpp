@@ -122,6 +122,8 @@ void		SigpipeSet(int state);
 std::string decodeURIComponent(std::string encoded);
 std::string encodeURIComponent(std::string decoded);
 
+std::string	getExtensionOf(const std::string& path);
+
 template <typename T>
 std::string to_string(T input)
 {

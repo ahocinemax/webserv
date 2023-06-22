@@ -82,7 +82,6 @@ std::string readFd(int fd)
 		return ("");
 	}
 
-	std::cout << RED "readFd: \n" RESET << str << std::endl;
 	return (str);
 }
 
@@ -121,6 +120,13 @@ bool	convertHttpCode(const std::string& str, int* code)
 	return (*code >= 0 && *code <= 505);
 }
 
+std::string	getExtensionOf(const std::string& path)
+{
+	const size_t	pos_extention = path.find_last_of('.');
+	std::string		res = (pos_extention == std::string::npos) ? "" : path.substr(pos_extention, path.length() - pos_extention);
+	std::cout << "res: " << res << std::endl;
+	return (res);
+}
 
 std::string	generateCopyFile(const std::string& dir, const std::string& file)
 {
@@ -167,6 +173,7 @@ std::string decodeURIComponent(std::string encoded)
 {
     std::string decoded = encoded;
     std::string haystack;
+	std::string doubleHaystack;
 
     int dynamicLength = decoded.size() - 2;
 
@@ -182,12 +189,19 @@ std::string decodeURIComponent(std::string encoded)
     for (int i = 0; i < dynamicLength; i++)
     {
         haystack = decoded.substr(i, 3);
+        doubleHaystack = decoded.substr(i, 6);
 
-        if (regexec(&regex, haystack.c_str(), 1, &match, 0) == 0)
+		if (!doubleHaystack.compare("%C3%A9"))
+        {
+            decoded.replace(i, 6, "é");
+			i++;
+        }
+        else if (regexec(&regex, haystack.c_str(), 1, &match, 0) == 0)
         {
             haystack.replace(0, 1, "0x");
             unsigned int rc = 0;
             std::istringstream(haystack) >> std::hex >> rc;
+			std::cout << "hs: " << haystack << std::endl;
             decoded.replace(i, 3, 1, static_cast<char>(rc));
 			i++;
         }

@@ -1,5 +1,6 @@
 {
     "files.associations": {
+        "*.conf": "dockerfile",
         "array": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
@@ -59,7 +60,8 @@
         "cstring": "cpp",
         "ratio": "cpp",
         "regex": "cpp",
-        "shared_mutex": "cpp"
+        "shared_mutex": "cpp",
+        "cinttypes": "cpp"
     },
     "C_Cpp.errorSquiggles": "disabled"
 }

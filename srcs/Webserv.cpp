@@ -288,7 +288,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 		{
 			if (client._server->autoindex)
 				return (sendAutoindex(client, filePath));
-			return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
+			return (client.displayErrorPage(_statusCodeList.find(FORBIDDEN)));
 		}
 	}
 
@@ -314,13 +314,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 			break ;
 	}
 	fclose(file);
-	if (totalSize == fileStat.st_size + header.length())
-		std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
-	else
-	{
-		std::cout << RED "> Error on size sent { file_size: " << fileStat.st_size << " ; total sent: ( " << header.length() << " + " << totalSize - header.length() << " )}" RESET << std::endl;
-		std::cout << YELLOW "> Status code: " << client.getRequest()._statusCode << RESET << std::endl;
-	}
+	std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
 }
 
 std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request, Client &client) const
@@ -374,29 +368,25 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 				end = content.find("?>", tmp + 1);
 				if (start != std::string::npos && end != std::string::npos)
 				{
-				std::string phpSection = content.substr(start, end - start + 2); // On ajoute chaque section PHP dans un nouveau fichier
-				std::string filePath;
-				std::stringstream ss_php;
-				ss_php << path << "tmp_" << count++ << ".php"; // Add counter to filename to make it unique
-				ss_php >> filePath;
-				int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-				if (fd < 0)
-				{
-					std::cerr << RED << "Failed to open php script: " << RESET << filePath << std::endl;
-					return result;							
-				}
-				if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
-				{
-					std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
-					return result;							
-				} // On garde le fichier pour l'exécuter dans le CGI Handler
-				if (close(fd) < 0)
-				{
-					std::cerr << RED << "Failed to close php script: " << RESET << path << std::endl;
-					return result;						
-				}
-				result.first = true;
-				result.second.push_back(filePath);
+					std::string phpSection = content.substr(start, end - start + 2); // On ajoute chaque section PHP dans un nouveau fichier
+					std::string filePath;
+					std::stringstream ss_php;
+					ss_php << path << "tmp_" << count++ << ".php"; // Add counter to filename to make it unique
+					ss_php >> filePath;
+					int fd = open(filePath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
+					if (fd < 0)
+					{
+						std::cerr << RED << "Failed to open php script: " << RESET << filePath << std::endl;
+						return result;							
+					}
+					if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
+					{
+						std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
+						return result;							
+					} // On garde le fichier pour l'exécuter dans le CGI Handler
+					close(fd);
+					result.first = true;
+					result.second.push_back(filePath);
 				}
 			}
 		}
@@ -407,15 +397,8 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 	{
 		for (it2 = it->_cgi.begin() ; it2 != it->_cgi.end(); it2++)
 		{
-			if (path.find(it2->first) != std::string::npos)
-			{
-				if (it2->second != "")
-				{
-					result.first = true;
-					result.second.push_back(path);
-					return result;
-				}
-			}
+			if (path.find(it2->first) != std::string::npos && it2->second != "")
+				return (result.first = true, result.second.push_back(path), result);
 		}
 	}
 
@@ -434,11 +417,8 @@ void Webserv::CgiGetMethod(Client &client, Request req)
 	output = response.getCgiBody(0);
 	// extrait l'extension du fichier (tout ce qui est après le dernier point)
 	std::string extension = req.getPath().substr(req.getPath().find_last_of(".") + 1);
-	std::cout << "extension : " << extension << std::endl;
 	if (extension == "php" || extension == "py")
-	{
 		response._message = output;
-	}
 	else
 	{
 		std::string		line;
@@ -564,8 +544,8 @@ std::string	Webserv::getPath(Client &client, std::string path)
 	Location	*location = client._server->getLocation(path);
 	if (location != NULL)
 		res = location->getPath();
-	filePath.append(path.substr(res.length()));
-	return (filePath);	
+	filePath.append(path);
+	return (filePath);
 }
 
 bool	Webserv::clientNotConnected(int socket)

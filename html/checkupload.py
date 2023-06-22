@@ -7,8 +7,8 @@ cgitb.enable()
 
 print("<h2>Uploaded files</h2>")
 print("<ul>")
-
-upload_dir = '/mnt/nfs/homes/mtsuji/Documents/level5/webserv/ahocine/html/uploads'
+upload_dir = os.getcwd()
+upload_dir += '/html/uploads'
 if not os.path.exists(upload_dir):
     print("<p>Directory 'uploads' does not exist.</p>")
     exit()
@@ -21,5 +21,3 @@ except Exception as e:
 
 for file in files:
     print(f"<li>{file}</li>")
-
-print("</ul>")

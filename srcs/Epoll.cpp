@@ -81,8 +81,6 @@ int	Webserv::routine(void)
 
 	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 200)) < SUCCESS)
 		return (FAILED);
-	if (nbEvents == 0)
-		checkTimeout();
 	for (int i = 0; i < nbEvents; i++)
 	{
 		if ((events[i].events & EPOLLERR) || (events[i].events & EPOLLHUP) || (!(events[i].events & EPOLLIN)))
@@ -99,14 +97,14 @@ int	Webserv::routine(void)
 		Request request = _clients[index]->getRequest();
 		if (request._statusCode != OK) // si la requête n'est pas encore complète
 		{
-			if (request._requestStatus == COMPLETE)
-				_clients[index]->displayErrorPage(_statusCodeList.find(request._statusCode));
+			if (request._statusCode == PAYLOAD_TOO_LARGE || request._requestStatus == INCOMPLETE)
+				eraseClient(index);
 			continue ;
 		}
 		std::cout << "> " GREEN "[" << request.getMethod() << "] " BLUE "File requested is " << request.getPath() << RESET << std::endl;
 		handleResponse(_clients[index], request, events[i]);
-		// StringMap::iterator it = request->_header.find("connection");
 	}
+	checkTimeout();
 	return (SUCCESS);
 }
 
@@ -357,8 +355,7 @@ void Webserv::handleRequest(Client *client, struct epoll_event &event)
 	client->parse(str);
 	client->setTimer();
 	if (client->getRequest()._statusCode != OK)
-		return (editSocket(client->getSocket(), EPOLLIN, event));
-	else
+		client->displayErrorPage(_statusCodeList.find(client->getRequest()._statusCode));
 	editSocket(client->getSocket(), EPOLLIN, event);
 }
 
@@ -366,15 +363,54 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 {
 	std::pair<bool, std::vector<std::string> > cgi;
 	std::cout << "> Handling response" << std::endl;
-	if (req._statusCode != OK)
-		return ;
+	std::string fullPath = getPath(*client, req.getPath());
+	// request._path is in Location ? -> yes -> check if method is allowed
+	MethodVector allowed = client->_server->allowMethods;
+	Location loc;
+	// Checking particular route allowMethods
+	std::vector<Location>::iterator location = client->_server->locations.begin();
+	for (; location != client->_server->locations.end(); location++)
+	{
+		if (fullPath.find(location->getPath()) != std::string::npos)
+		{
+			loc = *location;
+			allowed = loc._allowMethods;
+		}
+	}
+
+	MethodVector::iterator it = allowed.begin();
+	for (; it != allowed.end(); it++)
+	{
+		if (*it == strToMethodType(req.getMethod()))
+			break ;
+	}
+
+	if (it == allowed.end())
+		return (req._statusCode = METHOD_NOT_ALLOWED, client->displayErrorPage(_statusCodeList.find(req._statusCode)));
+	int fd = -1;
+	// if directory requested, find default (index) file
+	if (getExtensionOf(fullPath) == "")
+	{
+		for (StrVector::iterator it = loc._index.begin(); it != loc._index.end(); it++)
+		{
+			std::string tmp = fullPath + *it;
+			if ((fd = open(tmp.c_str(), O_RDONLY)) != -1)
+			{
+				fullPath = tmp;
+				close(fd);
+				break ;
+			}
+		}
+		req.setPath(fullPath);
+	}
+	std::pair<bool, std::vector<std::string> > cgi;
+	cgi.first = false;
 	if (req._statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req._statusCode)));
 	if (req.getMethod() == "GET" || req.getMethod() == "POST")
-		cgi = isValidCGI(req, *client);	
+		cgi = isValidCGI(req, *client);
 	if (cgi.first) // is CGI valid or not
 	{
-		std::cout << CYAN "CGI BOOL IS TRUE" RESET << std::endl;
 		std::vector<std::string>::iterator it = cgi.second.begin();
 		for (; it != cgi.second.end(); it++)
 		{
@@ -414,8 +450,6 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 	}
 	std::cout << std::endl;
 }
-
-
 
 /*----- EXCEPTION -----*/
 const char *Webserv::EpollCreateException::what() const throw()

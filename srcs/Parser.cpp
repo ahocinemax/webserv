@@ -72,6 +72,8 @@ Location	Parser::parseLocation(std::size_t *i)
 	std::size_t prev = _content.find_first_not_of(SEP, *i);
 	std::size_t curr = _content.find_first_of("\n{", prev);
 	result._path = _content.substr(prev, curr - prev);
+	if (result._path[result._path.length() - 1] == ' ')
+		result._path = result._path.substr(0, result._path.length() - 1);
 	prev = _content.find_first_not_of(SEP, curr);
 	if (prev == std::string::npos || _content[prev] != '{')
 		exit(printError(3));

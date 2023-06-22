@@ -20,6 +20,7 @@ class Location
 	public:
 		Location(/* args */);
 		~Location();
+		Location &operator=(const Location &loc);
 		void			printLocation(void) const;
 		std::string		getRoot(void) const;
 		std::string		getPath(void) const;

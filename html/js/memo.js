@@ -58,7 +58,7 @@ function checkMatch() {
 
         if (matchedCards.length === cards.length) {
             setTimeout(() => {
-                alert("Félicitations ! Vous avez gagné le jeu !");
+                Swal.fire("Félicitations !", "Vous avez gagné le jeu !", "success");
             }, 500);
         }
     } else {

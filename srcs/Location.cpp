@@ -64,6 +64,17 @@ std::string	Location::getPath(void) const
 	return (this->_path);
 }
 
+Location &Location::operator=(Location const &rhs)
+{
+	this->_path = rhs._path;
+	this->_root = rhs._root;
+	this->_client_body_limit = rhs._client_body_limit;
+	this->_allowMethods = rhs._allowMethods;
+	this->_index = rhs._index;
+	this->_cgi = rhs._cgi;
+	return (*this);
+}
+
 std::string	Location::getCgi(std::string extension) const
 {
 	for (std::map<std::string, std::string>::const_iterator it = this->_cgi.begin();

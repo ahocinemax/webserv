@@ -36,6 +36,11 @@
 	</style>
 </head>
 <body>
+	<header>
+		<div>
+			<a href="index.html">Home</a>
+		</div>
+	</header>
 	<div class="container">
 		<h1>Upload de fichier<h1>
 		<h3>(With CGI version(PHP))</h3>
@@ -82,8 +87,6 @@
 		</form>
 	</div>
 
-    <!-- Include form.js -->
-    <script type="text/javascript" src="js/form.js"></script>
 	<div class="container">
 	<h1>Supprimer un fichier</h1>
     
@@ -94,10 +97,10 @@
     </form>
 
     <script>
-        function deleteFile()
-        {
-            const filenameInput = document.getElementById('filename');
-            const filename = filenameInput.value;
+		function deleteFile()
+		{
+			const filenameInput = document.getElementById('filename');
+			const filename = filenameInput.value;
 
             const request = new XMLHttpRequest();
             request.open('DELETE', filename);
@@ -115,7 +118,5 @@
             request.send();
         }
     </script>
-	<a href="checkupload.py">View uploaded files</a>
-	</div>
 </body>
 </html>

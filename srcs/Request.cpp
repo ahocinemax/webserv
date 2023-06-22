@@ -161,6 +161,7 @@ void	Request::parsePath()
 		std::cout << "Query: " << _query << std::endl;
 		path.erase(pos);
 	}
+	path = decodeURIComponent(path);
 	_path = path;
 	_root += path;
 	_statusCode = OK;
@@ -237,6 +238,8 @@ void	Request::checkHeaders()
 	}
 	_headerParsed = true;
 }
+
+void	Request::setPath(std::string &path) { _path = path; }
 
 int	Request::checkChunk()
 {

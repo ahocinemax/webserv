@@ -28,7 +28,6 @@ CgiHandler::CgiHandler(Request &request) : _response(0),
 	{
         setProgram(_pos_exec);
 		_program = getProgram();
-		std::cout << getProgram() << std::endl;
 	}
 	if (!AccessiblePath(_scriptPath))
 	{
