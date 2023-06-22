@@ -135,6 +135,7 @@ void Webserv::eraseClient(int index)
 	_clients.erase(_clients.begin() + index);
 }
 
+
 /*----- UPLOAD -----*/
 bool Webserv::isMultipartFormData(Request &request)
 {
@@ -374,6 +375,7 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 		{
 			loc = *location;
 			allowed = loc._allowMethods;
+			break ;
 		}
 	}
 
@@ -388,11 +390,14 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 		return (req._statusCode = METHOD_NOT_ALLOWED, client->displayErrorPage(_statusCodeList.find(req._statusCode)));
 	int fd = -1;
 	// if directory requested, find default (index) file
-	if (getExtensionOf(fullPath) == "")
+	if (!loc._path.empty() && getExtensionOf(fullPath) == "")
 	{
-		for (StrVector::iterator it = loc._index.begin(); it != loc._index.end(); it++)
+		fullPath.erase(fullPath.find_last_of('/') + 1, fullPath.length());
+		std::cout << "fullPath: " << fullPath << std::endl;
+		for (StrVector::iterator testedIndex = loc._index.begin(); testedIndex != loc._index.end(); testedIndex++)
 		{
-			std::string tmp = fullPath + *it;
+			std::string tmp = fullPath + *testedIndex;
+			std::cout << "Testing index: " << tmp << std::endl;
 			if ((fd = open(tmp.c_str(), O_RDONLY)) != -1)
 			{
 				fullPath = tmp;

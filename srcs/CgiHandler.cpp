@@ -311,10 +311,7 @@ bool CgiHandler::WaitforChild(int pid)
 			break;
 		}
 	}
-	if (WIFEXITED(wstatus) && (WEXITSTATUS(wstatus) != EXIT_FAILURE))
-		return true;
-	else
-		return false;
+	return (WIFEXITED(wstatus) && (WEXITSTATUS(wstatus) != EXIT_FAILURE));
 }
 
 void CgiHandler::WriteToStdin()

@@ -63,7 +63,6 @@ class Webserv
 		int						_epollFd;
 
 		// Response builder
-		int					writeResponse(Client &client, std::string response, std::string path);
 		void				sendAutoindex(Client &client, std::string filePath);
 		void				redirectMethod(Client &client, Request &request);
 		void				deleteMethod(Client &client, std::string path);

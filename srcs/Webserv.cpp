@@ -90,46 +90,6 @@ void	Webserv::checkTimeout(void)
 		std::cout << GREEN "> No client timeout." RESET << std::endl;
 }
 
-int	Webserv::writeResponse(Client &client, std::string body, std::string path)
-{
-	std::size_t	begin = path.find_last_of("/");
-	std::string	dirPath = path.substr(0, begin);
-	std::string	fileName = path.substr(begin + 1);
-
-	if (dirPath != "")
-	{
-		struct stat		fileStat;
-		lstat(dirPath.c_str(), &fileStat);
-		if (!S_ISDIR(fileStat.st_mode))
-			return (client.displayErrorPage(_statusCodeList.find(400)), FAILED);
-	}
-	std::string	tmpPath = path + ".tmp";
-	std::string	command = "mkdir -p " + dirPath;
-	int			fd = open(tmpPath.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0666);
-	system(command.c_str());
-	if (fd < 0)
-		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
-
-
-	// add fd to epoll
-	struct epoll_event	event;
-	initEvent(event, EPOLLOUT | EPOLLET, fd);
-	if (epoll_ctl(_epollFd, EPOLL_CTL_ADD, fd, &event) < 0)
-		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
-
-	// write body to file
-	int		ret = write(fd, body.c_str(), body.length());
-	// std::cout << GREEN "> Response sent: " RESET << convertToOctets(ret) << "." << std::endl;
-	if (ret < 0)
-	{
-		// close fds
-		close(fd);
-		epoll_ctl(client.getSocket(), EPOLL_CTL_DEL, fd, &event);
-		return (client.displayErrorPage(_statusCodeList.find(500)), FAILED);
-	}
-	return (close(fd), SUCCESS);
-}
-
 void	Webserv::sendAutoindex(Client &client, std::string filePath)
 {
 	std::string		path = filePath;
@@ -381,7 +341,6 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 					}
 					if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
 					{
-						std::cerr << RED << "Failed to write php script: " << RESET << path << std::endl;
 						return result;							
 					} // On garde le fichier pour l'exécuter dans le CGI Handler
 					close(fd);

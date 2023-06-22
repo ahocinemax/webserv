@@ -122,9 +122,13 @@ bool	convertHttpCode(const std::string& str, int* code)
 
 std::string	getExtensionOf(const std::string& path)
 {
-	const size_t	pos_extention = path.find_last_of('.');
-	std::string		res = (pos_extention == std::string::npos) ? "" : path.substr(pos_extention, path.length() - pos_extention);
-	std::cout << "res: " << res << std::endl;
+	std::size_t	lastWord = path.find_last_of('/');
+	if (lastWord == std::string::npos)
+		lastWord = 0;
+	else
+		lastWord++;
+	const size_t	pos_extention = path.find_last_of('.', lastWord);
+	std::string		res = (pos_extention == std::string::npos || pos_extention < lastWord) ? "" : path.substr(pos_extention, path.length());
 	return (res);
 }
 

@@ -35,7 +35,6 @@ class Client
 
 		Client(Server *server);
 		~Client(void);
-		Client(void);
 
 		std::string	setRootPath(std::string path);
 		void		setRecvSize(int size);
