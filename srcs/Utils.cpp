@@ -120,6 +120,13 @@ bool	convertHttpCode(const std::string& str, int* code)
 	return (*code >= 0 && *code <= 505);
 }
 
+std::string	getExtensionOf(const std::string& path)
+{
+	const size_t	pos_extention = path.find_last_of('.');
+	std::string		res = (pos_extention == std::string::npos) ? "" : path.substr(pos_extention, path.length() - pos_extention);
+	std::cout << "res: " << res << std::endl;
+	return (res);
+}
 
 std::string	generateCopyFile(const std::string& dir, const std::string& file)
 {

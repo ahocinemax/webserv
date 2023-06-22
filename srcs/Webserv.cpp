@@ -314,13 +314,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 			break ;
 	}
 	fclose(file);
-	if (totalSize == fileStat.st_size + header.length())
-		std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
-	else
-	{
-		std::cout << RED "> Error on size sent { file_size: " << fileStat.st_size << " ; total sent: ( " << header.length() << " + " << totalSize - header.length() << " )}" RESET << std::endl;
-		std::cout << YELLOW "> Status code: " << client.getRequest()._statusCode << RESET << std::endl;
-	}
+	std::cout << GREEN << filePath << " sent (" << convertToOctets(totalSize) << ")" RESET << std::endl;
 }
 
 std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request, Client &client) const

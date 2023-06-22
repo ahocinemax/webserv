@@ -239,6 +239,8 @@ void	Request::checkHeaders()
 	_headerParsed = true;
 }
 
+void	Request::setPath(std::string &path) { _path = path; }
+
 int	Request::checkChunk()
 {
 	/*

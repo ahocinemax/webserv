@@ -364,19 +364,19 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 	std::cout << "> Handling response" << std::endl;
 	std::string fullPath = getPath(*client, req.getPath());
 	// request._path is in Location ? -> yes -> check if method is allowed
-	MethodVector allowed;
-
+	MethodVector allowed = client->_server->allowMethods;
+	Location loc;
 	// Checking particular route allowMethods
 	std::vector<Location>::iterator location = client->_server->locations.begin();
 	for (; location != client->_server->locations.end(); location++)
 	{
 		if (fullPath.find(location->getPath()) != std::string::npos)
-			allowed = location->_allowMethods;
+		{
+			loc = *location;
+			allowed = loc._allowMethods;
+		}
 	}
 
-	// Checking server allowMethods
-	if (allowed.empty())
-		allowed = client->_server->allowMethods;
 	MethodVector::iterator it = allowed.begin();
 	for (; it != allowed.end(); it++)
 	{
@@ -386,7 +386,22 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 
 	if (it == allowed.end())
 		return (req._statusCode = METHOD_NOT_ALLOWED, client->displayErrorPage(_statusCodeList.find(req._statusCode)));
-
+	int fd = -1;
+	// if directory requested, find default (index) file
+	if (getExtensionOf(fullPath) == "")
+	{
+		for (StrVector::iterator it = loc._index.begin(); it != loc._index.end(); it++)
+		{
+			std::string tmp = fullPath + *it;
+			if ((fd = open(tmp.c_str(), O_RDONLY)) != -1)
+			{
+				fullPath = tmp;
+				close(fd);
+				break ;
+			}
+		}
+		req.setPath(fullPath);
+	}
 	std::pair<bool, std::vector<std::string> > cgi;
 	cgi.first = false;
 	if (req._statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur

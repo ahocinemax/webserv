@@ -1,7 +1,7 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   Request.cpp                                         :+:      :+:    :+:   */
+/*   Request.hpp                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: ahocine <ahocine@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
@@ -77,6 +77,7 @@ class Request
 		/* Set */
 		void			setRoot(std::string& root);
 		void			setCgiBody(std::string& body);
+		void			setPath(std::string& path);
 
 		/*test*/
 		void			PrintHeader();
