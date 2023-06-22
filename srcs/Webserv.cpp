@@ -535,12 +535,36 @@ void Webserv::setStatusCodes(void)
 	_statusCodeList[HTTP_VERSION_NOT_SUPPORTED] = "505 HTTP Version Not Supported";
 }
 
+//std::string Webserv::getPath(Client &client, std::string path)
+//{
+//	std::string filePath = "";
+//	std::string res = "";
+//	
+//	Location *location = client._server->getLocation(path);
+//	if (location != NULL)
+//	{
+//		res = location->getRoot(); // use root from location config
+//		filePath.append(res); 
+//		std::size_t pos = path.find(location->getPath());
+//		if (pos != std::string::npos) 
+//			path.erase(pos, location->getPath().length());
+//	}
+//	else
+//		filePath.append(client.setRootPath(path));
+//	
+//	//if (path[path.size() - 1] != '/')
+//	//	path += "/";
+//	filePath.append(path);
+//	return filePath;
+//}
+
 std::string	Webserv::getPath(Client &client, std::string path)
 {
 	std::string		filePath = "";
 	std::string		res = "";
 
 	filePath.append(client.setRootPath(path));
+	std::cout << "filePath : " << filePath << std::endl;
 	Location	*location = client._server->getLocation(path);
 	if (location != NULL)
 		res = location->getPath();

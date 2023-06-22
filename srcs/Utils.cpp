@@ -120,13 +120,24 @@ bool	convertHttpCode(const std::string& str, int* code)
 	return (*code >= 0 && *code <= 505);
 }
 
-std::string	getExtensionOf(const std::string& path)
+//std::string	getExtensionOf(const std::string& path)
+//{
+//	const size_t	pos_extention = path.find_last_of('.');
+//	std::string		res = (pos_extention == std::string::npos) ? "" : path.substr(pos_extention, path.length() - pos_extention);
+//	std::cout << "res: " << res << std::endl;
+//	return (res);
+//}
+
+std::string getExtensionOf(const std::string& path)
 {
-	const size_t	pos_extention = path.find_last_of('.');
-	std::string		res = (pos_extention == std::string::npos) ? "" : path.substr(pos_extention, path.length() - pos_extention);
-	std::cout << "res: " << res << std::endl;
-	return (res);
+    size_t last_slash_pos = path.find_last_of('/');
+    size_t last_dot_pos = path.find_last_of('.');
+    
+    if (last_dot_pos != std::string::npos && (last_slash_pos == std::string::npos || last_dot_pos > last_slash_pos))
+        return path.substr(last_dot_pos, path.length() - last_dot_pos);
+    return "";
 }
+
 
 std::string	generateCopyFile(const std::string& dir, const std::string& file)
 {
