@@ -33,7 +33,7 @@ int	Webserv::connectEpollToSockets(void)
 		initEvent(event, EPOLLIN, _serversVec[i]._socket);
 		ret = epoll_ctl(_epollFd, EPOLL_CTL_ADD, _serversVec[i]._socket, &event);
 		char buffer;
-		ssize_t result = read(_serversVec[i]._socket, &buffer, 0);
+		ssize_t result = read(_serversVec[i]._socket, &buffer, 0); // server sockets
 		if (result < 0)
 			std::cout << "read error on socket " << _serversVec[i]._socket << std::endl;
 		if (ret < SUCCESS)
@@ -340,6 +340,8 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 	if (request._statusCode == NOT_FOUND || request._statusCode == BAD_REQUEST)
 		return (false);
 	std::string output = request.getBody();
+	if (output.empty())
+		return (false); // difference entre error cgi et error read
 	if (cgi.getCgiOutput(output))
 		return (request.appendCgiBody(output), true);
 	std::cout << RED "ERROR CGI EXECUTION" << std::endl;
@@ -351,7 +353,7 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 void Webserv::handleRequest(Client *client, struct epoll_event &event)
 {
 	std::string	str = readFd(client->getSocket());
-	if (str.empty())
+	if (str.empty()) // difference entre fd error & read error
 		return ;
 	client->parse(str);
 	client->setTimer();
@@ -393,11 +395,9 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 	if (!loc._path.empty() && getExtensionOf(fullPath) == "")
 	{
 		fullPath.erase(fullPath.find_last_of('/') + 1, fullPath.length());
-		std::cout << "fullPath: " << fullPath << std::endl;
 		for (StrVector::iterator testedIndex = loc._index.begin(); testedIndex != loc._index.end(); testedIndex++)
 		{
 			std::string tmp = fullPath + *testedIndex;
-			std::cout << "Testing index: " << tmp << std::endl;
 			if ((fd = open(tmp.c_str(), O_RDONLY)) != -1)
 			{
 				fullPath = tmp;

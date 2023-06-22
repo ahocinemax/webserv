@@ -160,15 +160,10 @@ void	Client::displayErrorPage(StatusMap::iterator statusCode)
 	int sendSize = 0;
 	if (_socket > 0)
 		sendSize = send(_socket, result.c_str(), result.length(), MSG_DONTWAIT | MSG_NOSIGNAL);
-	if (sendSize < 0) ;
-		// std::cerr << RED "Error:" RESET " send() failed to send error page" << std::endl;
+	if (sendSize < 0)
+		return ;
 	else if (sendSize == 0)
-	{
-		std::cerr << RED "Error:" RESET " send() failed: connection closed" << std::endl;
 		close(_socket);
-	}
-	// else
-		// std::cout << GREEN "> Response sent: " RESET << sendSize << " bytes." << std::endl;
 }
 
 void Client::parse(const std::string& str)
@@ -186,7 +181,13 @@ bool	Client::sendContent(const char *content, std::size_t size, bool display)
 	if (!content)
 		return (true);
 	if (_socket > 0)
+	{
 		sendSize = send(_socket, content, size, MSG_NOSIGNAL | MSG_DONTWAIT);
+		if (sendSize < 0)
+			return (false); // difference entre 0 et -1
+		else if (sendSize == 0)
+			return (false);
+	}
 	else
 		return (false);
 	if (sendSize < 0)

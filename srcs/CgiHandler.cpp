@@ -318,16 +318,14 @@ bool CgiHandler::WaitforChild(int pid)
 void CgiHandler::WriteToStdin()
 {
 	SetupParentIO();
-	if (write(fd_in[1], _request_body.c_str(), _request_body.size()) < 0)
-	{
-		std::cerr << "cgihandler: WriteToStdin (write) error" << std::endl;
-		return ;
-	}
-	if (close(fd_in[1]) < 0)
-	{
-		std::cerr << "cgihandler: WriteToStdin (close) error" << std::endl;
-		return ;
-	}
+	int errorCode = 0;
+	int ret = write(fd_in[1], _request_body.c_str(), _request_body.size());
+	if (ret < 0)
+		errorCode = 1;
+	if (ret == 0)
+		errorCode = 2;
+	close(fd_in[1]);
+	// return (errorCode);
 }
 
 bool CgiHandler::containHeader(std::string &output)

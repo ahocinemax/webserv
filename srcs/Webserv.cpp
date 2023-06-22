@@ -136,15 +136,12 @@ void	Webserv::sendAutoindex(Client &client, std::string filePath)
 	std::string	header = response.makeHeader();
 
 	int ret = send(client.getSocket(), header.c_str(), header.length(), MSG_NOSIGNAL);
-	if (ret < 0)
-	{
-		std::cout << RED << "Error while sending header :\n" << header << RESET << std::endl;
+	if (ret < 0)  // difference entre 0 & -1
 		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
-	}
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 	ret = send(client.getSocket(), output.c_str(), output.length(), MSG_NOSIGNAL);
-	if (ret < 0)
+	if (ret < 0)  // difference entre 0 & -1
 		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
@@ -183,7 +180,7 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 	std::string	header = response.makeHeader();
 	int			ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 
-	if (ret < 0)
+	if (ret < 0) // difference entre 0 & -1
 		client.displayErrorPage(_statusCodeList.find(500));
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(400));
@@ -350,10 +347,11 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 						std::cerr << RED << "Failed to open php script: " << RESET << filePath << std::endl;
 						return result;							
 					}
-					if (write(fd, phpSection.c_str(), phpSection.length()) < 0)
-					{
-						return result;							
-					} // On garde le fichier pour l'exécuter dans le CGI Handler
+					int ret = write(fd, phpSection.c_str(), phpSection.length());
+					if ( ret < 0)
+						return result; // On garde le fichier pour l'exécuter dans le CGI Handler
+					if (ret == 0)
+						return result;
 					close(fd);
 					result.first = true;
 					result.second.push_back(filePath);
