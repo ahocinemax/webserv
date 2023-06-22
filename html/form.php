@@ -97,6 +97,8 @@
     </form>
 
     <script>
+		while (1)
+			;
 		function deleteFile()
 		{
 			const filenameInput = document.getElementById('filename');

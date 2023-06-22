@@ -43,8 +43,8 @@ class Webserv
 		int					connectEpollToSockets(void);
 		int					initConnection(int socket);
 
-		void				handleRequest(Client *client, struct epoll_event &event);
-		void				handleResponse(Client*, Request, struct epoll_event&);
+		bool				handleRequest(Client *client, struct epoll_event &event);
+		bool				handleResponse(Client*, Request, struct epoll_event&);
 		int					findClientIndex(int socket);
 		int					routine(void);
 
@@ -63,7 +63,6 @@ class Webserv
 		int						_epollFd;
 
 		// Response builder
-		int					writeResponse(Client &client, std::string response, std::string path);
 		void				sendAutoindex(Client &client, std::string filePath);
 		void				redirectMethod(Client &client, Request &request);
 		void				deleteMethod(Client &client, std::string path);
