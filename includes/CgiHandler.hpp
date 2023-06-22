@@ -35,27 +35,27 @@ class CgiHandler
 		virtual ~CgiHandler();
 		CgiHandler &operator=(const CgiHandler &other);
 
-		void                                        initCgiEnvironment();
-		void                                        setEnv(const std::string &key, const std::string &val);
-		const std::map<std::string, std::string>&   getEnv() const;
-		const std::string&                          getScriptPath() const;
-		void                                       setProgram(const std::string& program);
-		bool                                        getCgiOutput(std::string& output);
-		std::string                                 get_cgipath() const;
-		char**                                      getEnvAsCstrArray() const;
-		void                                        freeEnvCstrArray(char** env) const;
-		const std::string&                          getProgram() const;
+		void										initCgiEnvironment();
+		void										setEnv(const std::string &key, const std::string &val);
+		const std::map<std::string, std::string>&	getEnv() const;
+		const std::string&							getScriptPath() const;
+		void										setProgram(const std::string& program);
+		bool										getCgiOutput(std::string& output);
+		std::string									get_cgipath() const;
+		char**										getEnvAsCstrArray() const;
+		void										freeEnvCstrArray(char** env) const;
+		const std::string&							getProgram() const;
 
 	private:
-		void                                Execute(void);
-		void                                Restore(void);
-		void                                RedirectOutputToPipe(void);
-		void                                PipeSet(void);
-		void                                SetupParentIO(void);
-		bool                                WaitforChild(int pid);
-		void                                WriteToStdin(void);
-		bool                                containHeader(std::string& output);
-		void                                removeHeader(std::string& output);
+		void								Execute(void);
+		void								Restore(void);
+		void								RedirectOutputToPipe(void);
+		void								PipeSet(void);
+		void								SetupParentIO(void);
+		bool								WaitforChild(int pid);
+		void								WriteToStdin(void);
+		bool								containHeader(std::string& output);
+		void								removeHeader(std::string& output);
 
 		Response							*_response;
 		Request								_request;
