@@ -12,10 +12,14 @@
 
 #include "Client.hpp"
 
-Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(""), _server(server)
+Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(""), _server(server), _isCgi(false)
 {}
 
-Client::~Client(void) {}
+Client::~Client(void)
+{
+	if (_isCgi)
+		delete _cgi;
+}
 
 void	Client::setTimer(void)
 {

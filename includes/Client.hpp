@@ -19,6 +19,7 @@
 # include "Server.hpp"
 # include "Request.hpp"
 # include "Utils.hpp"
+# include "CgiHandler.hpp"
 
 # include <sys/epoll.h>
 # include <sys/time.h>
@@ -32,10 +33,11 @@ class Client
 		Server				*_server;
 		const char			*_ipAdress;
 		const char			*_port;
+		CgiHandler			*_cgi;
+		bool 				_isCgi;
 
 		Client(Server *server);
 		~Client(void);
-		Client(void);
 
 		std::string	setRootPath(std::string path);
 		void		setRecvSize(int size);

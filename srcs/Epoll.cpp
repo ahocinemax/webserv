@@ -135,6 +135,7 @@ void Webserv::eraseClient(int index)
 	_clients.erase(_clients.begin() + index);
 }
 
+
 /*----- UPLOAD -----*/
 bool Webserv::isMultipartFormData(Request &request)
 {
@@ -347,19 +348,20 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 }
 
 /*-----REQUEST / RESPONSE-----*/
-void Webserv::handleRequest(Client *client, struct epoll_event &event)
+bool Webserv::handleRequest(Client *client, struct epoll_event &event)
 {
 	std::string	str = readFd(client->getSocket());
 	if (str.empty())
-		return ;
+		return (false);
 	client->parse(str);
 	client->setTimer();
 	if (client->getRequest()._statusCode != OK)
 		client->displayErrorPage(_statusCodeList.find(client->getRequest()._statusCode));
 	editSocket(client->getSocket(), EPOLLIN, event);
+	return (true);
 }
 
-void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
+bool Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
 {
 	std::cout << "> Handling response" << std::endl;
 	std::string fullPath = getPath(*client, req.getPath());
@@ -374,6 +376,7 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 		{
 			loc = *location;
 			allowed = loc._allowMethods;
+			break ;
 		}
 	}
 
@@ -385,14 +388,17 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 	}
 
 	if (it == allowed.end())
-		return (req._statusCode = METHOD_NOT_ALLOWED, client->displayErrorPage(_statusCodeList.find(req._statusCode)));
+		return (req._statusCode = METHOD_NOT_ALLOWED, client->displayErrorPage(_statusCodeList.find(req._statusCode)), true);
 	int fd = -1;
 	// if directory requested, find default (index) file
-	if (getExtensionOf(fullPath) == "")
+	if (!loc._path.empty() && getExtensionOf(fullPath) == "")
 	{
-		for (StrVector::iterator it = loc._index.begin(); it != loc._index.end(); it++)
+		fullPath.erase(fullPath.find_last_of('/') + 1, fullPath.length());
+		std::cout << "fullPath: " << fullPath << std::endl;
+		for (StrVector::iterator testedIndex = loc._index.begin(); testedIndex != loc._index.end(); testedIndex++)
 		{
-			std::string tmp = fullPath + *it;
+			std::string tmp = fullPath + *testedIndex;
+			std::cout << "Testing index: " << tmp << std::endl;
 			if ((fd = open(tmp.c_str(), O_RDONLY)) != -1)
 			{
 				fullPath = tmp;
@@ -405,7 +411,7 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 	std::pair<bool, std::vector<std::string> > cgi;
 	cgi.first = false;
 	if (req._statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
-		return (client->displayErrorPage(_statusCodeList.find(req._statusCode)));
+		return (client->displayErrorPage(_statusCodeList.find(req._statusCode)), true);
 	if (req.getMethod() == "GET" || req.getMethod() == "POST")
 		cgi = isValidCGI(req, *client);
 	if (cgi.first) // is CGI valid or not
@@ -415,14 +421,14 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 		{
 			req.setRoot(*it); // set new root path
 			if (!HandleCgi(req, *client))
-				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req._statusCode)));
+				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req._statusCode)), false);
 		}
 		if (req.getMethod() == "GET")
 			CgiGetMethod(*client, req);
 		else if (req.getMethod() == "POST")
 			CgiPostMethod(*client, req);
 		else
-			return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+			return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)), true);
 		eraseTmpFile(cgi.second);
 	}
 	else
@@ -445,9 +451,10 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 		else if (req.getMethod() == "DELETE")
 			deleteMethod(*client, req.getPath());
 		else
-			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)));
+			return (client->displayErrorPage(_statusCodeList.find(METHOD_NOT_ALLOWED)), true);
 	}
 	std::cout << std::endl;
+	return (true);
 }
 
 /*----- EXCEPTION -----*/

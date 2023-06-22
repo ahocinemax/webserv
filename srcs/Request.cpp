@@ -432,3 +432,26 @@ void	Request::PrintHeader()
 	std::cout << "PayloadSize	: " << getPayloadSize() << std::endl;
 	std::cout << "Body			: " << getBody() << RESET << std::endl;
 }
+
+Request &Request::operator=(const Request &other)
+{
+	if (this != &other)
+	{
+		_method = other._method;
+		_path = other._path;
+		_root = other._root;
+		_body = other._body;
+		_header = other._header;
+		_query = other._query;
+		_protocolHTTP = other._protocolHTTP;
+		_host = other._host;
+		_port = other._port;
+		_size = other._size;
+		_payloadsize = other._payloadsize;
+		_request = other._request;
+		_statusCode = other._statusCode;
+		_requestStatus = other._requestStatus;
+		_cgibody = other._cgibody;
+	}
+	return (*this);
+}

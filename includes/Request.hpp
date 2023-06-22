@@ -13,7 +13,7 @@
 #ifndef REQUEST_HPP
 # define REQUEST_HPP
 
-# include "../includes/Utils.hpp"
+# include "Utils.hpp"
 # include <stdexcept>
 # include <climits>
 
@@ -27,6 +27,7 @@ class Request
 		typedef void (Request::*FuncForParse)();
 		typedef std::vector<FuncForParse>	listFuncForParse;
 		Request(const std::string &request);
+		Request &operator=(const Request &other);
 		~Request();
 		Request() {}
 		int				_requestStatus;
