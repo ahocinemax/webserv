@@ -77,6 +77,17 @@ void	Webserv::checkTimeout(void)
 			_clients[it]->displayErrorPage(_statusCodeList.find(REQUEST_TIMEOUT));
 			toDelete.push_back(it);
 		}
+		// else if (_clients[it]->_isCgi)
+		// {
+		// 	time_t startOfRequest = _clients[it]->_cgi->_timer;
+		// 	time_t timeout = startOfRequest + TIMEOUT_LIMIT;
+		// 	if (time_Now > timeout)
+		// 	{
+		// 		_clients[it]->displayErrorPage(_statusCodeList.find(GATEWAY_TIMEOUT));
+		// 		kill(_clients[it]->_cgi->_pid, SIGTERM);
+		// 		toDelete.push_back(it);
+		// 	}
+		// }
 	}
 	if (toDelete.size() > 0)
 	{

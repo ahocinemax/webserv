@@ -30,9 +30,10 @@ class   Request;
 
 class CgiHandler
 {
-    public:
-        CgiHandler(Request& request);
-        virtual ~CgiHandler();
+	public:
+		CgiHandler(Request& request);
+		virtual ~CgiHandler();
+		CgiHandler &operator=(const CgiHandler &other);
 
 		void                                        initCgiEnvironment();
 		void                                        setEnv(const std::string &key, const std::string &val);

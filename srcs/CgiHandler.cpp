@@ -20,6 +20,7 @@ CgiHandler::CgiHandler(Request &request) : _response(0),
 										   _scriptPath(request.getRoot()),
 										   _program("")
 {
+	_timer = time(NULL);
 	size_t last_dot = _scriptPath.find_last_of(".");
 	if (last_dot != std::string::npos)
 	    _pos_exec = _scriptPath.substr(last_dot);
@@ -108,13 +109,13 @@ const std::string &CgiHandler::getProgram() const
 bool CgiHandler::getCgiOutput(std::string &output)
 {
 	PipeSet();
-	int pid = fork();
-	if (pid < 0)
+	_pid = fork();
+	if (_pid < 0)
 	{
 		std::cerr << "cgihandler:getCgiOutput (fork) error" << std::endl;
 		return (false);
 	}
-	else if (pid == 0)
+	else if (_pid == 0)
 	{
 		/*child*/
 		usleep(900);
@@ -125,7 +126,8 @@ bool CgiHandler::getCgiOutput(std::string &output)
 	else
 	{
 		/*parents*/
-		if (WaitforChild(pid))
+
+		if (WaitforChild(_pid))
 		{
 			output = readFd(fd_out[0]);
 			if (containHeader(output))
@@ -294,8 +296,7 @@ void CgiHandler::SetupParentIO()
 
 bool CgiHandler::WaitforChild(int pid)
 {
-	int wstatus;
-	time_t start = std::time(0);
+	int wstatus = 0;
 
 	WriteToStdin();
 	while (true)
@@ -314,19 +315,20 @@ bool CgiHandler::WaitforChild(int pid)
 	return (WIFEXITED(wstatus) && (WEXITSTATUS(wstatus) != EXIT_FAILURE));
 }
 
-void CgiHandler::WriteToStdin()
+bool CgiHandler::WriteToStdin()
 {
 	SetupParentIO();
 	if (write(fd_in[1], _request_body.c_str(), _request_body.size()) < 0)
 	{
 		std::cerr << "cgihandler: WriteToStdin (write) error" << std::endl;
-		return;
+		return false;
 	}
 	if (close(fd_in[1]) < 0)
 	{
 		std::cerr << "cgihandler: WriteToStdin (close) error" << std::endl;
-		return;
+		return false;
 	}
+	return true;
 }
 
 bool CgiHandler::containHeader(std::string &output)
