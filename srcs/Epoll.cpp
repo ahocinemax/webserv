@@ -330,7 +330,7 @@ void Webserv::CgihandleMultipart(Request &request, Client &client)
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }
 
-int Webserv::HandleCgi(Request &request, Client& client)
+int Webserv::HandleCgi(Request &request, Client& client, struct epoll_event &event)
 {
 	if (request.getMethod() == "POST" && isMultipartFormData(request))
 		CgihandleMultipart(request, client);
@@ -340,7 +340,7 @@ int Webserv::HandleCgi(Request &request, Client& client)
 	if (request._statusCode == NOT_FOUND || request._statusCode == BAD_REQUEST)
 		return (FAILED);
 	std::string output = request.getBody();
-	editSocket(client.getSocket(), EPOLLOUT, client.getEvent());
+	editSocket(client.getSocket(), EPOLLOUT, event);
 	if ((client._errorCode = cgi.getCgiOutput(output).first) == SUCCESS && !output.empty())
 		return (request.appendCgiBody(output), SUCCESS);
 	std::cout << RED "ERROR CGI EXECUTION" << std::endl;
@@ -366,6 +366,7 @@ int Webserv::handleRequest(Client *client, struct epoll_event &event)
 void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
 {
 	std::cout << "> Handling response" << std::endl;
+	std::cout << "req.getPath(): " << req.getPath() << std::endl;
 	std::string fullPath = getPath(*client, req.getPath());
 	// request._path is in Location ? -> yes -> check if method is allowed
 	MethodVector allowed = client->_server->allowMethods;
@@ -422,7 +423,7 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 		for (; it != cgi.second.end(); it++)
 		{
 			req.setRoot(*it); // set new root path
-			int res = HandleCgi(req, *client);
+			int res = HandleCgi(req, *client, event);
 			if (res == FAILED || res == READ_ERROR)
 				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req._statusCode)));
 		}

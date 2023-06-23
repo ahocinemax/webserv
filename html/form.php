@@ -126,8 +126,7 @@
 		}
 	</script>
 	<a href="checkupload.py">View uploaded files</a>
-	</div>
-	<div class="download">
+	<class="download">
 		<h1>Téléchargement de fichier</h1>
 		<p>Entrez le nom du fichier que vous souhaitez télécharger :</p>
 		<input type="text" id="downloadname" required>

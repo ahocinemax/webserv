@@ -79,7 +79,7 @@ class Webserv
 		
 		//Cgi(Epoll.cpp)
 		void				CgihandleMultipart(Request &request, Client &client);
-		int 				HandleCgi(Request &request, Client& client);
+		int 				HandleCgi(Request &request, Client& client, struct epoll_event &event);
 		
 		//Cgi(Webserv.cpp)
 		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;
