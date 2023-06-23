@@ -92,8 +92,12 @@ int	Webserv::routine(void)
 		}
 		else if ((index = findClientIndex(events[i].data.fd)) == FAILED) // si le client n'existe pas encore
 			index = initConnection(events[i].data.fd);
-
-		handleRequest(_clients[index], events[i]);
+		int res;
+		if ((res = handleRequest(_clients[index], events[i])) != SUCCESS)
+		{
+			_clients[i]->_errorCode = res;
+			break ; // va directement à checkTimeout() pour se faire supprimer
+		}
 		Request request = _clients[index]->getRequest();
 		if (request._statusCode != OK) // si la requête n'est pas encore complète
 		{
@@ -330,7 +334,7 @@ void Webserv::CgihandleMultipart(Request &request, Client &client)
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 }
 
-bool Webserv::HandleCgi(Request &request, Client& client)
+int Webserv::HandleCgi(Request &request, Client& client)
 {
 	if (request.getMethod() == "POST" && isMultipartFormData(request))
 		CgihandleMultipart(request, client);
@@ -338,28 +342,28 @@ bool Webserv::HandleCgi(Request &request, Client& client)
 	cgi.setEnv("SERVER_NAME", client._server->server_name);
 	cgi.setEnv("DOCUMENT_ROOT", "./html");
 	if (request._statusCode == NOT_FOUND || request._statusCode == BAD_REQUEST)
-		return (false);
+		return (FAILED);
 	std::string output = request.getBody();
-	if (output.empty())
-		return (false); // difference entre error cgi et error read
-	if (cgi.getCgiOutput(output))
-		return (request.appendCgiBody(output), true);
+	if ((client._errorCode = cgi.getCgiOutput(output).first) == SUCCESS && !output.empty())
+		return (request.appendCgiBody(output), SUCCESS);
 	std::cout << RED "ERROR CGI EXECUTION" << std::endl;
 	request._statusCode = INTERNAL_SERVER_ERROR;
-	return (false);
+	return (client._errorCode);
 }
 
 /*-----REQUEST / RESPONSE-----*/
-void Webserv::handleRequest(Client *client, struct epoll_event &event)
+int Webserv::handleRequest(Client *client, struct epoll_event &event)
 {
-	std::string	str = readFd(client->getSocket());
-	if (str.empty()) // difference entre fd error & read error
-		return ;
+	std::pair<int, std::string> result = readFd(client->getSocket());
+	if (result.first != SUCCESS)
+		return result.first;
+	std::string	str = result.second;
 	client->parse(str);
 	client->setTimer();
 	if (client->getRequest()._statusCode != OK)
 		client->displayErrorPage(_statusCodeList.find(client->getRequest()._statusCode));
 	editSocket(client->getSocket(), EPOLLIN, event);
+	return (SUCCESS);
 }
 
 void Webserv::handleResponse(Client *client, Request req, struct epoll_event &event)
@@ -409,8 +413,10 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 	}
 	std::pair<bool, std::vector<std::string> > cgi;
 	cgi.first = false;
+	std::cout << "fullPath: " << fullPath << std::endl;
 	if (req._statusCode != OK) // si une erreur est survenue, renvoyer la page d'erreur
 		return (client->displayErrorPage(_statusCodeList.find(req._statusCode)));
+	std::cout << "Status code is ok: " << req._statusCode << std::endl;
 	if (req.getMethod() == "GET" || req.getMethod() == "POST")
 		cgi = isValidCGI(req, *client);
 	if (cgi.first) // is CGI valid or not
@@ -419,7 +425,8 @@ void Webserv::handleResponse(Client *client, Request req, struct epoll_event &ev
 		for (; it != cgi.second.end(); it++)
 		{
 			req.setRoot(*it); // set new root path
-			if (!HandleCgi(req, *client))
+			int res = HandleCgi(req, *client);
+			if (res == FAILED || res == READ_ERROR)
 				return (eraseTmpFile(cgi.second), client->displayErrorPage(_statusCodeList.find(req._statusCode)));
 		}
 		if (req.getMethod() == "GET")

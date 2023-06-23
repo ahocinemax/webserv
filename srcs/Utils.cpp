@@ -64,25 +64,22 @@ void toLower(std::string *str)
 		*ite = std::tolower(*ite);
 }
 
-std::string readFd(int fd)
+std::pair<int, std::string> readFd(int fd)
 {
 	char buffer[BUFFER_SIZE + 1];
 	int totalBytes = 0;
 	int bytesRead = 0;
 	std::string str;
 	if (fd < 0)
-		return ("");
+		return (std::pair<int, std::string>(SERVER_ERROR, ""));
 	while ((bytesRead = read(fd, buffer, BUFFER_SIZE)) > 0)
 	{
 		str.append(buffer, bytesRead);
 		totalBytes += bytesRead;
 	}
-	if (totalBytes <= 0)
-	{
-		return ("");
-	}
-
-	return (str);
+	if (totalBytes < 0)
+		return (std::pair<int, std::string>(READ_ERROR, ""));
+	return (std::pair<int, std::string>(SUCCESS, str));
 }
 
 std::string convertToOctets(int octets)

@@ -112,7 +112,7 @@ typedef std::map<int, std::string>			StatusMap;
 typedef std::map<std::string, std::string>	StringMap;
 typedef std::map<int, Server*>				ServerMap;
 
-std::map<bool, std::string> readFd(int fd);
+std::pair<int, std::string>					readFd(int socket);
 
 StrVector	split(std::string input, char delimiter);
 MethodType	strToMethodType(std::string str);
@@ -136,6 +136,18 @@ std::string to_string(T input)
 	std::stringstream ss;
 	ss << input;
 	return ss.str();
+}
+
+template <typename T1>
+bool isInside(std::vector<T1> to_search, T1 to_find)
+{
+	typename std::vector<T1>::iterator	it = to_search.begin();
+	for ( ; it != to_search.end() ; it++)
+	{
+		if (*it == to_find)
+			return (true);
+	}
+	return false;
 }
 
 #endif

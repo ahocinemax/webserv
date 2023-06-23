@@ -12,7 +12,7 @@
 
 #include "Client.hpp"
 
-Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(""), _server(server)
+Client::Client(Server *server) : _addrLen(sizeof(_addr)), _request(""), _server(server), _errorCode(0)
 {}
 
 Client::~Client(void) {}
@@ -184,7 +184,7 @@ int	Client::sendContent(const char *content, std::size_t size, bool display)
 	{
 		sendSize = send(_socket, content, size, MSG_NOSIGNAL | MSG_DONTWAIT);
 		if (sendSize < 0)
-			return (SEND_ERROR); // difference entre 0 et -1
+			return (SEND_ERROR);
 		else if (sendSize == 0)
 			return (SERVER_ERROR);
 	}

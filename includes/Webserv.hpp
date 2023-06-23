@@ -43,7 +43,7 @@ class Webserv
 		int					connectEpollToSockets(void);
 		int					initConnection(int socket);
 
-		void				handleRequest(Client *client, struct epoll_event &event);
+		int					handleRequest(Client *client, struct epoll_event &event);
 		void				handleResponse(Client*, Request, struct epoll_event&);
 		int					findClientIndex(int socket);
 		int					routine(void);
@@ -79,7 +79,7 @@ class Webserv
 		
 		//Cgi(Epoll.cpp)
 		void				CgihandleMultipart(Request &request, Client &client);
-		bool 				HandleCgi(Request &request, Client& client);
+		int 				HandleCgi(Request &request, Client& client);
 		
 		//Cgi(Webserv.cpp)
 		std::pair<bool, std::vector<std::string> >	isValidCGI(Request &request, Client &client) const;

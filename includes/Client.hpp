@@ -32,6 +32,7 @@ class Client
 		Server				*_server;
 		const char			*_ipAdress;
 		const char			*_port;
+		int					_errorCode;
 
 		Client(Server *server);
 		~Client(void);

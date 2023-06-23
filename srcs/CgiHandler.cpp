@@ -105,14 +105,14 @@ const std::string &CgiHandler::getProgram() const
 }
 
 
-bool CgiHandler::getCgiOutput(std::string &output)
+std::pair<int, std::string> CgiHandler::getCgiOutput(std::string &output)
 {
 	PipeSet();
 	int pid = fork();
 	if (pid < 0)
 	{
 		std::cerr << "cgihandler:getCgiOutput (fork) error" << std::endl;
-		return (SERVER);
+		return (std::pair<int, std::string>(SERVER_ERROR, ""));
 	}
 	else if (pid == 0)
 	{
@@ -120,7 +120,6 @@ bool CgiHandler::getCgiOutput(std::string &output)
 		usleep(900);
 		Execute();
 		exit(EXIT_FAILURE);
-		//return true;
 	}
 	else
 	{
@@ -128,16 +127,20 @@ bool CgiHandler::getCgiOutput(std::string &output)
 
 		if (WaitforChild(pid))
 		{
-			output = readFd(fd_out[0]);
+			std::pair<int, std::string> result = readFd(fd_out[0]);
+			if (result.first == SUCCESS)
+				output = result.second;
+			else
+				return (std::pair<int, std::string>(result.first, ""));
 			if (containHeader(output))
 				removeHeader(output);
 			close(fd_out[0]);
-			return true;
+			return (std::pair<int, std::string>(SUCCESS, output));
 		}
 		else
 		{
 			close(fd_out[0]);
-			return false;
+			return std::pair<int, std::string>(SERVER_ERROR, "");
 		}
 	}
 }
@@ -298,7 +301,11 @@ bool CgiHandler::WaitforChild(int pid)
 	int wstatus = 0;
 	time_t start = time(0);
 
-	WriteToStdin();
+	if (WriteToStdin() == WRITE_ERROR)
+	{
+		kill(pid, SIGINT);
+		return (false);
+	}
 	while (true)
 	{
 		if (waitpid(pid, &wstatus, WNOHANG) == pid)
@@ -315,17 +322,17 @@ bool CgiHandler::WaitforChild(int pid)
 	return (WIFEXITED(wstatus) && (WEXITSTATUS(wstatus) != EXIT_FAILURE));
 }
 
-void CgiHandler::WriteToStdin()
+int CgiHandler::WriteToStdin()
 {
 	SetupParentIO();
 	int errorCode = 0;
 	int ret = write(fd_in[1], _request_body.c_str(), _request_body.size());
 	if (ret < 0)
-		errorCode = 1;
+		errorCode = WRITE_ERROR;
 	if (ret == 0)
-		errorCode = 2;
+		errorCode = EMPTY;
 	close(fd_in[1]);
-	// return (errorCode);
+	return (errorCode);
 }
 
 bool CgiHandler::containHeader(std::string &output)

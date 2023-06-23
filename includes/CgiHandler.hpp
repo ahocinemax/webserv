@@ -40,7 +40,7 @@ class CgiHandler
 		const std::map<std::string, std::string>&	getEnv() const;
 		const std::string&							getScriptPath() const;
 		void										setProgram(const std::string& program);
-		bool										getCgiOutput(std::string& output);
+		std::pair<int, std::string>					getCgiOutput(std::string &output);
 		std::string									get_cgipath() const;
 		char**										getEnvAsCstrArray() const;
 		void										freeEnvCstrArray(char** env) const;
@@ -53,7 +53,7 @@ class CgiHandler
 		void								PipeSet(void);
 		void								SetupParentIO(void);
 		bool								WaitforChild(int pid);
-		void								WriteToStdin(void);
+		int									WriteToStdin(void);
 		bool								containHeader(std::string& output);
 		void								removeHeader(std::string& output);
 

@@ -77,17 +77,12 @@ void	Webserv::checkTimeout(void)
 			_clients[it]->displayErrorPage(_statusCodeList.find(REQUEST_TIMEOUT));
 			toDelete.push_back(it);
 		}
-		// else if (_clients[it]->_isCgi)
-		// {
-		// 	time_t startOfRequest = _clients[it]->_cgi->_timer;
-		// 	time_t timeout = startOfRequest + TIMEOUT_LIMIT;
-		// 	if (time_Now > timeout)
-		// 	{
-		// 		_clients[it]->displayErrorPage(_statusCodeList.find(GATEWAY_TIMEOUT));
-		// 		kill(_clients[it]->_cgi->_pid, SIGTERM);
-		// 		toDelete.push_back(it);
-		// 	}
-		// }
+		
+		else if (_clients[it]->_errorCode == READ_ERROR && isInside(toDelete, it))
+		{
+			_clients[it]->displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+			toDelete.push_back(it);
+		}
 	}
 	if (toDelete.size() > 0)
 	{
@@ -136,13 +131,19 @@ void	Webserv::sendAutoindex(Client &client, std::string filePath)
 	std::string	header = response.makeHeader();
 
 	int ret = send(client.getSocket(), header.c_str(), header.length(), MSG_NOSIGNAL);
-	if (ret < 0)  // difference entre 0 & -1
-		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+	if (ret < 0)
+	{
+		client._errorCode = SEND_ERROR;
+		return ;
+	}
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 	ret = send(client.getSocket(), output.c_str(), output.length(), MSG_NOSIGNAL);
-	if (ret < 0)  // difference entre 0 & -1
-		client.displayErrorPage(_statusCodeList.find(INTERNAL_SERVER_ERROR));
+	if (ret < 0)
+	{
+		client._errorCode = SEND_ERROR;
+		return ;
+	}
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(BAD_REQUEST));
 }
@@ -160,7 +161,8 @@ void	Webserv::redirectMethod(Client &client, Request &request)
 	response.addHeader("content-length", 0);
 	response.addHeader("date", response.getDate());
 	std::string	header = response.makeHeader();
-	if ((int errorCode = client.sendContent(header.c_str(), header.length())) == SEND_ERROR)
+	int errorCode;
+	if ((errorCode = client.sendContent(header.c_str(), header.length())) == SEND_ERROR)
 	{
 		// delete client
 		(void)errorCode;
@@ -185,8 +187,11 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 	std::string	header = response.makeHeader();
 	int			ret = send(client.getSocket(), header.c_str(), header.length(), 0);
 
-	if (ret < 0) // difference entre 0 & -1
-		client.displayErrorPage(_statusCodeList.find(500));
+	if (ret < 0)
+	{
+		client._errorCode = SEND_ERROR;
+		return ;
+	}
 	else if (ret == 0)
 		client.displayErrorPage(_statusCodeList.find(400));
 	std::cout << GREEN "File \"" << filePath << "\" deleted" RESET << std::endl;
@@ -210,7 +215,8 @@ void	Webserv::postMethod(Client &client, std::string path)
 	response.addHeader("content-length", "0"); 
 	response.addHeader("content-type", "text/plain"); 
 	std::string header = response.makeHeader(false); 
-	if ((int errorCode = client.sendContent(header.c_str(), header.length(), true)) == SEND_ERROR)
+	int errorCode;
+	if ((errorCode = client.sendContent(header.c_str(), header.length(), true)) == SEND_ERROR)
 	{
 		// delete client
 		(void)errorCode;
@@ -275,7 +281,8 @@ void	Webserv::getMethod(Client &client, std::string path)
 	response.addHeader("content-length", to_string(fileStat.st_size));
 	response.addHeader("content-type", mime);
 	std::string	header = response.makeHeader(false);
-	if ((int errorCode = client.sendContent(header.c_str(), header.length(), true)) == SEND_ERROR)
+	int errorCode;
+	if ((errorCode = client.sendContent(header.c_str(), header.length(), true)) == SEND_ERROR)
 	{
 		// delete client
 		(void)errorCode;
@@ -291,7 +298,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 			std::cout << RED "> Error while reading file" RESET << std::endl;
 		else if (readSize == 0)
 			std::cout << RED "> File is empty" RESET << std::endl;
-		else if ((int errorCode = client.sendContent(buffer, readSize)) == SEND_ERROR)
+		else if ((errorCode = client.sendContent(buffer, readSize)) == SEND_ERROR)
 			break ;
 	}
 	fclose(file);
@@ -361,11 +368,11 @@ std::pair<bool, std::vector<std::string> > Webserv::isValidCGI(Request &request,
 						return result;							
 					}
 					int ret = write(fd, phpSection.c_str(), phpSection.length());
-					if ( ret < 0)
+					close(fd);
+					if (ret < 0)
 						return result; // On garde le fichier pour l'exécuter dans le CGI Handler
 					if (ret == 0)
-						return result;
-					close(fd);
+						break ;
 					result.first = true;
 					result.second.push_back(filePath);
 				}
@@ -442,13 +449,14 @@ void Webserv::CgiGetMethod(Client &client, Request req)
 	if (response.getHeader("Content-type") == "")
 		response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
-	if ((int errorCode = client.sendContent(header.c_str(), header.length())) == SERVER_ERROR)
+	int errorCode;
+	if ((errorCode = client.sendContent(header.c_str(), header.length())) == SERVER_ERROR)
 	{
 		// delete client
 		(void)errorCode;
 		return ;
 	}
-	if ((int errorCode = client.sendContent(response._message.c_str(), response._message.length())) == SERVER_ERROR)
+	if ((errorCode = client.sendContent(response._message.c_str(), response._message.length())) == SERVER_ERROR)
 	{
 		// delete client
 		(void)errorCode;
@@ -468,13 +476,14 @@ void Webserv::CgiPostMethod(Client &client, Request req)
 	if (response.getHeader("Content-type") == "")
 		response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
-	if ((int errorCode = client.sendContent(header.c_str(), header.length())) == SERVER_ERROR)
+	int errorCode;
+	if ((errorCode = client.sendContent(header.c_str(), header.length())) == SERVER_ERROR)
 	{
 		// delete client
 		(void)errorCode;
 		return ;
 	}
-	if ((int errorCode = client.sendContent(response.getBody().c_str(), response.getBody().length())) == SERVER_ERROR)
+	if ((errorCode = client.sendContent(response.getBody().c_str(), response.getBody().length())) == SERVER_ERROR)
 	{
 		// delete client
 		(void)errorCode;
