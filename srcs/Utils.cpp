@@ -77,7 +77,7 @@ std::pair<int, std::string> readFd(int fd)
 		str.append(buffer, bytesRead);
 		totalBytes += bytesRead;
 	}
-	if (totalBytes < 0)
+	if (totalBytes <= 0)
 		return (std::pair<int, std::string>(READ_ERROR, ""));
 	return (std::pair<int, std::string>(SUCCESS, str));
 }

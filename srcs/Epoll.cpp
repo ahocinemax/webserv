@@ -290,10 +290,6 @@ void Webserv::handleMultipart(Request &request, Client &client, std::string *fil
 		upload_path(client, filename, request, pos_file);
 		writeContent(request, filename, content);
 	}
-	//if (filename != "")
-	//{
-	//	upload_path(client, filename, request, pos_file);
-	//}
 	std::cout << BLUE << "name is:\t" << name << RESET << std::endl;
 	std::cout << BLUE << "filename is:\t" << filename << RESET << std::endl;
 	filepath = &filename;
@@ -344,6 +340,7 @@ int Webserv::HandleCgi(Request &request, Client& client)
 	if (request._statusCode == NOT_FOUND || request._statusCode == BAD_REQUEST)
 		return (FAILED);
 	std::string output = request.getBody();
+	editSocket(client.getSocket(), EPOLLOUT, client.getEvent());
 	if ((client._errorCode = cgi.getCgiOutput(output).first) == SUCCESS && !output.empty())
 		return (request.appendCgiBody(output), SUCCESS);
 	std::cout << RED "ERROR CGI EXECUTION" << std::endl;
