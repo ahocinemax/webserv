@@ -107,12 +107,13 @@ typedef std::map<int, std::string>			StatusMap;
 typedef std::map<std::string, std::string>	StringMap;
 typedef std::map<int, Server*>				ServerMap;
 
+std::map<bool, std::string> readFd(int fd);
+
 StrVector	split(std::string input, char delimiter);
 MethodType	strToMethodType(std::string str);
 std::string methodTypeToStr(MethodType method);
 std::string	trimSpacesStr(std::string *str);
 void		toLower(std::string *str);
-std::string readFd(int fd);
 std::string convertToOctets(int octets);
 bool		convertHttpCode(const std::string& str, int* code);
 std::string	generateCopyFile(const std::string& dir, const std::string& file);
