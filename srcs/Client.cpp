@@ -175,34 +175,32 @@ void Client::parse(const std::string& str)
 		_request._statusCode = PAYLOAD_TOO_LARGE;
 }
 
-bool	Client::sendContent(const char *content, std::size_t size, bool display)
+int	Client::sendContent(const char *content, std::size_t size, bool display)
 {
 	ssize_t sendSize = 0;
 	if (!content)
-		return (true);
+		return (SUCCESS);
 	if (_socket > 0)
 	{
 		sendSize = send(_socket, content, size, MSG_NOSIGNAL | MSG_DONTWAIT);
 		if (sendSize < 0)
-			return (false); // difference entre 0 et -1
+			return (SEND_ERROR); // difference entre 0 et -1
 		else if (sendSize == 0)
-			return (false);
+			return (SERVER_ERROR);
 	}
 	else
-		return (false);
+		return (SERVER_ERROR);
 	if (sendSize < 0)
 	{
 		if (display)
 			displayErrorPage(_server->error_pages.find(INTERNAL_SERVER_ERROR));
-		return (false);
+		return (SEND_ERROR);
 	}
 	else if (sendSize == 0)
 	{
 		if (display)
 			displayErrorPage(_server->error_pages.find(BAD_REQUEST));
-		return (false);
+		return (SERVER_ERROR);
 	}
-	// else
-		// std::cout << "> " GREEN "Response sent: " RESET << sendSize << " bytes." << std::endl;
-	return (true);
+	return (SUCCESS);
 }

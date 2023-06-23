@@ -160,7 +160,12 @@ void	Webserv::redirectMethod(Client &client, Request &request)
 	response.addHeader("content-length", 0);
 	response.addHeader("date", response.getDate());
 	std::string	header = response.makeHeader();
-	client.sendContent(header.c_str(), header.length());
+	if ((int errorCode = client.sendContent(header.c_str(), header.length())) == SEND_ERROR)
+	{
+		// delete client
+		(void)errorCode;
+		return ;
+	}
 }
 
 void	Webserv::deleteMethod(Client &client, std::string path)
@@ -189,25 +194,29 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 
 void	Webserv::postMethod(Client &client, std::string path)
 {
-    std::string filePath = getPath(client, path);
+	std::string filePath = getPath(client, path);
 
-    if (filePath.length() > MAX_URI_LENGTH)
-        return (client.displayErrorPage(_statusCodeList.find(URI_TOO_LONG)));
+	if (filePath.length() > MAX_URI_LENGTH)
+		return (client.displayErrorPage(_statusCodeList.find(URI_TOO_LONG)));
 
-    struct stat fileStat;
-    lstat(filePath.c_str(), &fileStat);
-    FILE *file = fopen(filePath.c_str(), "rb");
-    if (file == NULL)
-        return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
-    fclose(file);
+	struct stat fileStat;
+	lstat(filePath.c_str(), &fileStat);
+	FILE *file = fopen(filePath.c_str(), "rb");
+	if (file == NULL)
+		return (client.displayErrorPage(_statusCodeList.find(NOT_FOUND)));
+	fclose(file);
 	
 	Response	response(_statusCodeList[client.getRequest()._statusCode]);
-    response.addHeader("content-length", "0"); 
-    response.addHeader("content-type", "text/plain"); 
-    std::string header = response.makeHeader(false); 
-    if (!client.sendContent(header.c_str(), header.length(), true))
-        return;
-    std::cout << GREEN << "File uploaded successfully" << RESET << std::endl;
+	response.addHeader("content-length", "0"); 
+	response.addHeader("content-type", "text/plain"); 
+	std::string header = response.makeHeader(false); 
+	if ((int errorCode = client.sendContent(header.c_str(), header.length(), true)) == SEND_ERROR)
+	{
+		// delete client
+		(void)errorCode;
+		return;
+	}
+	std::cout << GREEN << "File uploaded successfully" << RESET << std::endl;
 }
 
 void	Webserv::getMethod(Client &client, std::string path)
@@ -266,8 +275,12 @@ void	Webserv::getMethod(Client &client, std::string path)
 	response.addHeader("content-length", to_string(fileStat.st_size));
 	response.addHeader("content-type", mime);
 	std::string	header = response.makeHeader(false);
-	if (!client.sendContent(header.c_str(), header.length(), true))
+	if ((int errorCode = client.sendContent(header.c_str(), header.length(), true)) == SEND_ERROR)
+	{
+		// delete client
+		(void)errorCode;
 		return (fclose(file), void());
+	}
 	char		buffer[BUFFER_SIZE + 1];
 	ssize_t		readSize = 0;
 	ssize_t		totalSize = header.length();
@@ -278,7 +291,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 			std::cout << RED "> Error while reading file" RESET << std::endl;
 		else if (readSize == 0)
 			std::cout << RED "> File is empty" RESET << std::endl;
-		else if (!client.sendContent(buffer, readSize))
+		else if ((int errorCode = client.sendContent(buffer, readSize)) == SEND_ERROR)
 			break ;
 	}
 	fclose(file);
@@ -429,11 +442,18 @@ void Webserv::CgiGetMethod(Client &client, Request req)
 	if (response.getHeader("Content-type") == "")
 		response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
-	if (!client.sendContent(header.c_str(), header.length()))
+	if ((int errorCode = client.sendContent(header.c_str(), header.length())) == SERVER_ERROR)
+	{
+		// delete client
+		(void)errorCode;
 		return ;
-	if (!client.sendContent(response._message.c_str(), response._message.length()))
+	}
+	if ((int errorCode = client.sendContent(response._message.c_str(), response._message.length())) == SERVER_ERROR)
+	{
+		// delete client
+		(void)errorCode;
 		return ;
-	// std::cout << GREEN << "CGI response sent (" << convertToOctets(header.length() + response._message.length()) << ")" RESET << std::endl;
+	}
 }
 
 void Webserv::CgiPostMethod(Client &client, Request req)
@@ -448,22 +468,29 @@ void Webserv::CgiPostMethod(Client &client, Request req)
 	if (response.getHeader("Content-type") == "")
 		response.addHeader("Content-Type", "text/html");
 	std::string header = response.makeHeader(false);
-	if (!client.sendContent(header.c_str(), header.length()))
+	if ((int errorCode = client.sendContent(header.c_str(), header.length())) == SERVER_ERROR)
+	{
+		// delete client
+		(void)errorCode;
 		return ;
-	if (!client.sendContent(response.getBody().c_str(), response.getBody().length()))
+	}
+	if ((int errorCode = client.sendContent(response.getBody().c_str(), response.getBody().length())) == SERVER_ERROR)
+	{
+		// delete client
+		(void)errorCode;
 		return ;
-	// std::cout << GREEN << "CGI response sent (" << convertToOctets(header.length() + response._message.length()) << ")" RESET << std::endl;
+	}
 }
 
 void Webserv::eraseTmpFile(StrVector vec)
 {
 	for (int i = 0 ; i < vec.size() ; i++)
 	{
-	    if (vec[i].find("tmp_") != std::string::npos) // prefix pour tmp file dans isValidCGI
-        {
-            if (remove(vec[i].c_str()) != 0)
-                std::cerr << RED << "Failed to remove tmp file: " << RESET << vec[i] << std::endl;
-        }
+		if (vec[i].find("tmp_") != std::string::npos) // prefix pour tmp file dans isValidCGI
+		{
+			if (remove(vec[i].c_str()) != 0)
+				std::cerr << RED << "Failed to remove tmp file: " << RESET << vec[i] << std::endl;
+		}
 	}
 }
 

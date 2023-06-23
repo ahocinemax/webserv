@@ -112,7 +112,7 @@ bool CgiHandler::getCgiOutput(std::string &output)
 	if (pid < 0)
 	{
 		std::cerr << "cgihandler:getCgiOutput (fork) error" << std::endl;
-		return (false);
+		return (SERVER);
 	}
 	else if (pid == 0)
 	{

@@ -53,7 +53,7 @@ class Client
 
 		void		displayErrorPage(StatusMap::iterator statusCode);
 		void		parse(const std::string& str);
-		bool		sendContent(const char *content, std::size_t size, bool displayErrorPage = false);
+		int			sendContent(const char *content, std::size_t size, bool displayErrorPage = false);
 
 	private:
 		int			_socket;
