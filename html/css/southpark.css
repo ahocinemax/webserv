@@ -92,6 +92,7 @@ nav ul li
 {
 	height				:	fit-content;
 	margin-bottom		:	20px;
+	cursor				:	pointer;
 }
 
 .character-card#towelie img /* Towelie doit être plus petit */

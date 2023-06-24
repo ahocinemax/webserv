@@ -105,10 +105,7 @@ void	Webserv::sendAutoindex(Client &client, std::string filePath)
 	if (filePath[filePath.length() - 1] != '/')
 		filePath += "/";
 	if ((dir = opendir(filePath.c_str())) == NULL)
-	{
-		client.displayErrorPage(_statusCodeList.find(NOT_FOUND));
-		return ;
-	}
+		return client.displayErrorPage(_statusCodeList.find(NOT_FOUND));
 	struct dirent	*ent;
 	filePath.erase(filePath.begin(), filePath.begin() + client._server->root.length());
 	while ((ent = readdir(dir)) != NULL)
@@ -158,16 +155,12 @@ void	Webserv::redirectMethod(Client &client, Request &request)
 	else
 		response.addHeader("server", "default_server");
 	response.addHeader("content-type", "text/html");
-	response.addHeader("content-length", 0);
+	response.addHeader("content-length", "0");
 	response.addHeader("date", response.getDate());
 	std::string	header = response.makeHeader();
 	int errorCode;
 	if ((errorCode = client.sendContent(header.c_str(), header.length())) == SEND_ERROR)
-	{
-		// delete client
-		(void)errorCode;
-		return ;
-	}
+		client._errorCode = errorCode;
 }
 
 void	Webserv::deleteMethod(Client &client, std::string path)
@@ -176,10 +169,7 @@ void	Webserv::deleteMethod(Client &client, std::string path)
 	FILE			*file = fopen(filePath.c_str(), "r");
 
 	if (file == NULL)
-	{
-		client.displayErrorPage(_statusCodeList.find(404));
-		return ;
-	}
+		return client.displayErrorPage(_statusCodeList.find(404));
 	fclose(file);
 	std::remove(filePath.c_str());
 
@@ -217,8 +207,7 @@ void	Webserv::postMethod(Client &client, std::string path)
 	std::string header = response.makeHeader(false); 
 	int errorCode;
 	if ((errorCode = client.sendContent(header.c_str(), header.length(), true)) == SEND_ERROR)
-	{
-		// delete client
+	{ 
 		(void)errorCode;
 		return;
 	}
@@ -283,8 +272,7 @@ void	Webserv::getMethod(Client &client, std::string path)
 	std::string	header = response.makeHeader(false);
 	int errorCode;
 	if ((errorCode = client.sendContent(header.c_str(), header.length(), true)) == SEND_ERROR)
-	{
-		// delete client
+	{ 
 		(void)errorCode;
 		return (fclose(file), void());
 	}
@@ -451,14 +439,12 @@ void Webserv::CgiGetMethod(Client &client, Request req)
 	std::string header = response.makeHeader(false);
 	int errorCode;
 	if ((errorCode = client.sendContent(header.c_str(), header.length())) == SERVER_ERROR)
-	{
-		// delete client
+	{ 
 		(void)errorCode;
 		return ;
 	}
 	if ((errorCode = client.sendContent(response._message.c_str(), response._message.length())) == SERVER_ERROR)
-	{
-		// delete client
+	{ 
 		(void)errorCode;
 		return ;
 	}
@@ -478,14 +464,12 @@ void Webserv::CgiPostMethod(Client &client, Request req)
 	std::string header = response.makeHeader(false);
 	int errorCode;
 	if ((errorCode = client.sendContent(header.c_str(), header.length())) == SERVER_ERROR)
-	{
-		// delete client
+	{ 
 		(void)errorCode;
 		return ;
 	}
 	if ((errorCode = client.sendContent(response.getBody().c_str(), response.getBody().length())) == SERVER_ERROR)
-	{
-		// delete client
+	{ 
 		(void)errorCode;
 		return ;
 	}

@@ -51,7 +51,7 @@ void	Client::setRecvSize(int size) { _recvSize = size; }
 
 std::string	Client::setRootPath(std::string path)
 {
-	std::size_t	len = _server->locations[0]._root.length();;
+	std::size_t	len = 0;
 	std::string	root;
 	int index = -1;
 
