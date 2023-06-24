@@ -79,7 +79,7 @@ int	Webserv::routine(void)
 	int 				nbEvents = 0;
 	int					index = 0;
 
-	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 2000)) < SUCCESS)
+	if ((nbEvents = epoll_wait(_epollFd, events, MAX_EPOLL_EVENTS, 300)) < SUCCESS)
 		return (FAILED);
 	for (int i = 0; i < nbEvents; i++)
 	{

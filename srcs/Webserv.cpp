@@ -64,7 +64,7 @@ void	Webserv::closeServers(void)
 
 void	Webserv::checkTimeout(void)
 {
-	std::cout << BLUE "> Checking timeout for " RED << _clients.size() << BLUE " clients." RESET << std::endl;
+	// std::cout << BLUE "> Checking timeout for " RED << _clients.size() << BLUE " clients." RESET << std::endl;
 	std::vector<int> toDelete;
 	for (int it = 0 ; it < _clients.size() ; it++)
 	{
@@ -92,8 +92,8 @@ void	Webserv::checkTimeout(void)
 			eraseClient(toDelete[i]);
 		}
 	}
-	else
-		std::cout << GREEN "> No client timeout." RESET << std::endl;
+	// else
+		// std::cout << GREEN "> No client timeout." RESET << std::endl;
 }
 
 void	Webserv::sendAutoindex(Client &client, std::string filePath)
