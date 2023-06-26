@@ -390,7 +390,7 @@ void Webserv::CgiGetMethod(Client &client, Request req)
 		response.parseCgiBody(req.getCgiBody(index));
 		response.setCgiBody(req.getCgiBody(index));
 	}
-	output = response.getCgiBody(0);
+	output = req.getCgiBody().size() != 0 ? response.getCgiBody(0) : "";
 	// extrait l'extension du fichier (tout ce qui est après le dernier point)
 	std::string extension = req.getPath().substr(req.getPath().find_last_of(".") + 1);
 	if (extension == "php" || extension == "py")
